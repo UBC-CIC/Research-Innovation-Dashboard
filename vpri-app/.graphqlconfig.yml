@@ -1,0 +1,18 @@
+projects:
+  graphql2postgres:
+    schemaPath: src/graphql/schema.json
+    includes:
+      - src/graphql/**/*.js
+    excludes:
+      - ./amplify/**
+    extensions:
+      amplify:
+        codeGenTarget: javascript
+        generatedFileName: ''
+        docsFilePath: src/graphql
+        region: ca-central-1
+        apiId: icovegqsmjb7pmcui2ajotb4gq
+        maxDepth: 2
+extensions:
+  amplify:
+    version: 3

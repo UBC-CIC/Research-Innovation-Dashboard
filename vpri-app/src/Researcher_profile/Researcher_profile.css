@@ -1,0 +1,67 @@
+#header_text {
+    font-size: 32px;
+}
+
+#research_highlights_text {
+    font-size: 32px;
+    margin-left: 8px;
+}
+
+#prof_image {
+    height: 160px;
+    width: 125px;
+    display: inline-block;
+    vertical-align: top;
+    padding-bottom: 6px;
+    padding-right: 6px;
+    padding-top: 6px;
+}
+#content {
+    display: inline-block;
+    vertical-align: top;
+    padding-top: 6px;
+    padding-bottom: 24px;
+    margin: 0%;
+}
+
+p {
+    line-height: 1.5;
+}
+
+#top_text {
+    text-align: center;
+    vertical-align: middle; 
+}
+
+#bottom_text {
+    text-align: center;
+}
+
+#Areas_Of_Interest_Text {
+    display: inline-block;
+    font-size: 32px;
+}
+
+#similar_researchers {
+    float: right;
+    text-align: center;
+    padding-top: 8px;
+}
+
+#full_box {
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+#left_box {
+    padding-right: 0px;
+}
+
+#testing {
+    background-color: #002145;
+}
+
+.loader {
+    left: 50%;
+    margin-left: -4em;
+  }
