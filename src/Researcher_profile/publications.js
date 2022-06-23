@@ -1,32 +1,21 @@
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState} from 'react';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Grid from '@mui/material/Grid';
 import PUBLICATION from './publication'
-import { Link } from 'react-router-dom'
 import Amplify from '@aws-amplify/core'
 import TableSortLabel from '@mui/material/TableSortLabel';
-import {useParams} from "react-router-dom";
 
 import { Auth } from '@aws-amplify/auth'
 import awsmobile from '../aws-exports'
-import { API } from 'aws-amplify';
-import {
-    getPub,
-    getResearcher,
-    getResearcherFull,
-    getResearcherPubs,
-  } from '../graphql/queries';
 
 Amplify.configure(awsmobile)
 Auth.configure(awsmobile)
 
 export default function PUBLICATIONS(props){
-    const {scopusId} = useParams();
-
     const [sortByTitle, setSortByTitle] = useState(false);
     const [sortByTitleDirection, setSortByTitleDirection] = useState('desc');
 
@@ -71,29 +60,27 @@ export default function PUBLICATIONS(props){
 
     const sortHandler = header_name => () => 
     { 
-        if(header_name  == 'title'){
-            if(sortByTitle){setSortByTitleDirection((sortByTitleDirection == 'desc') ? 'asc': 'desc');}
+        if(header_name  === 'title'){
+            if(sortByTitle){setSortByTitleDirection((sortByTitleDirection === 'desc') ? 'asc': 'desc');}
             setSortByTitle(true);
             setSortyByNumberCitations(false);
             setSortByYear(false);
         }
-        else if(header_name == 'citations'){
+        else if(header_name === 'citations'){
             if(sortByNumberCitations){
-                setSortyByNumberCitationsDirection((sortByNumberCitationsDirection == 'desc') ? 'asc': 'desc');
+                setSortyByNumberCitationsDirection((sortByNumberCitationsDirection === 'desc') ? 'asc': 'desc');
             }
             setSortByTitle(false); 
             setSortyByNumberCitations(true);
             setSortByYear(false);
         }
-        else if(header_name == 'year'){
-            if(sortByYear){setSortByYearDirection((sortByYearDirection == 'desc') ? 'asc': 'desc');}
+        else if(header_name === 'year'){
+            if(sortByYear){setSortByYearDirection((sortByYearDirection === 'desc') ? 'asc': 'desc');}
             setSortByTitle(false);
             setSortyByNumberCitations(false);
             setSortByYear(true);
         }
     }
-
-    let showDesc = (sortByYearDirection == 'desc') ? 'block': 'none';
 
     return(    
         <Box id='full_box'>
@@ -128,12 +115,12 @@ export default function PUBLICATIONS(props){
                         </TableSortLabel>
                     </Paper>
                 </Grid>
-                {(sortByNumberCitations && sortByNumberCitationsDirection == 'desc') && DescendingSortByCitationsPublications}
-                {(sortByNumberCitations && sortByNumberCitationsDirection == 'asc') && AscendingSortByCitationsPublications}
-                {(sortByTitle &&  sortByTitleDirection == 'desc') && DescendingSortByTitlePublications}
-                {(sortByTitle &&  sortByTitleDirection == 'asc') && AscendingsSortByTitlePublications}
-                {(sortByYear &&  sortByYearDirection == 'desc') && DescendingSortByYearPublications}
-                {(sortByYear &&  sortByYearDirection == 'asc') && AscendingsSortByYearPublications}
+                {(sortByNumberCitations && sortByNumberCitationsDirection === 'desc') && DescendingSortByCitationsPublications}
+                {(sortByNumberCitations && sortByNumberCitationsDirection === 'asc') && AscendingSortByCitationsPublications}
+                {(sortByTitle &&  sortByTitleDirection === 'desc') && DescendingSortByTitlePublications}
+                {(sortByTitle &&  sortByTitleDirection === 'asc') && AscendingsSortByTitlePublications}
+                {(sortByYear &&  sortByYearDirection === 'desc') && DescendingSortByYearPublications}
+                {(sortByYear &&  sortByYearDirection === 'asc') && AscendingsSortByYearPublications}
             </Grid>
             <Box textAlign='center'>
                 <ShowMorePublicationsButton/>

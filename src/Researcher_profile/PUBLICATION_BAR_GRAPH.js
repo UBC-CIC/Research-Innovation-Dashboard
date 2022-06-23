@@ -21,7 +21,7 @@ ChartJS.register(
     Legend
   );
 
-export default function PUBLICATION_BAR_GRAPH(props){
+export default function PublicationBarGraph(props){
     console.log(props.barGraphData);
     const labels = props.barGraphData.barGraphLastFiveYears;
     const publication_data = props.barGraphData.publicationsPerYear;

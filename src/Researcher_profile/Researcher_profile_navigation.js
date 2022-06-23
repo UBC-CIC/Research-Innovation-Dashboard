@@ -5,8 +5,6 @@ import Grid from '@mui/material/Grid';
 import './Researcher_profile.css'
 import Button from "@mui/material/Button";
 import ButtonGroup from '@mui/material/ButtonGroup';
-import { Link } from 'react-router-dom'
-import {useParams} from "react-router-dom";
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
@@ -19,10 +17,6 @@ const navigationBarTheme = createTheme({
   });
 
 export default function Research_Profile_Navigation(props) {
-
-    const {scopusId} = useParams();
-
-    let base_link = "/Researchers/"+scopusId+"/";
 
     /* There is a bug if you click a link too fast where you get sent to the wrong place */
     return(

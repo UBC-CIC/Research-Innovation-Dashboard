@@ -3,12 +3,12 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Typography from "@mui/material/Typography";
 import './Rankings.css'
-import { useState, useEffect } from 'react';
+import { useState} from 'react';
 import Button from "@mui/material/Button";
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { Link } from 'react-router-dom'
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme} from '@mui/material/styles';
 
 const heightMatch = {height: "100%"};
 

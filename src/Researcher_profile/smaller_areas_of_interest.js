@@ -6,7 +6,7 @@ import Stack from '@mui/material/Stack';
 import Button from "@mui/material/Button";
 import Grid from '@mui/material/Grid';
 import './Researcher_profile.css'
-import { useState, useEffect } from 'react';
+import {useState} from 'react';
 
 export default function SMALLER_AREAS_OF_INTEREST(props){
     /* This is a 2D array. Each slot of the 2D array contains an Array of 5 elemnts which are areas of interest */

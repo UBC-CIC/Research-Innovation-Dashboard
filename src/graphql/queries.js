@@ -177,3 +177,35 @@ export const getResearcherRankingsByFaculty = /* GraphQL */ `
     }
   }
 `;
+export const searchResearcher = /* GraphQL */ `
+  query SearchResearcher($search_value: String!) {
+    searchResearcher(search_value: $search_value) {
+      first_name
+      preferred_name
+      last_name
+      email
+      rank
+      job_stream
+      prime_department
+      second_department
+      prime_faculty
+      second_faculty
+      campus
+      scopus_id
+    }
+  }
+`;
+export const searchPublications = /* GraphQL */ `
+  query SearchPublications($search_value: String!) {
+    searchPublications(search_value: $search_value) {
+      id
+      title
+      keywords
+      author_ids
+      author_names
+      journal
+      cited_by
+      year_published
+    }
+  }
+`;

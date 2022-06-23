@@ -1,9 +1,7 @@
 import * as React from 'react';
-import Rankings_Navigation from "./Rankings_Navigation"
+import RankingsNavigation from "./Rankings_Navigation"
 import './Rankings.css'
 import { useState, useEffect } from 'react';
-import InputBase from '@mui/material/InputBase';
-import { styled } from '@mui/material/styles';
 
 import Amplify from '@aws-amplify/core'
 import { Auth } from '@aws-amplify/auth'
@@ -21,31 +19,10 @@ import {
 import RankingsByDepartment from './RankResearcherByDepartment'
 import AllResearcherRankings from './allResearcherRankings'
 import RankByFaculty from './RankByFaculty'
-import useMediaQuery from '@mui/material/useMediaQuery';
+import LoadingWheel from '../LoadingWheel'
 
 Amplify.configure(awsmobile)
 Auth.configure(awsmobile)
-
-const BootstrapInput = styled(InputBase)(({ theme }) => ({
-    'label + &': {
-      marginTop: theme.spacing(3),
-    },
-    '& .MuiInputBase-input': {
-      borderRadius: 4,
-      position: 'relative',
-      backgroundColor: theme.palette.background.paper,
-      border: '1px solid #ced4da',
-      fontSize: 16,
-      padding: '10px 26px 10px 12px',
-      transition: theme.transitions.create(['border-color', 'box-shadow']),
-      // Use the system font instead of the default Roboto font.
-      '&:focus': {
-        borderRadius: 4,
-        borderColor: '#80bdff',
-        boxShadow: '0 0 0 0.2rem rgba(0,123,255,.25)',
-      },
-    },
-  }));
 
 export default function Rankings(props) {
     const [researcherRankingsByDepartment, setResearcherRankingsByDepartment] = useState([]);
@@ -60,6 +37,8 @@ export default function Rankings(props) {
     const [showByDepartment, setShowByDepartment] = useState(true);
     const [showByFaculty, setShowByFaculty] = useState(false);
     const [showOverallRankings, setShowOverallRankings] = useState(false);
+
+    const [pageLoaded, setPageLoaded] = useState(false);
 
     const getDeparmentArray = async () => {
         const department = await API.graphql({
@@ -115,9 +94,10 @@ export default function Rankings(props) {
     }
 
     useEffect(() => {
-        getDeparmentArray();
-        getFacultyArray();
-        getOverallResearcherRankings();
+        Promise.all([getDeparmentArray(), getFacultyArray(), getOverallResearcherRankings()]).then(()=>{
+            console.log("done loading");
+            setPageLoaded(true);
+        })
     }, []);
 
     useEffect(() => {
@@ -147,7 +127,9 @@ export default function Rankings(props) {
 
     return(
         <div>
-            <Rankings_Navigation onClickFunctions={{byDepartmentButton, byFacultyButton, overallRankingsButton}} />
+            {!pageLoaded && <LoadingWheel />}
+            {pageLoaded && <div>
+            <RankingsNavigation onClickFunctions={{byDepartmentButton, byFacultyButton, overallRankingsButton}} />
             {showByDepartment && <RankingsByDepartment allDepartments={allDepartments} 
             researcherRankingsByDepartment={researcherRankingsByDepartment}
             changeDepartmentToRank={changeDepartmentToRank}
@@ -156,6 +138,7 @@ export default function Rankings(props) {
             researcherRankingsByFaculty={researcherRankingsByFaculty}
             changeFacultyToRank={changeFacultyToRank}/>}
             {showOverallRankings && <AllResearcherRankings allResearcherRankings={allResearcherRankings} />}
+            </div>}
         </div>
     )
 }

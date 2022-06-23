@@ -1,32 +1,24 @@
 import * as React from 'react';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import professor_photo from './professor_photo.png';
 import './Researcher_profile.css'
-
-const leftGrid = {
-    height: "100%",
-    paddingLeft: 24,
-    backgroundColor: "#fff"
-  };
+import Typography from "@mui/material/Typography";
+import placeholderResearchPhoto from '../placeholder.png'
+import Stack from '@mui/material/Stack';
 
 export default function Researcher_Info(props) {
     return(
         <Grid item xs={4} sx={{}}>
-            <Paper style={leftGrid} square={true} elevation={0} variant="outlined">
-                <div id='header_text'>
-                    {props.researcher_information.preferred_name}
-                </div>
-                <div>
-                    <img alt="" src={professor_photo} id='prof_image'></img>
-                    <p id='content'>
-                        Department of {props.researcher_information.prime_department} <br />
-                        {props.researcher_information.prime_faculty}<br />
-                        Email: {props.researcher_information.email}<br />
-                        Phone: {props.researcher_information.phone_number}<br />
-                        Office: {props.researcher_information.office}<br />
-                    </p>
-                </div>
+            <Paper square={true} elevation={0} component={Stack} direction="row">
+                    <img alt='professor' style={{width: "20%", height: "fit-content", margin: "4%"}} src={placeholderResearchPhoto} />
+                    <Paper elevation={0} sx={{width: "72%", marginTop: "4%"}}>
+                        <Typography>{props.researcher_information.preferred_name} <br /></Typography>
+                        <Typography> {props.researcher_information.prime_faculty}</Typography>
+                        <Typography>{"Department: "+props.researcher_information.prime_department}</Typography>
+                        <Typography>{"Email: "+props.researcher_information.email}</Typography>
+                        <Typography>{"Phone: "+props.researcher_information.phone_number}</Typography>
+                        <Typography>{"Office: "+props.researcher_information.office}</Typography>
+                    </Paper>
             </Paper>
         </Grid>
     )
