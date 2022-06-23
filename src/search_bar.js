@@ -1,76 +1,85 @@
 import * as React from "react";
-import { styled, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import InputBase from '@mui/material/InputBase';
 import './stylesheet.css'
+import Stack from '@mui/material/Stack';
+import Paper from '@mui/material/Paper';
+import IconButton from '@mui/material/IconButton';
+import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
+import {useParams} from "react-router-dom";
 
+import { API } from 'aws-amplify';
 
-const Search = styled('div')(({ theme }) => ({
-    position: 'relative',
-    borderRadius: theme.shape.borderRadius,
-    color: '#002145',
-    border: 1,
-    borderColor: '#002145',
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.common.white, 0.25),
-    },
-    marginLeft: "auto",
-    width: 'auto',
-    [theme.breakpoints.up('sm')]: {
-      marginLeft: "auto",
-      width: 'auto',
-    },
-  }));
-  
-  const SearchIconWrapper = styled('div')(({ theme }) => ({
-    fontSize: "1.0rem",
-    [theme.breakpoints.up('sm')]: {
-      fontSize: "1.25rem",
-    },
-    [theme.breakpoints.up('md')]: {
-      fontSize: "1.5rem",
-    },
-    padding: theme.spacing(0, 2),
-    height: '100%',
-    position: 'absolute',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#002145'
-  }));
-  
-  const StyledInputBase = styled(InputBase)(({ theme }) => ({
-    color: 'inherit',
-    
-    fontSize: "0.75rem",
-    [theme.breakpoints.up('sm')]: {
-      fontSize: "0.875rem",
-    },
-    [theme.breakpoints.up('md')]: {
-      fontSize: "1.0rem",
-    },
-    '& .MuiInputBase-input': {
-      padding: theme.spacing(1, 1, 1, 0),
-      // vertical padding + font size from searchIcon
-      paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-      transition: theme.transitions.create('width'),
-      width: '17ch',
-    },
-  }));  
+import {
+  searchResearcher,
+  searchPublications,
+} from './graphql/queries';
+
 
 export default function Search_Bar(props){
-    return(
-        <Search>
-            <SearchIconWrapper>
-              <SearchIcon sx={{fontSize: 'inherit'}} />
-            </SearchIconWrapper>
-            <StyledInputBase
-              sx={{border: 1}}
-              placeholder="Search Researchers"
-              inputProps={{ 'aria-label': 'search' }}
-            />
-        </Search>
-    );
+  let {searchValue} = useParams();
+  if(!searchValue) {
+    searchValue = "";
+  }
+  const [searchBarValue, setSearchBarValue] = useState(searchValue); 
+
+  function search() {
+    if(props.whatToSearch === "Everything") {
+      searchResearchersQuery();
+      searchPublicationsQuery();
+    }
+    else if(props.whatToSearch === "Researchers") {
+      searchResearchersQuery();
+      props.setPublicationSearchResults([]);
+    }
+    else if(props.whatToSearch === "Publications") {
+      props.setResearcherSearchResults([]);
+      searchPublicationsQuery();
+    }
+  }
+
+  const searchResearchersQuery = async () => {
+      const researcherSearchResult = await API.graphql({
+        query: searchResearcher,
+        variables: {search_value: searchValue}, 
+      });
+      props.setResearcherSearchResults(researcherSearchResult.data.searchResearcher);
+  }
+
+  const searchPublicationsQuery = async () => {
+      const searchPublicationsResult = await API.graphql({
+        query: searchPublications,
+        variables: {search_value: searchValue}, 
+      });
+
+      props.setPublicationSearchResults(searchPublicationsResult.data.searchPublications);
+  }
+
+  let navigate = useNavigate(); 
+  const routeChange = () =>{ 
+    navigate(props.path+searchBarValue);
+  }
+
+  useEffect(() => {
+    console.log("Use Effect Called");
+    search();
+  }, [searchValue]);
+
+
+  return(
+    <Paper elevation={0} sx={{border: 1, width: "60%", marginTop: "8px", marginBottom: "8px"}} component={Stack} direction="row">
+        <InputBase value={searchBarValue} onChange={(e) => {setSearchBarValue(e.target.value)}} 
+        fullWidth={true} inputProps={{style: {padding: 0}}} 
+        sx={{padding: "8px", fontSize: "1.0rem"}}
+        onKeyDown={(e) => {
+          if(e.key === 'Enter'){
+            routeChange();
+          }
+          }}></InputBase>
+        <IconButton onClick={() => {routeChange()}}>
+          <SearchIcon sx={{padding: "8px"}} /> 
+        </IconButton>
+    </Paper>
+  );
 }

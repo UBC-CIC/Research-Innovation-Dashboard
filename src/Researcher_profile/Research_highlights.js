@@ -4,9 +4,8 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Typography from "@mui/material/Typography";
 import './Researcher_profile.css'
-import PUBLICATION_BAR_GRAPH from './PUBLICATION_BAR_GRAPH';
+import PublicationBarGraph from './PUBLICATION_BAR_GRAPH';
 import Stack from '@mui/material/Stack';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const rightGrid = {
     height: "100%",
@@ -56,7 +55,7 @@ export default function Researcher_Highlights(props) {
                                 Funding (5 Years)
                             </Typography>
                         </Paper>
-                        <PUBLICATION_BAR_GRAPH style={boxStyling} preferred_name={props.preferred_name} barGraphData={props.barGraphData}></PUBLICATION_BAR_GRAPH>
+                        <PublicationBarGraph style={boxStyling} preferred_name={props.preferred_name} barGraphData={props.barGraphData}></PublicationBarGraph>
                </Box>
             </Paper>
         </Grid>
