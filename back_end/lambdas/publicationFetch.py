@@ -1,0 +1,127 @@
+import requests
+import json
+import boto3
+import psycopg2
+
+ssm_client = boto3.client('ssm')
+
+def fetch_publications(author_id):
+    instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
+    apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
+    url = 'https://api.elsevier.com/content/search/scopus'
+    results_per_page = 25
+    
+    headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
+    query = {'query': 'AU-ID(' + author_id + ')', 'view' : 'COMPLETE', 'cursor': '*'}
+    
+    response = requests.get(url, headers=headers, params=query)
+    rjson = response.json()
+    stored_results = 0
+    total_results = int(rjson['search-results']['opensearch:totalResults'])
+    publications = []
+    while(stored_results < total_results):
+        results = rjson['search-results']['entry']
+        for result in results:
+            keys = result.keys()
+            id = ''
+            title = ''
+            keywords = []
+            journal = ''
+            cited_by = None
+            year_published = ''
+            # This will evaluate to false if the publication no longer exists
+            if(list(keys).count('author-count')):
+                author_ids = []
+                author_names = []
+                if(list(keys).count('dc:identifier')):
+                    for c in result['dc:identifier']:
+                        if c.isdigit():
+                            id = id + c
+                if(list(keys).count('dc:title')):
+                    title = result['dc:title']
+                if(list(keys).count('authkeywords')):
+                    keywords_string = result['authkeywords']
+                    keywords = keywords_string.split('|')
+                    keywords = [keyword.strip() for keyword in keywords]
+                if(list(keys).count('dc:description')):
+                    description = result['dc:description']
+                if (list(keys).count('prism:publicationName')):
+                    journal = result['prism:publicationName']
+                if (list(keys).count('citedby-count')):
+                    cited_by = int(result['citedby-count'])
+                if (list(keys).count('prism:coverDate')):
+                    year_published = result['prism:coverDate'][0:4]
+                if (list(keys).count('author')):
+                    scopus_authors = result['author']
+                    for author in scopus_authors:
+                        author_ids.append(author['authid'])
+                        author_names.append(author['authname'])
+                
+                publications.append({'id': id, 'title': title, 
+                    'keywords': keywords, 'journal': journal, 'cited_by': cited_by, 
+                    'year_published': year_published, 'author_ids': author_ids, 'author_names': author_names})
+            
+            stored_results += 1
+        if (stored_results >= total_results):
+            break
+        next_url = rjson['search-results']['link'][2]['@href']
+        response = requests.get(next_url, headers=headers)
+        rjson = response.json()
+    return(publications)
+
+def getCredentials():
+    credential = {}
+    
+    ssm_username = ssm_client.get_parameter(Name='/service/publicationDB/username', WithDecryption=True)
+    ssm_password = ssm_client.get_parameter(Name='/service/publicationDB/password', WithDecryption=True)
+    credential['username'] = ssm_username['Parameter']['Value']
+    credential['password'] = ssm_password['Parameter']['Value']
+    credential['host'] = 'vpripublicationdb.ct5odvmonthn.ca-central-1.rds.amazonaws.com'
+    credential['db'] = 'myDatabase'
+    return credential
+    
+def formatStringArray(arr):
+    for i, entry in enumerate(arr):
+        arr[i] = entry.replace('\"', "\'")
+    str_arr = str(arr).replace('\', \'', '", "')
+    str_arr = str_arr.replace('\', "', '", "')
+    str_arr = str_arr.replace('", \'', '", "')
+    str_arr = str_arr.replace('[\'', '["')
+    str_arr = str_arr.replace('\']', '"]')
+    str_arr = str_arr.replace('\'', '\'\'')
+    return str_arr
+    
+def store_publications(publications):
+    credentials = getCredentials()
+    connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
+    cursor = connection.cursor()
+    
+    for publication in publications:
+        # Format each field
+        publication['id'] = publication['id']
+        publication['title'] = publication['title'].replace('\'', "''")
+        publication['author_ids'] = str(publication['author_ids']).replace('\'', '"').replace('[', '{').replace(']', '}')
+        publication['author_names'] = str(formatStringArray(publication['author_names'])).replace('[', '{').replace(']', '}')
+        publication['keywords'] = str(formatStringArray(publication['keywords'])).replace('[', '{').replace(']', '}')
+        publication['journal'] = publication['journal'].replace("'", "''")
+        publication['cited_by'] = str(publication['cited_by'])
+        publication['year_published'] = publication['year_published']
+        
+        queryline1 = "INSERT INTO public.publication_data(id, title, author_ids, author_names, keywords, journal, cited_by, year_published) "
+        queryline2 = "VALUES ('" + publication['id'] + "'::text, '" + publication['title'] + "'::text, '" + publication['author_ids'] + "'::text[], '" + publication['author_names'] + "'::text[], '" + publication['keywords'] + "'::text[], '" + publication['journal'] + "'::text, '" + publication['cited_by'] + "'::integer, '" + publication['year_published'] + "'::text)"
+        queryline3 = "ON CONFLICT (id) DO UPDATE "
+        queryline4 = "SET cited_by='" + publication['cited_by'] + "', keywords='" + publication['keywords'] + "'"
+        cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
+    
+    cursor.close()
+    connection.commit()
+
+def lambda_handler(event, context):
+    author_ids = event
+    #print(author_ids[0])
+    for author_id in author_ids:
+        print(author_id)
+        publications = fetch_publications(author_id[0])
+        store_publications(publications)
+    
+    
