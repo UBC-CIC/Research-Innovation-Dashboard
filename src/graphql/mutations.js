@@ -24,6 +24,7 @@ export const putPub = /* GraphQL */ `
       journal
       cited_by
       year_published
+      link
     }
   }
 `;

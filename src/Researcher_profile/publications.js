@@ -26,26 +26,25 @@ export default function PUBLICATIONS(props){
     const [sortByYearDirection, setSortByYearDirection] = useState('desc');
 
     const DescendingSortByCitationsPublications = props.stateVariables.descendingPublicationListByCitation.filter((data,index) => index < props.stateVariables.numberOfPublicationsToShow)
-    .map((filteredData) => <PUBLICATION key={filteredData.Title} publication_data = {filteredData}/>);
+    .map((filteredData) => <PUBLICATION key={filteredData.id} publication_data = {filteredData}/>);
 
     const AscendingSortByCitationsPublications = props.stateVariables.ascendingPublicationListByCitation.filter((data,index) => index < props.stateVariables.numberOfPublicationsToShow)
-    .map((filteredData) => <PUBLICATION key={filteredData.Title} publication_data = {filteredData}/>);
+    .map((filteredData) => <PUBLICATION key={filteredData.id} publication_data = {filteredData}/>);
 
     const DescendingSortByTitlePublications = props.stateVariables.descendingPublicationListByTitle.filter((data,index) => index < props.stateVariables.numberOfPublicationsToShow)
-    .map((filteredData) => <PUBLICATION key={filteredData.Title} publication_data = {filteredData}/>);
+    .map((filteredData) => <PUBLICATION key={filteredData.id} publication_data = {filteredData}/>);
     
     const AscendingsSortByTitlePublications = props.stateVariables.ascendingPublicationListByTitle.filter((data,index) => index < props.stateVariables.numberOfPublicationsToShow)
-    .map((filteredData) => <PUBLICATION key={filteredData.Title} publication_data = {filteredData}/>);
+    .map((filteredData) => <PUBLICATION key={filteredData.id} publication_data = {filteredData}/>);
 
     const DescendingSortByYearPublications = props.stateVariables.descendingPublicationListByYear.filter((data,index) => index < props.stateVariables.numberOfPublicationsToShow)
-    .map((filteredData) => <PUBLICATION key={filteredData.Title} publication_data = {filteredData}/>);
+    .map((filteredData) => <PUBLICATION key={filteredData.id} publication_data = {filteredData}/>);
     
     const AscendingsSortByYearPublications = props.stateVariables.ascendingPublicationListByYear.filter((data,index) => index < props.stateVariables.numberOfPublicationsToShow)
-    .map((filteredData) => <PUBLICATION key={filteredData.Title} publication_data = {filteredData}/>);
+    .map((filteredData) => <PUBLICATION key={filteredData.id} publication_data = {filteredData}/>);
 
     function showMorePublications() {
         props.stateFunctions.setNumberOfPublicationsToShow(props.stateVariables.numberOfPublicationsToShow+props.stateVariables.increasePublicationListBy);
-        props.stateFunctions.setincreasePublicationListBy(props.stateVariables.increasePublicationListBy*2);
     }
 
     function ShowMorePublicationsButton() {
@@ -83,49 +82,52 @@ export default function PUBLICATIONS(props){
     }
 
     return(    
-        <Box id='full_box'>
-            <Box id='header_text'>Publications
-        </Box>
-        <Box> 
-            <Grid container gridAutoRows='1fr'>
-                <Grid item xs={8}>
-                    <Paper square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                        <TableSortLabel onClick={sortHandler('title')} active={sortByTitle} direction={sortByTitleDirection} >
+        <Box>
+            <Box sx={{ml: "2%", mr: "2%"}} id='header_text'>Publications</Box>
+            <Box  sx={{ml: "2%", mr: "2%"}}>
+            <Grid container >
+                    <Grid item xs={8}>
+                        <Paper square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
+                            <TableSortLabel onClick={sortHandler('title')} active={sortByTitle} direction={sortByTitleDirection} >
+                                <Typography align='center' variant='h6'>
+                                    Title
+                                </Typography>
+                            </TableSortLabel>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={2}>
+                        <Paper square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
+                        <TableSortLabel onClick={sortHandler('citations')} active={sortByNumberCitations} direction={sortByNumberCitationsDirection} >
                             <Typography align='center' variant='h6'>
-                                Title
+                                Cited By
                             </Typography>
                         </TableSortLabel>
-                    </Paper>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={2}>
+                        <Paper square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
+                            <TableSortLabel onClick={sortHandler('year')} active={sortByYear} direction={sortByYearDirection} >
+                                <Typography align='center' variant='h6'>
+                                    Year Published
+                                </Typography>
+                            </TableSortLabel>
+                        </Paper>
+                    </Grid>
                 </Grid>
-                <Grid item xs={2}>
-                    <Paper square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                    <TableSortLabel onClick={sortHandler('citations')} active={sortByNumberCitations} direction={sortByNumberCitationsDirection} >
-                        <Typography align='center' variant='h6'>
-                            Cited By
-                        </Typography>
-                    </TableSortLabel>
-                    </Paper>
-                </Grid>
-                <Grid item xs={2}>
-                    <Paper square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                        <TableSortLabel onClick={sortHandler('year')} active={sortByYear} direction={sortByYearDirection} >
-                            <Typography align='center' variant='h6'>
-                                Year Published
-                            </Typography>
-                        </TableSortLabel>
-                    </Paper>
-                </Grid>
-                {(sortByNumberCitations && sortByNumberCitationsDirection === 'desc') && DescendingSortByCitationsPublications}
-                {(sortByNumberCitations && sortByNumberCitationsDirection === 'asc') && AscendingSortByCitationsPublications}
-                {(sortByTitle &&  sortByTitleDirection === 'desc') && DescendingSortByTitlePublications}
-                {(sortByTitle &&  sortByTitleDirection === 'asc') && AscendingsSortByTitlePublications}
-                {(sortByYear &&  sortByYearDirection === 'desc') && DescendingSortByYearPublications}
-                {(sortByYear &&  sortByYearDirection === 'asc') && AscendingsSortByYearPublications}
-            </Grid>
-            <Box textAlign='center'>
-                <ShowMorePublicationsButton/>
             </Box>
-        </Box>
-    </Box> 
+            <Box sx={{m: "0%"}}> 
+                <Grid container>
+                    {(sortByNumberCitations && sortByNumberCitationsDirection === 'desc') && DescendingSortByCitationsPublications}
+                    {(sortByNumberCitations && sortByNumberCitationsDirection === 'asc') && AscendingSortByCitationsPublications}
+                    {(sortByTitle &&  sortByTitleDirection === 'desc') && DescendingSortByTitlePublications}
+                    {(sortByTitle &&  sortByTitleDirection === 'asc') && AscendingsSortByTitlePublications}
+                    {(sortByYear &&  sortByYearDirection === 'desc') && DescendingSortByYearPublications}
+                    {(sortByYear &&  sortByYearDirection === 'asc') && AscendingsSortByYearPublications}
+                </Grid>
+                <Box textAlign='center'>
+                    <ShowMorePublicationsButton/>
+                </Box>
+            </Box>
+        </Box> 
     );
 }

@@ -12,8 +12,36 @@ import NativeSelect from '@mui/material/NativeSelect';
 import InputBase from '@mui/material/InputBase';
 import { styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom'
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const heightMatch = {height: "100%"};
+
+const rankingsTheme = createTheme();
+
+rankingsTheme.typography.body1 = {
+    fontSize: '1.0rem',
+
+    [rankingsTheme.breakpoints.down('md')]: {
+        fontSize: '0.75rem',
+    },
+
+    [rankingsTheme.breakpoints.down('sm')]: {
+        fontSize: '0.5rem',
+    },
+};
+
+rankingsTheme.typography.h3 = {
+    fontWeight: 'normal',
+    fontSize: '3.0rem',
+
+    [rankingsTheme.breakpoints.down('md')]: {
+        fontSize: '2.25rem',
+    },
+
+    [rankingsTheme.breakpoints.down('sm')]: {
+        fontSize: '1.5rem',
+    },
+};
 
 const BootstrapInput = styled(InputBase)(({ theme }) => ({
     'label + &': {
@@ -37,11 +65,11 @@ const BootstrapInput = styled(InputBase)(({ theme }) => ({
   }));
 
 export default function RankByFaculty(props) {
-    const [numberOfRankingsToShow, setNumberOfRankingsToShow] = useState(2);
-    const [increaseRankingsListBy, setIncreaseRankingsListBy] = useState(5);
+    const [numberOfRankingsToShow, setNumberOfRankingsToShow] = useState(50);
+    const [increaseRankingsListBy, setIncreaseRankingsListBy] = useState(100);
 
-    const facultyDropDownItems = props.allFaculty.map((department)=>
-        <option value={department.prime_faculty} key={department.prime_faculty}>{department.prime_faculty}</option>
+    const facultyDropDownItems = props.allFaculty.map((faculty)=>
+        <option value={faculty} key={faculty}>{faculty}</option>
     );
 
     const rankings_element = props.researcherRankingsByFaculty.filter((data,index) =>index < numberOfRankingsToShow)
@@ -49,49 +77,49 @@ export default function RankByFaculty(props) {
     <Grid container key={prof_data.preferred_name}>
         <Grid item xs={1}>
                     <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                        <Typography align='center' variant='h6'>
+                        <Typography align='center' variant="body1">
                             {index+1}
                         </Typography>
                     </Paper>
                 </Grid>
                 <Grid item xs={2}>
                     <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                        <Typography component={Link} to={"/Researchers/"+prof_data.scopus_id+"/"} align='center' variant='h6'>
+                        <Typography component={Link} to={"/Researchers/"+prof_data.scopus_id+"/"} align='center' variant="body1">
                             {prof_data.preferred_name}
                         </Typography>
                     </Paper>
                 </Grid>
                 <Grid item xs={3}>
                     <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                        <Typography align='center' variant='h6'>
+                        <Typography align='center' variant="body1">
                             {prof_data.prime_faculty}
                         </Typography>
                     </Paper>
                 </Grid>
                 <Grid item xs={3}>
                     <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                        <Typography align='center' variant='h6'>
+                        <Typography align='center' variant="body1">
                             {prof_data.prime_department}
                         </Typography>
                     </Paper>
                 </Grid>
                 <Grid item xs={1}>
                     <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                        <Typography align='center' variant='h6'>
+                        <Typography align='center' variant="body1">
                             {prof_data.num_citations}
                         </Typography>
                     </Paper>
                 </Grid>
                 <Grid item xs={1}>
                     <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                        <Typography align='center' variant='h6'>
+                        <Typography align='center' variant="body1">
                             {prof_data.h_index}
                         </Typography>
                     </Paper>
                 </Grid>
                 <Grid item xs={1}>
                     <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                        <Typography align='center' variant='h6'>
+                        <Typography align='center' variant="body1">
                             {}
                         </Typography>
                     </Paper>
@@ -100,20 +128,20 @@ export default function RankByFaculty(props) {
 
     function showMoreRankings() {
         setNumberOfRankingsToShow(numberOfRankingsToShow+increaseRankingsListBy);
-        setIncreaseRankingsListBy(increaseRankingsListBy*2);
     }
 
     function ShowMoreRankingsButton() {
         if(numberOfRankingsToShow<props.researcherRankingsByFaculty.length){
             return(<Button onClick={showMoreRankings}
                 sx={{m: 1, border: "2px solid Black", color: "black", backgroundColor: 'white'}}>
-                    Show More Publications
+                    Show More Researchers
                 </Button>);
         }
         return;
     }
     
     return(
+        <ThemeProvider theme={rankingsTheme}>
         <div>
             <Grid container justifyContent="flex-end">
                 <Grid item xs={12}>
@@ -121,7 +149,7 @@ export default function RankByFaculty(props) {
                         <Grid container id='full_box'>
                             <Grid item xs={6}>
                                 <Typography align='left' variant='h3' justifyContent={'center'}>
-                                    Researcher Rankings
+                                    Rankings By Faculty
                                 </Typography> 
                             </Grid>
                             <Grid item xs={6} >
@@ -140,49 +168,49 @@ export default function RankByFaculty(props) {
                             </Grid>
                             <Grid item xs={1}>
                                 <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                                    <Typography align='center' variant='h6'>
+                                    <Typography align='center' variant="body1">
                                         Rank
                                     </Typography>
                                 </Paper>
                             </Grid>
                             <Grid item xs={2}>
                                 <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                                    <Typography align='center' variant='h6'>
+                                    <Typography align='center' variant="body1">
                                         Name
                                     </Typography>
                                 </Paper>
                             </Grid>
                             <Grid item xs={3}>
                                 <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                                    <Typography align='center' variant='h6'>
+                                    <Typography align='center' variant="body1">
                                         Faculty
                                     </Typography>
                                 </Paper>
                             </Grid>
                             <Grid item xs={3}>
                                 <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                                    <Typography align='center' variant='h6'>
+                                    <Typography align='center' variant="body1">
                                         Department
                                     </Typography>
                                 </Paper>
                             </Grid>
                             <Grid item xs={1}>
                                 <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                                    <Typography align='center' variant='h6'>
+                                    <Typography align='center' variant="body1">
                                         Citations
                                     </Typography>
                                 </Paper>
                             </Grid>
                             <Grid item xs={1}>
                                 <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                                    <Typography align='center' variant='h6'>
+                                    <Typography align='center' variant="body1">
                                         H Index (5 Years)
                                     </Typography>
                                 </Paper>
                             </Grid>
                             <Grid item xs={1}>
                                 <Paper style={heightMatch} square={true} elevation={0} variant="outlined" sx={{textAlign: 'center'}}>
-                                    <Typography align='center' variant='h6'>
+                                    <Typography align='center' variant="body1">
                                         Funding
                                     </Typography>
                                 </Paper>
@@ -197,5 +225,6 @@ export default function RankByFaculty(props) {
                 </Grid>
             </Grid>          
         </div>
+        </ThemeProvider>
     )
 }

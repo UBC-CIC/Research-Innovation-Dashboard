@@ -21,7 +21,7 @@ export default function Research_Profile_Navigation(props) {
     /* There is a bug if you click a link too fast where you get sent to the wrong place */
     return(
         <Grid item xs={12}>
-            <Paper square={true} elevation={0} variant="outlined">
+            <Paper square={true} elevation={0}>
             <Box backgroundColor='#e6e6e6' sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', '& > *': { m: 1,},}}>
                     <ThemeProvider theme={navigationBarTheme}>
                     <ButtonGroup  color='primary' size='large' variant="text" aria-label="text button group">

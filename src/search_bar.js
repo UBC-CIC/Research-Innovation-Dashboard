@@ -48,6 +48,7 @@ export default function Search_Bar(props){
   }
 
   const searchPublicationsQuery = async () => {
+      console.log(searchValue);
       const searchPublicationsResult = await API.graphql({
         query: searchPublications,
         variables: {search_value: searchValue}, 
