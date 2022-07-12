@@ -5,13 +5,13 @@ import ResearcherProfilePublications from "./Researcher_profile/Researcher_profi
 import {Routes, Route} from "react-router-dom";
 import SearchComponent from './Search_Reseachers/SearchComponent'
 import SimilarResearchers from "./Researcher_profile/Similar_Researchers"
-import AdvancedSearch from "./Search_Reseachers/Advanced_Search";
+import AdvancedSearchComponent from "./Search_Reseachers/AdvancedSearchComponent";
 import Rankings from "./Rankings/Rankings"
+import UbcMetrics from "./UBC_Metrics/UbcMetrics";
 
 import React from 'react';
 import './stylesheet.css'
-
-console.log(React.version);
+import { useState, useEffect } from 'react';
 
 function App() {
   return (
@@ -22,8 +22,10 @@ function App() {
         <Route path="/Researchers/:scopusId/Areas_Of_Interest" element={<ResearcherProfileAreasOfInterest />} />
         <Route path="/Researchers/:scopusId/Similar_Researchers" element={<SimilarResearchers />} />
         <Route path="/Researchers/:scopusId" element={<ResearcherProfileOverview />} />
+        <Route path="/UBC/Metrics/" element={<UbcMetrics />} />
         <Route path="/Rankings/" element={<Rankings />} />
-        <Route path="/Advanced_Search/" element={<AdvancedSearch />} />
+        <Route path="/AdvancedSearch/:SearchForWhat/:AllWords/:ExactPhrase/:AnyWords/:NoneOfTheseWords/:Department/:Faculty/:yearFrom/:yearTo/:Journal" element={<AdvancedSearchComponent />} />
+        <Route path="/AdvancedSearch/:SearchForWhat/" element={<AdvancedSearchComponent />} />
         <Route path="/Search/Researchers/:searchValue" element={<SearchComponent whatToSearch={"Researchers"} />} />
         <Route path="/Search/Researchers/" element={<SearchComponent whatToSearch={"Researchers"} />} />
         <Route path="/Search/Publications/:searchValue" element={<SearchComponent whatToSearch={"Publications"} />} />

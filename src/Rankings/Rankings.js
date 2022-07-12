@@ -46,7 +46,7 @@ export default function Rankings(props) {
         });
         let allDepartmentsArray = department.data.getAllDepartments;
         setAllDepartments(allDepartmentsArray);
-        setDepartmentToRank(allDepartmentsArray[0].prime_department)
+        setDepartmentToRank(allDepartmentsArray[0]);
     }
 
     const getResearcherRankingByDepartment = async () => {
@@ -63,8 +63,10 @@ export default function Rankings(props) {
             query: getAllFaculty
         });
         let allFacultyArray = department.data.getAllFaculty;
+        console.log("ALL FACULTY");
+        console.log(allFacultyArray);
         setAllFaculty(allFacultyArray);
-        setFacultyToRank(allFacultyArray[0].prime_faculty)
+        setFacultyToRank(allFacultyArray[0])
     }
 
     const getResearcherRankingByFaculty = async () => {
@@ -95,12 +97,12 @@ export default function Rankings(props) {
 
     useEffect(() => {
         Promise.all([getDeparmentArray(), getFacultyArray(), getOverallResearcherRankings()]).then(()=>{
-            console.log("done loading");
             setPageLoaded(true);
         })
     }, []);
 
     useEffect(() => {
+        console.log("department to rank use effect called");
         getResearcherRankingByDepartment();
     }, [departmentToRank]);
 

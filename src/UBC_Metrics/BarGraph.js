@@ -21,9 +21,10 @@ ChartJS.register(
     Legend
   );
 
-export default function PublicationBarGraph(props){
-    const labels = props.barGraphData.barGraphLastFiveYears;
-    const publication_data = props.barGraphData.publicationsPerYear;
+export default function BarGraph(props){
+    const labels = props.labels;
+
+    console.log(props.dataset);
 
     const options = {
       responsive: true,
@@ -35,24 +36,18 @@ export default function PublicationBarGraph(props){
         },
         title: {
           display: true,
-          text: props.preferred_name+' Publications Each Year',
+          text: 'HELLO',
         },
       },
   };
 
     const data = {
       labels,
-      datasets: [
-        {
-          label: 'Publications',
-          data: publication_data,
-          backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        },
-      ],
-  };
+      datasets: props.dataset,
+    };
 
     return(
-        <div style={{height:'10rem', width: props.width }}>
+        <div style={{height:'500px', width: "50%" }}>
             <Bar height={5} options={options} data={data} />
         </div>
     );

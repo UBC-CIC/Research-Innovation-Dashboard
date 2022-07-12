@@ -20,7 +20,7 @@ export default function LoadingWheel(){
             justifyContent="center"
             height={"50vh"}
             maxHeight={"100%"}
-            width={"95vw"}>
+            width={"100vw"}>
                 <ThemeProvider theme={ubcBlueColor}>
                     <CircularProgress size={60} /> 
                 </ThemeProvider>

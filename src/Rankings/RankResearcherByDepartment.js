@@ -14,6 +14,7 @@ import { styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom'
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import AutoCompleteStyled from '../Search_Reseachers/AutoCompleteStyled';
 
 const heightMatch = {height: "100%"};
 
@@ -66,11 +67,13 @@ const BootstrapInput = styled(InputBase)(({ theme }) => ({
   }));
 
 export default function RankingsByDepartment(props) {
-    const [numberOfRankingsToShow, setNumberOfRankingsToShow] = useState(2);
-    const [increaseRankingsListBy, setIncreaseRankingsListBy] = useState(5);
+    const [numberOfRankingsToShow, setNumberOfRankingsToShow] = useState(50);
+    const [increaseRankingsListBy, setIncreaseRankingsListBy] = useState(100);
+
+    console.log(props.allDepartments);
 
     const departmentDropDownItems = props.allDepartments.map((department)=>
-        <option value={department.prime_department} key={department.prime_department}>{department.prime_department}</option>
+        <option value={department} key={department}>{department}</option>
     );
 
     const rankings_element = props.researcherRankingsByDepartment.filter((data,index) =>index < numberOfRankingsToShow)
@@ -140,7 +143,7 @@ export default function RankingsByDepartment(props) {
             }
             return(<Button onClick={showMoreRankings}
                 sx={{m: 1, border: "2px solid Black", color: "black", backgroundColor: 'white', fontSize: buttonFontSize}}>
-                    Show More Publications
+                    Show More Researchers
                 </Button>);
         }
         return;
@@ -155,7 +158,7 @@ export default function RankingsByDepartment(props) {
                         <Grid container id='full_box'>
                             <Grid item xs={6}>
                                 <Typography align='left' variant='h3' justifyContent={'center'}>
-                                    Researcher Rankings
+                                    Rankings By Department
                                 </Typography> 
                             </Grid>
                             <Grid item xs={6} >

@@ -15,6 +15,7 @@ import {useParams} from "react-router-dom";
 import SmallerAreasOfInterest from './smaller_areas_of_interest';
 import SimilarResearchers from "./Similar_Researchers"
 import LoadingWheel from '../LoadingWheel'
+import PublicationBarGraph from './PUBLICATION_BAR_GRAPH';
 
 import Amplify from '@aws-amplify/core'
 import { Auth } from '@aws-amplify/auth'
@@ -27,6 +28,8 @@ import {
     getResearcherPubsByYear,
     getResearcherPubsByTitle,
     getNumberOfResearcherPubsLastFiveYears,
+    getNumberOfResearcherPubsAllYears,
+    similarResearchers,
   } from '../graphql/queries';
 
 Amplify.configure(awsmobile)
@@ -52,9 +55,10 @@ export default function Researcher_profile_overview() {
     const [showAreasOfInterest, setShowAreasOfInterest] = useState(false);
     const [showPublications, setShowPublications] = useState(false);
     const [showSimilarResearchers, setShowSimilarResearchers] = useState(false);
+    const [similarResearchersArray, setSimilarResearchersArray] = useState([]);
 
     const [numberOfPublicationsToShow, setNumberOfPublicationsToShow] = useState(2);
-    const [increasePublicationListBy, setincreasePublicationListBy] = useState(5);
+    const [increasePublicationListBy, setincreasePublicationListBy] = useState(50);
     
     const [descendingPublicationListByCitation, setDescendingPublicationListByCitation] = useState([]);
     const [ascendingPublicationListByCitation, setAscendingPublicationListByCitation] = useState([]);
@@ -72,7 +76,12 @@ export default function Researcher_profile_overview() {
     const [barGraphLastFiveYears, setBarGraphLastFiveYears] = useState(["0","0","0","0","0"]);
     const [publicationsPerYear, setPublicationsPerYear] = useState(["0","0","0","0","0"]);
 
+    const [barGraphLastAllYears, setBarGraphLastAllYears] = useState(["0"]);
+    const [publicationsAllYears, setPublicationsAllYears] = useState(["0"]);
+
     const [pageLoaded, setPageLoaded] = useState(false);
+
+    const [showFullGraph, setShowFullGraph] = useState(false); 
 
     const getAllPublications = async () => {
         const dataSortedByCitation = await API.graphql({
@@ -98,72 +107,44 @@ export default function Researcher_profile_overview() {
 
         let descendingPublicationsTitle = [];
         let ascendingPublicationsTitle = [];
-
-        let areas_of_interest_hash_map = new Map();
     
         for(let i = 0; i<publication_data_sorted_by_ciation.length; i++){
-            let authors = "";
-            for(let j = 0; (j<publication_data_sorted_by_ciation[i].author_names.length && j<10); j++) {
-                authors = authors+publication_data_sorted_by_ciation[i].author_names[j]+", ";
-            }
+            let authors = publication_data_sorted_by_ciation[i].author_names;
             //Sorted By Citation Publication
             let publicationCitation = {
+            id: publication_data_sorted_by_ciation[i].id,
             title: publication_data_sorted_by_ciation[i].title,
-            authors: authors,
+            author_names: authors,
             cited_by: publication_data_sorted_by_ciation[i].cited_by,
             year_published: publication_data_sorted_by_ciation[i].year_published,
             journal: publication_data_sorted_by_ciation[i].journal,
-            Article_Link: 'Article_Link'}
+            link: publication_data_sorted_by_ciation[i].link}
             descendingPublicationsCitation.push(publicationCitation);
             ascendingPublicationsCitation.unshift(publicationCitation);
 
-            //Sorted By Yaer Publication
+            //Sorted By Year Publication
             let publicationYear = {
+            id: publication_data_sorted_by_year[i].id,
             title: publication_data_sorted_by_year[i].title,
-            authors: authors,
+            author_names: authors,
             cited_by: publication_data_sorted_by_year[i].cited_by,
             year_published: publication_data_sorted_by_year[i].year_published,
             journal: publication_data_sorted_by_year[i].journal,
-            Article_Link: 'Article_Link'}
+            link: publication_data_sorted_by_year[i].link}
             descendingPublicationsYear.push(publicationYear);
             ascendingPublicationsYear.unshift(publicationYear);
 
             //Sorted By Title Publication
             let publicationTitle = {
+            id: publication_data_sorted_by_title[i].id,
             title: publication_data_sorted_by_title[i].title,
-            authors: authors,
+            author_names: authors,
             cited_by: publication_data_sorted_by_title[i].cited_by,
             year_published: publication_data_sorted_by_title[i].year_published,
             journal: publication_data_sorted_by_title[i].journal,
-            Article_Link: 'Article_Link'}
+            link: publication_data_sorted_by_title[i].link}
             descendingPublicationsTitle.push(publicationTitle);
             ascendingPublicationsTitle.unshift(publicationTitle);
-
-            //areas of interest mapping
-            for(var j = 0; j<publication_data_sorted_by_ciation[i].keywords.length; j++){
-                if(areas_of_interest_hash_map.get(publication_data_sorted_by_ciation[i].keywords[j])){
-                    areas_of_interest_hash_map.set(publication_data_sorted_by_ciation[i].keywords[j], areas_of_interest_hash_map.get(publication_data_sorted_by_ciation[i].keywords[j])+1);
-                }
-                else {
-                    areas_of_interest_hash_map.set(publication_data_sorted_by_ciation[i].keywords[j], 1);
-                }
-            }
-        }
-        const sortedNumDesc = new Map([...areas_of_interest_hash_map].sort((a, b) => b[1] - a[1]));
-        let sorted_areas_of_interest_array = [];
-        let small_array = [];
-        let i = 0;
-        sortedNumDesc.forEach((value, key)=>{
-            small_array.push(key);
-            i++;
-            if(i === 5){
-                sorted_areas_of_interest_array.push(small_array);
-                small_array = [];
-                i = 0;
-            }
-        })
-        if(i !== 0){
-            sorted_areas_of_interest_array.push(small_array);
         }
 
         setNumberOfPublications(descendingPublicationsCitation.length);
@@ -176,10 +157,6 @@ export default function Researcher_profile_overview() {
 
         setDescendingPublicationListByTitle(descendingPublicationsTitle);
         setAscendingPublicationListByTitle(ascendingPublicationsTitle);
-
-        if(sorted_areas_of_interest_array.length !== 0){
-            setSortedAreasOfInterest(sorted_areas_of_interest_array);
-        }
         setPageLoaded(true);
     }
 
@@ -202,21 +179,39 @@ export default function Researcher_profile_overview() {
         set_funding("")
         set_num_patents_filed(researcher_data.num_patents_filed)
         set_num_licensed_patents(0);
+
+        const result = await API.graphql({
+            query: similarResearchers,
+            variables: {keywordsString: researcher_data.keywords, 
+                        scopus_id: scopusId}
+        });
+
+        setSimilarResearchersArray(result.data.similarResearchers);
+
+        const sortedAreas = researcher_data.keywords.split(", ");
+        setSortedAreasOfInterest(sortedAreas);
     }
     const getResearcherBarGraphData = async () => {
         const bar_graph_data_response = await API.graphql({
             query: getNumberOfResearcherPubsLastFiveYears,
             variables: {id: scopusId}, 
         });
+        const bar_graph_data_response_all_years = await API.graphql({
+            query: getNumberOfResearcherPubsAllYears,
+            variables: {id: scopusId}, 
+        });
         let bar_graph_data = bar_graph_data_response.data.getNumberOfResearcherPubsLastFiveYears;
+        let bar_graph_data_all_years = bar_graph_data_response_all_years.data.getNumberOfResearcherPubsAllYears;
         setBarGraphLastFiveYears(bar_graph_data.lastFiveYears);
         setPublicationsPerYear(bar_graph_data.publicationsPerYear);
+        setBarGraphLastAllYears(bar_graph_data_all_years.allyears);
+        setPublicationsAllYears(bar_graph_data_all_years.publicationsPerYear);
     }
 
     useEffect(() => {
-        getResearcherGeneralInformation().catch(()=>{console.log("ERROR")});
-        getAllPublications().catch(()=>{console.log("ERROR")});
-        getResearcherBarGraphData().catch(()=>{console.log("ERROR")});
+        getResearcherGeneralInformation().catch((e)=>{console.log(e)});
+        getAllPublications().catch((e)=>{console.log(e)});
+        getResearcherBarGraphData().catch((e)=>{console.log(e)});
     }, []);
 
     function showOverviewFunc(){
@@ -261,13 +256,16 @@ export default function Researcher_profile_overview() {
                 researcher_information={{preferred_name, prime_department,
                 prime_faculty,email, phone_number, office}} 
                 />
-                <ResearcherHighlights preferred_name={preferred_name} barGraphData={{barGraphLastFiveYears: barGraphLastFiveYears, publicationsPerYear: publicationsPerYear}}
+                <ResearcherHighlights showFullGraph={showFullGraph} setShowFullGraph={setShowFullGraph} preferred_name={preferred_name} barGraphData={{barGraphLastFiveYears: barGraphLastFiveYears, publicationsPerYear: publicationsPerYear}}
                  researcher_information={{num_publications, h_index, funding}}/>
+                {showFullGraph && <Paper sx={{p: "1%", width: "100%", borderBottom: "0px"}} square={true} elevation={0} variant='outlined'>
+                    <PublicationBarGraph width={"100%"} preferred_name={preferred_name} barGraphData={{barGraphLastFiveYears: barGraphLastAllYears, publicationsPerYear: publicationsAllYears}}></PublicationBarGraph>
+                </Paper>}
                 <ResearchProfileNavigation researcher_information={{first_name, last_name}} onClickFunctions={{showOverviewFunc,showAreasOfInterestFunc,showPublicationsFunc}} />
                 {showOverview && <Grid container>
                 <Grid item xs={12}>
-                    <Paper square={true} elevation={0} variant="outlined">
-                        <AreasOfInterest areasOfInterest={sortedAreasOfInterest} onClickFunctions={{showAreasOfInterestFunc, showSimilarResearchersFunc}} />
+                    <Paper square={true} elevation={0} sx={{borderTop: "0px"}} variant="outlined">
+                        <AreasOfInterest numberOfSimilarResearchers={similarResearchersArray.length} areasOfInterest={sortedAreasOfInterest} onClickFunctions={{showAreasOfInterestFunc, showSimilarResearchersFunc}} />
                     </Paper>
                 </Grid>
                 <Grid item xs={12}>
@@ -303,7 +301,7 @@ export default function Researcher_profile_overview() {
                         stateFunctions={{setNumberOfPublicationsToShow, setincreasePublicationListBy}}/>
                     </Paper>
                 </Grid>}
-                {showSimilarResearchers && <SimilarResearchers />}
+                {showSimilarResearchers && <SimilarResearchers researchSearchResults={similarResearchersArray}/>}
             </Grid>}
         </Box>
     );

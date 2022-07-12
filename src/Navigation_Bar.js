@@ -57,9 +57,8 @@ export default function NAV_BAR() {
                 <Button sx={{fontSize: buttonFontSize, paddingLeft: "0%"}} href='/'>Home</Button>
                 <Button sx={{fontSize: buttonFontSize}} href='/Search/Researchers'>Researchers</Button>
                 <Button sx={{fontSize: buttonFontSize}} href='/Search/Publications'>Publications</Button>
-                <Button sx={{fontSize: buttonFontSize}} href='/Faculty'>Faculty</Button>
-                <Button sx={{fontSize: buttonFontSize}} href='/Department'>Department</Button>
                 <Button sx={{fontSize: buttonFontSize}} href='/Rankings/'>Rankings</Button>
+                <Button sx={{fontSize: buttonFontSize}} href='/UBC/Metrics/'>UBC Metrics</Button>
               </ButtonGroup>
               );
   }
@@ -71,7 +70,7 @@ export default function NAV_BAR() {
           <Toolbar style={{paddingLeft: "2%"}} sx={{height: 10}}>
               <img style={{height: "80%", paddingRight: "1%", justifyContent: "center", marginTop: "5px"}} src={ubcLogo} alt=""></img>
               <ThemeProvider theme={headerTheme}>
-                <Typography style={{textDecoration: "none"}} component={Link} to="/" variant="h3" color="#002145">UBC Research</Typography>
+                <Typography style={{textDecoration: "none"}} component={Link} to="/" onClick={() => {window.location.href="/"}} variant="h3" color="#002145">UBC Research</Typography>
               </ThemeProvider>
           </Toolbar>
       </AppBar>

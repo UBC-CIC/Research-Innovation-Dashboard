@@ -11,7 +11,7 @@ export default function PublicationSearchResultsComponent(props){
     function ShowAllPublicationsResultsButton() {
         return(
             <Paper square={true} elevation={0} sx={{width: "100%", justifyContent: "center", marginTop: "1%", marginBottom: "1%"}} component={Stack} direction="row">
-            <Button onClick={console.log("Clicked Button")}
+            <Button onClick={() => {console.log("Clicked Button")}}
             sx={{m: 1, border: "2px solid Black", color: "black", backgroundColor: 'white'}}>
                 {"Show All "+props.publicationSearchResults.length+" Publication Results"}
             </Button>
@@ -54,10 +54,15 @@ export default function PublicationSearchResultsComponent(props){
     });
 
     return(
-        <Grid container>
+        <Grid container >
+            {(props.publicationSearchResults.length === 0) && 
+                <Paper elevation={0} square={true} sx={{width: "100%"}}>
+                    <Typography variant='h4' sx={{marginLeft: "2%", marginTop: "2%"}}>No Publication Search Results</Typography>
+                </Paper>
+            }
             {(props.publicationSearchResults.length !== 0) && 
                 <Paper elevation={0} square={true} sx={{width: "100%"}}>
-                    <Typography variant='h5' sx={{marginLeft: "2%", marginTop: "2%"}}>Publication Results</Typography>
+                    <Typography variant='h4' sx={{marginLeft: "2%", marginTop: "2%"}}>Publication Search Results</Typography>
                 </Paper>
                 }
                 {(props.publicationSearchResults.length !== 0) && <PublicationsHeader />}

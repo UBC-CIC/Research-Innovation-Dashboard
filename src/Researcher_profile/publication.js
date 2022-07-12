@@ -9,16 +9,29 @@ const gridStyling = {
 }
 
 export default function PUBLICATION({publication_data}){
+
+    let array = publication_data.author_names.split(",");
+    let authorNamesString = "";
+
+    for(let i = 0; i<array.length && i<5; i++){
+        if(i == 4) {
+            authorNamesString = authorNamesString + array[i] + "...";
+        }
+        else {
+            authorNamesString = authorNamesString + array[i] + ", ";
+        }
+    }
+
     return(
-        <Grid container gridAutoRows='1fr' style={{marginLeft: "2%", marginRight: "2%"}}>
+        <Grid key={publication_data.id} container gridAutoRows='1fr' style={{marginLeft: "2%", marginRight: "2%"}}>
                     <Grid item xs={8}>
                         <Paper style={gridStyling} square={true} elevation={0} sx={{textAlign: 'left'}}>
                             <Typography variant='h5'>
-                                <a href="A">
+                                <a href={publication_data.link}>
                                     {publication_data.title}
                                 </a>
                             </Typography>
-                            <Typography>{publication_data.authors}</Typography>
+                            <Typography>{authorNamesString}</Typography>
                             <Typography>Journal Of {publication_data.journal}</Typography>
                         </Paper>
                     </Grid>

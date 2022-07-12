@@ -12,6 +12,7 @@ export const getPub = /* GraphQL */ `
       journal
       cited_by
       year_published
+      link
     }
   }
 `;
@@ -26,6 +27,7 @@ export const getResearcherPubsByCitations = /* GraphQL */ `
       journal
       cited_by
       year_published
+      link
     }
   }
 `;
@@ -40,6 +42,7 @@ export const getResearcherPubsByYear = /* GraphQL */ `
       journal
       cited_by
       year_published
+      link
     }
   }
 `;
@@ -54,6 +57,7 @@ export const getResearcherPubsByTitle = /* GraphQL */ `
       journal
       cited_by
       year_published
+      link
     }
   }
 `;
@@ -116,6 +120,7 @@ export const getResearcherFull = /* GraphQL */ `
       num_documents
       h_index
       num_patents_filed
+      keywords
     }
   }
 `;
@@ -141,9 +146,7 @@ export const getNumberOfResearcherPubsLastFiveYears = /* GraphQL */ `
 `;
 export const getAllDepartments = /* GraphQL */ `
   query GetAllDepartments {
-    getAllDepartments {
-      prime_department
-    }
+    getAllDepartments
   }
 `;
 export const getAllResearchersRankings = /* GraphQL */ `
@@ -160,9 +163,7 @@ export const getAllResearchersRankings = /* GraphQL */ `
 `;
 export const getAllFaculty = /* GraphQL */ `
   query GetAllFaculty {
-    getAllFaculty {
-      prime_faculty
-    }
+    getAllFaculty
   }
 `;
 export const getResearcherRankingsByFaculty = /* GraphQL */ `
@@ -192,6 +193,26 @@ export const searchResearcher = /* GraphQL */ `
       second_faculty
       campus
       scopus_id
+      keywords
+    }
+  }
+`;
+export const similarResearchers = /* GraphQL */ `
+  query SimilarResearchers($keywordsString: String!, $scopus_id: String!) {
+    similarResearchers(keywordsString: $keywordsString, scopus_id: $scopus_id) {
+      first_name
+      preferred_name
+      last_name
+      email
+      rank
+      job_stream
+      prime_department
+      second_department
+      prime_faculty
+      second_faculty
+      campus
+      scopus_id
+      keywords
     }
   }
 `;
@@ -206,6 +227,102 @@ export const searchPublications = /* GraphQL */ `
       journal
       cited_by
       year_published
+      link
+    }
+  }
+`;
+export const advancedSearchResearchers = /* GraphQL */ `
+  query AdvancedSearchResearchers(
+    $includeAllTheseWords: String!
+    $includeTheseExactWordsOrPhrases: String!
+    $includeAnyOfTheseWords: String!
+    $noneOfTheseWords: String!
+    $table: String!
+  ) {
+    advancedSearchResearchers(
+      includeAllTheseWords: $includeAllTheseWords
+      includeTheseExactWordsOrPhrases: $includeTheseExactWordsOrPhrases
+      includeAnyOfTheseWords: $includeAnyOfTheseWords
+      noneOfTheseWords: $noneOfTheseWords
+      table: $table
+    ) {
+      first_name
+      preferred_name
+      last_name
+      email
+      rank
+      job_stream
+      prime_department
+      second_department
+      prime_faculty
+      second_faculty
+      campus
+      scopus_id
+      keywords
+    }
+  }
+`;
+export const advancedSearchPublications = /* GraphQL */ `
+  query AdvancedSearchPublications(
+    $includeAllTheseWords: String!
+    $includeTheseExactWordsOrPhrases: String!
+    $includeAnyOfTheseWords: String!
+    $noneOfTheseWords: String!
+    $table: String!
+    $year_lte: Int!
+    $year_gte: Int!
+    $journal: String!
+  ) {
+    advancedSearchPublications(
+      includeAllTheseWords: $includeAllTheseWords
+      includeTheseExactWordsOrPhrases: $includeTheseExactWordsOrPhrases
+      includeAnyOfTheseWords: $includeAnyOfTheseWords
+      noneOfTheseWords: $noneOfTheseWords
+      table: $table
+      year_lte: $year_lte
+      year_gte: $year_gte
+      journal: $journal
+    ) {
+      id
+      title
+      keywords
+      author_ids
+      author_names
+      journal
+      cited_by
+      year_published
+      link
+    }
+  }
+`;
+export const getNumberOfResearcherPubsAllYears = /* GraphQL */ `
+  query GetNumberOfResearcherPubsAllYears($id: ID!) {
+    getNumberOfResearcherPubsAllYears(id: $id) {
+      allyears
+      publicationsPerYear
+    }
+  }
+`;
+export const getAllDistinctJournals = /* GraphQL */ `
+  query GetAllDistinctJournals {
+    getAllDistinctJournals
+  }
+`;
+export const wordCloud = /* GraphQL */ `
+  query WordCloud {
+    wordCloud {
+      text
+      value
+    }
+  }
+`;
+export const facultyMetrics = /* GraphQL */ `
+  query FacultyMetrics {
+    facultyMetrics {
+      faculty
+      num_publications
+      num_pubs_last_five_years
+      num_pubs_last_ten_years
     }
   }
 `;

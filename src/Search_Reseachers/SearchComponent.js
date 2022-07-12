@@ -8,6 +8,8 @@ import { useState,} from 'react';
 import ResearcherSearchResultsComponent from './ResearcherSearchResultsComponent'
 import PublicationSearchResultsComponent from './PublicationSearchResultsComponent'
 
+
+
 export default function SearchComponent(props){
     const [researchSearchResults, setResearcherSearchResults] = useState([]);
     const [publicationSearchResults, setPublicationSearchResults] = useState([]);
@@ -38,7 +40,7 @@ export default function SearchComponent(props){
                                 whatToSearch={props.whatToSearch}
                                 path={path}/>
                                 <Paper square={true} elevation={0} sx={{width: "60%", marginTop: "8px", marginBottom: "8px", flexDirection: "row-reverse"}} component={Stack} direction="row">
-                                    <a href='Advanced_Search'>Advanced Search</a>
+                                    <a href='/AdvancedSearch/Everything/'>Advanced Search</a>
                                 </Paper>
                             </Grid>
                         </Grid>
