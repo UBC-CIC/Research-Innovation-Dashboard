@@ -15,7 +15,7 @@ import { API } from 'aws-amplify';
 
 import {
     wordCloud,
-    facultyMetrics,
+    allPublicationsPerFacultyQuery,
 } from '../graphql/queries';
 
 
@@ -39,8 +39,6 @@ export default function UbcMetrics(props){
     const [words, setWords] = useState([]);
     const [facultyList, setFacultyList] = useState([]);
     const [facultyPublicationsOverall, setFacultyPublicationsOverall] = useState([]);
-    const [facultyPubsLastFiveYears, setFacultyPubsLastFiveYears] = useState([]);
-    const [facultyPubsLastTenYears, setFacultyPubsLastTenYears] = useState([]);
 
 
     const wordCloudQuery = async () => {
@@ -49,55 +47,33 @@ export default function UbcMetrics(props){
         });
         setWords(wordCloudResult.data.wordCloud);
     }
-    const facultyMetricsQuery = async () => {
-        const facultyMetricsResult = await API.graphql({
-            query: facultyMetrics
+    const allPublicationsPerFacultyFunction = async () => {
+        const queryResult = await API.graphql({
+            query: allPublicationsPerFacultyQuery
         });
 
         let facList = [];
         let facOverallPubs = [];
-        let fac5year = [];
-        let fac10year = [];
 
-        let result = facultyMetricsResult.data.facultyMetrics;
+        let result = queryResult.data.allPublicationsPerFacultyQuery;
 
         for(let i = 0; i<result.length; i++){
             facList.push(result[i].faculty);
-            facOverallPubs.push(result[i].num_publications);
-            fac5year.push(result[i].num_pubs_last_five_years);
-            fac10year.push(result[i].num_pubs_last_ten_years);
+            facOverallPubs.push(result[i].sum);
         }
         setFacultyList(facList);
         setFacultyPublicationsOverall(facOverallPubs);
-        setFacultyPubsLastFiveYears(fac5year);
-        setFacultyPubsLastTenYears(fac10year);
     }
 
     useEffect(() => {
         wordCloudQuery();
-        facultyMetricsQuery();
+        allPublicationsPerFacultyFunction();
     }, []);
-
-    let dataset= [
-        {
-            label: '5 Years',
-            data: facultyPubsLastFiveYears,
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        },
-        {
-            label: '10 Years',
-            data: facultyPubsLastTenYears,
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        },
-    ]
-
-    console.log(dataset);
 
     return(
         <div style={{ height: 500, width: "100%" }}>
             <ReactWordcloud options={options} words={words} />
-            {/* <DoughnutChart labels={facultyList} data={facultyPublicationsOverall} title={"Pubs Graph"}/> */}
-            {/* <BarGraph labels={facultyList} dataset={dataset} /> */}
+            <DoughnutChart labels={facultyList} data={facultyPublicationsOverall} title={"Pubs Graph"}/>
         </div>
     );
 }
