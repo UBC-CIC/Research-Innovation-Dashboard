@@ -72,8 +72,8 @@ export default function UbcMetrics(props){
 
     return(
         <div style={{ height: 500, width: "100%" }}>
-            <ReactWordcloud options={options} words={words} />
-            <DoughnutChart labels={facultyList} data={facultyPublicationsOverall} title={"Pubs Graph"}/>
+            {/* <ReactWordcloud options={options} words={words} />
+            <DoughnutChart labels={facultyList} data={facultyPublicationsOverall} title={"Pubs Graph"}/> */}
         </div>
     );
 }
