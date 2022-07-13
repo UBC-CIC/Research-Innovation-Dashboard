@@ -237,6 +237,8 @@ export const advancedSearchResearchers = /* GraphQL */ `
     $includeTheseExactWordsOrPhrases: String!
     $includeAnyOfTheseWords: String!
     $noneOfTheseWords: String!
+    $prime_department: String!
+    $prime_faculty: String!
     $table: String!
   ) {
     advancedSearchResearchers(
@@ -244,6 +246,8 @@ export const advancedSearchResearchers = /* GraphQL */ `
       includeTheseExactWordsOrPhrases: $includeTheseExactWordsOrPhrases
       includeAnyOfTheseWords: $includeAnyOfTheseWords
       noneOfTheseWords: $noneOfTheseWords
+      prime_department: $prime_department
+      prime_faculty: $prime_faculty
       table: $table
     ) {
       first_name
@@ -317,12 +321,27 @@ export const wordCloud = /* GraphQL */ `
   }
 `;
 export const facultyMetrics = /* GraphQL */ `
-  query FacultyMetrics {
-    facultyMetrics {
+  query FacultyMetrics($faculty: String!) {
+    facultyMetrics(faculty: $faculty) {
       faculty
+      year
       num_publications
-      num_pubs_last_five_years
-      num_pubs_last_ten_years
+    }
+  }
+`;
+export const totalPublicationPerYear = /* GraphQL */ `
+  query TotalPublicationPerYear {
+    totalPublicationPerYear {
+      year_published
+      count
+    }
+  }
+`;
+export const allPublicationsPerFacultyQuery = /* GraphQL */ `
+  query AllPublicationsPerFacultyQuery {
+    allPublicationsPerFacultyQuery {
+      faculty
+      sum
     }
   }
 `;
