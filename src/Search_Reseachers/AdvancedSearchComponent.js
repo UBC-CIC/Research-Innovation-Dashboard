@@ -200,6 +200,8 @@ export default function Advanced_Search(props){
                       includeTheseExactWordsOrPhrases: ExactPhrase,
                       includeAnyOfTheseWords: AnyWords,
                       noneOfTheseWords: NoneOfTheseWords,
+                      prime_department: filterDepartmentValue,
+                      prime_faculty: filterFacultyValue,
                       table: "researcher_data"}, 
         });
         setResearcherSearchResults(researcherSearchResult.data.advancedSearchResearchers);
@@ -222,15 +224,14 @@ export default function Advanced_Search(props){
         setPublicationSearchResults(publicationsSearchResult.data.advancedSearchPublications);
     }
 
-    function handleBackClick() {
+    function scrollToResults() {
         titleRef.current.scrollIntoView({ behavior: 'smooth' })
     }
 
     async function search () {
         await searchResearchersQuery();
         await searchPublicationsQuery();
-        handleBackClick();
-        //scroll.scrollToTop();
+        scrollToResults();
     }
 
     useEffect(() => {
@@ -243,7 +244,8 @@ export default function Advanced_Search(props){
 
     useEffect(() => {
         if(searching) {
-            search().then(()=>{setSearching(false)});
+            search();
+            setSearching(false);
         }
     }, [searching]);
 
