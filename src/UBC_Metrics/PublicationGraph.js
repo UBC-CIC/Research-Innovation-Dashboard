@@ -52,7 +52,7 @@ const PublicationGraph = () => {
       query: totalPublicationPerYear,
     });
     const totalData = totalDataRes.data.totalPublicationPerYear;
-    const pastTenYearsData = totalData.splice(1, 11);
+    const pastTenYearsData = totalData.splice(1, 11).reverse();
     setTotalPublicationData(pastTenYearsData);
   };
 
@@ -63,7 +63,9 @@ const PublicationGraph = () => {
       variables: { faculty: selectedFaculty && selectedFaculty },
     });
     const facultyMetricData = facultyMetricDataRes.data.facultyMetrics;
-    const pastTenYearsFacultyMetricData = facultyMetricData.splice(1, 11);
+    const pastTenYearsFacultyMetricData = facultyMetricData
+      .splice(1, 11)
+      .reverse();
     setFacultyData(pastTenYearsFacultyMetricData);
   };
 
@@ -78,107 +80,112 @@ const PublicationGraph = () => {
   }, [selectedFaculty]);
 
   return (
-    <Paper sx={{ p: "1em" }} elevation={0}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          mb: "1.5em",
-        }}
-      >
-        <Typography variant="h5">Title </Typography>
+    totalPublicationData &&
+    facultyData && (
+      <Paper sx={{ p: "1em" }} elevation={0}>
         <Box
           sx={{
             display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            justifyContent: "space-between",
+            mb: "1.5em",
           }}
         >
-          <Tooltip title="Apply Filter">
-            <IconButton onClick={handleClick}>
-              <FilterListIcon />
-            </IconButton>
-          </Tooltip>
-          <Menu
-            id="filter-menu"
-            open={openFilterMenu}
-            anchorEl={filterMenuAnchor}
-            onClose={handleClose}
-            sx={{ height: "60%" }}
+          <Typography variant="h5">Title </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
-            {facultyOptions &&
-              facultyOptions.map((filter, index) => (
-                <MenuItem
-                  key={index}
-                  onClick={() => setSelectedFaculty(filter)}
-                  style={
-                    selectedFaculty === filter
-                      ? { backgroundColor: "#ededed" }
-                      : {}
-                  }
-                >
-                  {filter}
-                </MenuItem>
-              ))}
-          </Menu>
+            <Tooltip title="Apply Filter">
+              <IconButton onClick={handleClick}>
+                <FilterListIcon />
+              </IconButton>
+            </Tooltip>
+            <Menu
+              id="filter-menu"
+              open={openFilterMenu}
+              anchorEl={filterMenuAnchor}
+              onClose={handleClose}
+              sx={{ height: "60%" }}
+            >
+              {facultyOptions &&
+                facultyOptions.map((filter, index) => (
+                  <MenuItem
+                    key={index}
+                    onClick={() => setSelectedFaculty(filter)}
+                    style={
+                      selectedFaculty === filter
+                        ? { backgroundColor: "#ededed" }
+                        : {}
+                    }
+                  >
+                    {filter}
+                  </MenuItem>
+                ))}
+            </Menu>
+          </Box>
         </Box>
-      </Box>
-      {totalPublicationData && facultyData && (
-        <Chart
-          type="bar"
-          data={{
-            labels: totalPublicationData.map((data) => data.year_published),
-            datasets: [
-              {
-                type: "line",
-                label: `Number of Publications for ${selectedFaculty}`,
-                data: facultyData.map(
-                  (dataPoint) => dataPoint.num_publications
-                ),
-                backgroundColor: "#002145",
-                borderColor: "#0055B7",
-              },
-              {
-                type: "bar",
-                label: "Total Publications for All Faculties",
-                data: totalPublicationData.map((dataPoint) => dataPoint.count),
-                backgroundColor: "#97D4E9",
-              },
-            ],
-          }}
-          options={{
-            scales: {
-              x: {
-                stacked: true,
-                title: {
-                  display: true,
-                  text: "Year",
-                  padding: {
-                    top: 20,
+        {totalPublicationData && facultyData && (
+          <Chart
+            type="bar"
+            data={{
+              labels: totalPublicationData.map((data) => data.year_published),
+              datasets: [
+                {
+                  type: "line",
+                  label: `Number of Publications for ${selectedFaculty}`,
+                  data: facultyData.map(
+                    (dataPoint) => dataPoint.num_publications
+                  ),
+                  backgroundColor: "#002145",
+                  borderColor: "#0055B7",
+                },
+                {
+                  type: "bar",
+                  label: "Total Publications for All Faculties",
+                  data: totalPublicationData.map(
+                    (dataPoint) => dataPoint.count
+                  ),
+                  backgroundColor: "#97D4E9",
+                },
+              ],
+            }}
+            options={{
+              scales: {
+                x: {
+                  stacked: true,
+                  title: {
+                    display: true,
+                    text: "Year",
+                    padding: {
+                      top: 20,
+                    },
+                  },
+                },
+                y: {
+                  stacked: true,
+                  title: {
+                    display: true,
+                    text: "Number of Publications",
+                    padding: {
+                      bottom: 20,
+                    },
                   },
                 },
               },
-              y: {
-                stacked: true,
-                title: {
-                  display: true,
-                  text: "Number of Publications",
-                  padding: {
-                    bottom: 20,
-                  },
-                },
+              plugins: {
+                responsive: true,
+                maintainAspectRatio: false,
               },
-            },
-            plugins: {
-              responsive: true,
-              maintainAspectRatio: false,
-            },
-          }}
-          height={300}
-          width={900}
-        />
-      )}
-    </Paper>
+            }}
+            height={300}
+            width={900}
+          />
+        )}
+      </Paper>
+    )
   );
 };
 

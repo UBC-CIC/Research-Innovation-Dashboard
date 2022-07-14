@@ -1,12 +1,5 @@
 import * as React from "react";
-import SearchIcon from "@mui/icons-material/Search";
-import InputBase from "@mui/material/InputBase";
-import Stack from "@mui/material/Stack";
-import Paper from "@mui/material/Paper";
-import IconButton from "@mui/material/IconButton";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
 import ReactWordcloud from "react-wordcloud";
 import DoughnutChart from "./DoughnutChart";
 import { Grid, Box, Typography } from "@mui/material";
@@ -126,8 +119,13 @@ export default function UbcMetrics(props) {
       <Grid
         item
         container
-        spacing={4}
-        sx={{ display: "flex", justifyContent: "center" }}
+        spacing={6}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+        }}
       >
         <Grid item xs={4}>
           <DoughnutChart
@@ -137,7 +135,7 @@ export default function UbcMetrics(props) {
           />
         </Grid>
         <Grid item xs={8}>
-          <Box sx={{ width: "100%", height: "300px" }}>
+          <Box sx={{ width: "100%" }}>
             <PublicationGraph />
           </Box>
         </Grid>
