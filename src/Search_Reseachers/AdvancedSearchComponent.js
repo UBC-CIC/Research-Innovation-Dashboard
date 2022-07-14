@@ -173,6 +173,7 @@ export default function Advanced_Search(props){
         const result = await API.graphql({
             query: getAllDistinctJournals,
         });
+        result.data.getAllDistinctJournals.shift(); // There is an Empty Journal Bug in DB for now!
         result.data.getAllDistinctJournals.unshift("All Journals");
         setAllJournals(result.data.getAllDistinctJournals);
     }

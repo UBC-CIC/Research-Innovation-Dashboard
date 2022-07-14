@@ -86,7 +86,7 @@ const PublicationGraph = () => {
           mb: "1.5em",
         }}
       >
-        <Typography variant="h5">Title </Typography>
+        <Typography variant="h5">Total Publications At UBC Per Year </Typography>
         <Box
           sx={{
             display: "flex",
@@ -174,7 +174,7 @@ const PublicationGraph = () => {
               maintainAspectRatio: false,
             },
           }}
-          height={300}
+          height={369}
           width={900}
         />
       )}
