@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import ReactWordcloud from "react-wordcloud";
 import DoughnutChart from "./DoughnutChart";
+import { select } from "d3-selection";
 import { Grid, Box, Typography } from "@mui/material";
 import { API } from "aws-amplify";
 import {
@@ -11,9 +12,29 @@ import {
 } from "../graphql/queries";
 import PublicationGraph from "./PublicationGraph";
 
+import "tippy.js/dist/tippy.css";
+import "tippy.js/animations/scale.css";
+
+function getCallback(callback) {
+  return function(word, event) {
+    const isActive = callback !== "onWordMouseOut";
+    const element = event.target;
+    const text = select(element);
+    text.on("click", () => {
+      if (isActive) {
+        window.open(`${window.location.origin}/${word.text}`);
+      }
+    });
+    // .transition()
+    // .attr("background", "white")
+    // .attr("font-size", isActive ? "300%" : "100%")
+    // .attr("text-decoration", isActive ? "underline" : "none");
+  };
+}
+
 const options = {
   colors: ["#23D2DC", "#2376DC", "#23DC89"],
-  enableTooltip: false,
+  enableTooltip: true,
   deterministic: true,
   fontFamily: "Arial",
   fontSizes: [5, 60],
@@ -25,6 +46,13 @@ const options = {
   scale: "sqrt",
   spiral: "archimedean",
 };
+const callbacks = {
+  getWordTooltip: (word) =>
+    `The word "${word.text}" appears ${word.value} times. Click to search for the keyword "${word.text}"`,
+  onWordClick: getCallback("onWordClick"),
+  onWordMouseOut: getCallback("onWordMouseOut"),
+  onWordMouseOver: getCallback("onWordMouseOver"),
+};
 
 export default function UbcMetrics(props) {
   const [words, setWords] = useState([]);
@@ -32,8 +60,6 @@ export default function UbcMetrics(props) {
   const [facultyPublicationsOverall, setFacultyPublicationsOverall] = useState(
     []
   );
-  const [facultyPubsLastFiveYears, setFacultyPubsLastFiveYears] = useState([]);
-  const [facultyPubsLastTenYears, setFacultyPubsLastTenYears] = useState([]);
 
   const wordCloudQuery = async () => {
     const wordCloudResult = await API.graphql({
@@ -61,17 +87,18 @@ export default function UbcMetrics(props) {
     }
     setFacultyList(facList);
     setFacultyPublicationsOverall(facOverallPubs);
-    setFacultyPubsLastFiveYears(fac5year);
-    setFacultyPubsLastTenYears(fac10year);
   };
 
   const allPublicationsPerFacultyFunction = async () => {
     const queryResult = await API.graphql({
       query: allPublicationsPerFacultyQuery,
     });
+
     let facList = [];
     let facOverallPubs = [];
+
     let result = queryResult.data.allPublicationsPerFacultyQuery;
+
     for (let i = 0; i < result.length; i++) {
       facList.push(result[i].faculty);
       facOverallPubs.push(result[i].sum);
@@ -86,21 +113,13 @@ export default function UbcMetrics(props) {
     allPublicationsPerFacultyFunction();
   }, []);
 
-  let dataset = [
-    {
-      label: "5 Years",
-      data: facultyPubsLastFiveYears,
-      backgroundColor: "rgba(255, 99, 132, 0.5)",
-    },
-    {
-      label: "10 Years",
-      data: facultyPubsLastTenYears,
-      backgroundColor: "rgba(255, 99, 132, 0.5)",
-    },
-  ];
-
   return (
     <Grid container>
+      <Grid item xs={12} sx={{ mt: "1%" }}>
+        <Typography variant="h4" align="center">
+          Top 100 Keywords In UBC Research
+        </Typography>
+      </Grid>
       <Grid
         item
         xs={12}
@@ -108,37 +127,22 @@ export default function UbcMetrics(props) {
           height: "70vh",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          mt: "100px",
+          flexDirection: "row",
         }}
       >
-        <Typography variant="h5">Top 100 Research Keywords</Typography>
-        <ReactWordcloud options={options} words={words} />
+        <ReactWordcloud callbacks={callbacks} options={options} words={words} />
       </Grid>
-      <Grid
-        item
-        container
-        spacing={6}
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "70vh",
-        }}
-      >
-        <Grid item xs={4}>
-          <DoughnutChart
-            labels={facultyList}
-            data={facultyPublicationsOverall}
-            title={"Pubs Graph"}
-          />
-        </Grid>
-        <Grid item xs={8}>
-          <Box sx={{ width: "100%" }}>
-            <PublicationGraph />
-          </Box>
-        </Grid>
+      <Grid item xs={4}>
+        <DoughnutChart
+          labels={facultyList}
+          data={facultyPublicationsOverall}
+          title={"Pubs Graph"}
+        />
+      </Grid>
+      <Grid item xs={8}>
+        <Box sx={{ width: "100%", height: "369px" }}>
+          <PublicationGraph />
+        </Box>
       </Grid>
     </Grid>
   );
