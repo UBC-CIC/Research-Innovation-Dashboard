@@ -80,8 +80,6 @@ export default function DoughnutChart(props) {
           },
         },
       ]}
-      height={300}
-      width={900}
     />
   );
 }
