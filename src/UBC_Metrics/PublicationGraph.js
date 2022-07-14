@@ -63,10 +63,12 @@ const PublicationGraph = () => {
       variables: { faculty: selectedFaculty && selectedFaculty },
     });
     const facultyMetricData = facultyMetricDataRes.data.facultyMetrics;
-    const pastTenYearsFacultyMetricData = facultyMetricData
-      .splice(1, 11)
-      .reverse();
-    setFacultyData(pastTenYearsFacultyMetricData);
+    const pastTenYearsFacultyMetricData =
+      facultyMetricData[0].year === "2023"
+        ? facultyMetricData.splice(1, 11)
+        : facultyMetricData.splice(0, 11);
+    const chronologicalData = pastTenYearsFacultyMetricData.reverse();
+    setFacultyData(chronologicalData);
   };
 
   useEffect(() => {
@@ -90,7 +92,9 @@ const PublicationGraph = () => {
             mb: "1.5em",
           }}
         >
-          <Typography variant="h5">Title </Typography>
+          <Typography variant="h5">
+            Total Publications At UBC Per Year{" "}
+          </Typography>
           <Box
             sx={{
               display: "flex",
@@ -180,7 +184,7 @@ const PublicationGraph = () => {
                 maintainAspectRatio: false,
               },
             }}
-            height={300}
+            height={369}
             width={900}
           />
         )}
