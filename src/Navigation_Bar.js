@@ -77,13 +77,13 @@ export default function NAV_BAR() {
     </Box>
     <Box sx={{ flexGrow: 1 }}>
       <Paper sx={{width: "100%"}} square={true} elevation={0}>
-            <Box backgroundColor='#002145' borderLeft={1} borderRight={1} id='testBorder'
+          <Box backgroundColor='#002145'
              sx={{display: 'flex', flexDirection: 'column','& > *': { m: 1, ml: "2%"},}}>
               <ThemeProvider theme={navigationBarTheme}>
                 <NavBarButtons />
               </ThemeProvider>
           </Box>
-        </Paper>
+      </Paper>
     </Box>
     </div>
   );

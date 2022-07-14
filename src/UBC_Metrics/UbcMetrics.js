@@ -9,10 +9,13 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import ReactWordcloud from "react-wordcloud";
 import DoughnutChart from "./DoughnutChart";
-import { Grid, Box } from "@mui/material";
+import { Grid, Box, Typography } from "@mui/material";
 import { API } from "aws-amplify";
-
-import { wordCloud, facultyMetrics } from "../graphql/queries";
+import {
+  wordCloud,
+  facultyMetrics,
+  allPublicationsPerFacultyQuery,
+} from "../graphql/queries";
 import PublicationGraph from "./PublicationGraph";
 
 const options = {
@@ -69,9 +72,25 @@ export default function UbcMetrics(props) {
     setFacultyPubsLastTenYears(fac10year);
   };
 
+  const allPublicationsPerFacultyFunction = async () => {
+    const queryResult = await API.graphql({
+      query: allPublicationsPerFacultyQuery,
+    });
+    let facList = [];
+    let facOverallPubs = [];
+    let result = queryResult.data.allPublicationsPerFacultyQuery;
+    for (let i = 0; i < result.length; i++) {
+      facList.push(result[i].faculty);
+      facOverallPubs.push(result[i].sum);
+    }
+    setFacultyList(facList);
+    setFacultyPublicationsOverall(facOverallPubs);
+  };
+
   useEffect(() => {
     wordCloudQuery();
     facultyMetricsQuery();
+    allPublicationsPerFacultyFunction();
   }, []);
 
   let dataset = [
@@ -88,17 +107,40 @@ export default function UbcMetrics(props) {
   ];
 
   return (
-    <Grid>
-      <ReactWordcloud options={options} words={words} />
-      {/* <DoughnutChart
-        labels={facultyList}
-        data={facultyPublicationsOverall}
-        title={"Pubs Graph"}
-      /> */}
-      <Grid item>
-        <Box sx={{ width: "100%", height: "300px" }}>
-          <PublicationGraph />
-        </Box>
+    <Grid container>
+      <Grid
+        item
+        xs={12}
+        sx={{
+          height: "70vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          mt: "100px",
+        }}
+      >
+        <Typography variant="h5">Top 100 Research Keywords</Typography>
+        <ReactWordcloud options={options} words={words} />
+      </Grid>
+      <Grid
+        item
+        container
+        spacing={4}
+        sx={{ display: "flex", justifyContent: "center" }}
+      >
+        <Grid item xs={4}>
+          <DoughnutChart
+            labels={facultyList}
+            data={facultyPublicationsOverall}
+            title={"Pubs Graph"}
+          />
+        </Grid>
+        <Grid item xs={8}>
+          <Box sx={{ width: "100%", height: "300px" }}>
+            <PublicationGraph />
+          </Box>
+        </Grid>
       </Grid>
     </Grid>
   );

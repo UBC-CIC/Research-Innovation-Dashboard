@@ -188,7 +188,27 @@ export default function Researcher_profile_overview() {
 
         setSimilarResearchersArray(result.data.similarResearchers);
 
-        const sortedAreas = researcher_data.keywords.split(", ");
+        // create weighted list of keywords
+        let keywordHashmap = new Map();
+        let keyWords = researcher_data.keywords.split(", ");
+    
+        for(let i = 0; i<keyWords.length; i++){
+            if(keywordHashmap.get(keyWords[i])) {
+            keywordHashmap.set(keyWords[i], keywordHashmap.get(keyWords[i]) + 1);
+            }
+            else {
+            keywordHashmap.set(keyWords[i], 1);
+            }
+        }
+      
+        let sortedKeywordHashmap = ([...keywordHashmap].sort((a, b) => b[1] - a[1]));
+
+        let sortedAreas = [];
+        
+        for(let i = 0; i<sortedKeywordHashmap.length; i++){
+            sortedAreas.push(sortedKeywordHashmap[i][0]);
+        }
+        // save weighted list of keywords to state variable
         setSortedAreasOfInterest(sortedAreas);
     }
     const getResearcherBarGraphData = async () => {

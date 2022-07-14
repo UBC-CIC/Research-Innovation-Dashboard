@@ -29,7 +29,7 @@ export default function Rankings_Navigation(props) {
 
         return(
                 <ButtonGroup size='large' variant="text" aria-label="text button group" >
-                    <Button sx={{fontSize: buttonFontSize}} onClick={props.onClickFunctions.byDepartmentButton}>Rank By Department</Button>
+                    <Button sx={{fontSize: buttonFontSize, paddingLeft: "0%"}} onClick={props.onClickFunctions.byDepartmentButton}>Rank By Department</Button>
                     <Button sx={{fontSize: buttonFontSize}} onClick={props.onClickFunctions.byFacultyButton}>Rank By Faculty</Button>
                     <Button sx={{fontSize: buttonFontSize}} onClick={props.onClickFunctions.overallRankingsButton}>Overall Rankings</Button>
                 </ButtonGroup>
@@ -38,12 +38,12 @@ export default function Rankings_Navigation(props) {
 
     return(
         <Grid item xs={12}>
-            <Paper square={true} elevation={0}>
-            <Box backgroundColor='#e6e6e6' sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', '& > *': { m: 1,},}}>
-                <ThemeProvider theme={navigationBarTheme}>
-                    <TheButtonGroup />
-                </ThemeProvider>
-            </Box>
+            <Paper sx={{width: "100%"}} square={true} elevation={0}>
+                <Box backgroundColor='#e6e6e6' sx={{display: 'flex', flexDirection: 'column','& > *': { m: 1, ml: "2%"},}}>
+                    <ThemeProvider theme={navigationBarTheme}>
+                        <TheButtonGroup />
+                    </ThemeProvider>
+                </Box>
             </Paper>
         </Grid>
     );

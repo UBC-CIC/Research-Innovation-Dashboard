@@ -40,7 +40,7 @@ export default function SearchComponent(props){
                                 whatToSearch={props.whatToSearch}
                                 path={path}/>
                                 <Paper square={true} elevation={0} sx={{width: "60%", marginTop: "8px", marginBottom: "8px", flexDirection: "row-reverse"}} component={Stack} direction="row">
-                                    <a href='/AdvancedSearch/Everything/'>Advanced Search</a>
+                                    <a href={'/AdvancedSearch/'+props.whatToSearch+'/ / / / /All Departments/All Faculties/2017-07/2022-07/All Journals/'}>Advanced Search</a>
                                 </Paper>
                             </Grid>
                         </Grid>

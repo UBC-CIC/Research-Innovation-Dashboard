@@ -52,7 +52,7 @@ const PublicationGraph = () => {
       query: totalPublicationPerYear,
     });
     const totalData = totalDataRes.data.totalPublicationPerYear;
-    const pastTenYearsData = totalData.splice(0, 10);
+    const pastTenYearsData = totalData.splice(1, 11);
     setTotalPublicationData(pastTenYearsData);
   };
 
@@ -63,7 +63,7 @@ const PublicationGraph = () => {
       variables: { faculty: selectedFaculty && selectedFaculty },
     });
     const facultyMetricData = facultyMetricDataRes.data.facultyMetrics;
-    const pastTenYearsFacultyMetricData = facultyMetricData.splice(0, 10);
+    const pastTenYearsFacultyMetricData = facultyMetricData.splice(1, 11);
     setFacultyData(pastTenYearsFacultyMetricData);
   };
 
@@ -78,7 +78,7 @@ const PublicationGraph = () => {
   }, [selectedFaculty]);
 
   return (
-    <Paper sx={{ p: "1em" }}>
+    <Paper sx={{ p: "1em" }} elevation={0}>
       <Box
         sx={{
           display: "flex",
@@ -86,7 +86,7 @@ const PublicationGraph = () => {
           mb: "1.5em",
         }}
       >
-        <Typography variant="body1">Publications</Typography>
+        <Typography variant="h5">Title </Typography>
         <Box
           sx={{
             display: "flex",
