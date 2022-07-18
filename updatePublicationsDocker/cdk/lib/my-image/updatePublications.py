@@ -7,6 +7,7 @@ print("Starting Update Publications")
 
 ssm_client = boto3.client('ssm', region_name='ca-central-1')
 
+#Will Need To Think About Where To Get Credentials From With CDK!!!!
 def getCredentials():
     """Using AWS secrets manager the function returns the databases credentials"""
     credential = {}
