@@ -1,40 +1,89 @@
-import NavigationBar from "./Navigation_Bar"
-import ResearcherProfileOverview from "./Researcher_profile/Researcher_profile_overview"
-import ResearcherProfileAreasOfInterest from "./Researcher_profile/Researcher_profile_areas_of_interest"
-import ResearcherProfilePublications from "./Researcher_profile/Researcher_profile_publications"
-import {Routes, Route} from "react-router-dom";
-import SearchComponent from './Search_Reseachers/SearchComponent'
-import SimilarResearchers from "./Researcher_profile/Similar_Researchers"
-import AdvancedSearchComponent from "./Search_Reseachers/AdvancedSearchComponent";
-import Rankings from "./Rankings/Rankings"
-import UbcMetrics from "./UBC_Metrics/UbcMetrics";
+import "./App.css";
+import { StylesProvider } from "@material-ui/core/styles";
+import { ThemeProvider } from "@mui/material/styles";
+import Amplify from "aws-amplify";
+import awsmobile from "./aws-exports";
+import { Hub } from "aws-amplify";
+import { BrowserRouter } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { connect } from "react-redux";
+import { updateLoginState } from "./actions/loginActions";
+import theme from "./themes";
+import Login from "./components/authentication/Login_material";
+import PageContainer from "./views/pageContainer/PageContainer";
 
-import React from 'react';
-import './stylesheet.css'
-import { useState, useEffect } from 'react';
+Amplify.configure(awsmobile);
 
-function App() {
+function App(props) {
+  const { loginState, updateLoginState } = props;
+
+  const [currentLoginState, updateCurrentLoginState] = useState(loginState);
+
+  useEffect(() => {
+    setAuthListener();
+  }, []);
+
+  useEffect(() => {
+    updateCurrentLoginState(loginState);
+  }, [loginState]);
+
+  async function setAuthListener() {
+    Hub.listen("auth", (data) => {
+      switch (data.payload.event) {
+        case "signOut":
+          updateLoginState("signIn");
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
   return (
-    <div id='websiteFont'>
-      <NavigationBar />
-      <Routes>
-        <Route path="/Researchers/:scopusId/Publications" element={<ResearcherProfilePublications />} />
-        <Route path="/Researchers/:scopusId/Areas_Of_Interest" element={<ResearcherProfileAreasOfInterest />} />
-        <Route path="/Researchers/:scopusId/Similar_Researchers" element={<SimilarResearchers />} />
-        <Route path="/Researchers/:scopusId" element={<ResearcherProfileOverview />} />
-        <Route path="/UBC/Metrics/" element={<UbcMetrics />} />
-        <Route path="/Rankings/" element={<Rankings />} />
-        <Route path="/AdvancedSearch/:SearchForWhat/:AllWords/:ExactPhrase/:AnyWords/:NoneOfTheseWords/:Department/:Faculty/:yearFrom/:yearTo/:Journal" element={<AdvancedSearchComponent />} />
-        <Route path="/AdvancedSearch/:SearchForWhat/" element={<AdvancedSearchComponent />} />
-        <Route path="/Search/Researchers/:searchValue" element={<SearchComponent whatToSearch={"Researchers"} />} />
-        <Route path="/Search/Researchers/" element={<SearchComponent whatToSearch={"Researchers"} />} />
-        <Route path="/Search/Publications/:searchValue" element={<SearchComponent whatToSearch={"Publications"} />} />
-        <Route path="/Search/Publications/" element={<SearchComponent whatToSearch={"Publications"} />} />
-        <Route path="/:searchValue" element={<SearchComponent whatToSearch={"Everything"} />} />
-        <Route path="/" element={<SearchComponent whatToSearch={"Everything"} />} />
-      </Routes>
-    </div>
+    <StylesProvider injectFirst>
+      <ThemeProvider theme={theme}>
+        <div style={{ width: "100vw", height: "100vh" }}>
+          {currentLoginState !== "signedIn" && (
+            /* Login component options:
+             *
+             * [logo: "custom", "none"]
+             * [type: "video", "image", "static"]
+             * [themeColor: "standard", "#012144" (color hex value in quotes) ]
+             *  Suggested alternative theme colors: #037dad, #5f8696, #495c4e, #4f2828, #ba8106, #965f94
+             * [animateTitle: true, false]
+             * [title: string]
+             * [darkMode (changes font/logo color): true, false]
+             * [disableSignUp: true, false]
+             * */
+            <Login
+              logo={"custom"}
+              type={"image"}
+              themeColor={"standard"}
+              animateTitle={false}
+              title={"VPRI Innovation Dashboard"}
+              darkMode={true}
+              disableSignUp={false}
+            />
+          )}
+          {currentLoginState === "signedIn" && (
+            <BrowserRouter>
+              <PageContainer />
+            </BrowserRouter>
+          )}
+        </div>
+      </ThemeProvider>
+    </StylesProvider>
   );
 }
 
-export default App;
+const mapStateToProps = (state) => {
+  return {
+    loginState: state.loginState.currentState,
+  };
+};
+
+const mapDispatchToProps = {
+  updateLoginState,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
