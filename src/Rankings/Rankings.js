@@ -3,10 +3,6 @@ import RankingsNavigation from "./Rankings_Navigation";
 import "./Rankings.css";
 import { useState, useEffect } from "react";
 
-import Amplify from "@aws-amplify/core";
-import { Auth } from "@aws-amplify/auth";
-import awsmobile from "../aws-exports";
-
 import { API } from "aws-amplify";
 import {
   getResearcherRankingsByDepartment,
@@ -20,9 +16,6 @@ import RankingsByDepartment from "./RankResearcherByDepartment";
 import AllResearcherRankings from "./allResearcherRankings";
 import RankByFaculty from "./RankByFaculty";
 import LoadingWheel from "../LoadingWheel";
-
-Amplify.configure(awsmobile);
-Auth.configure(awsmobile);
 
 export default function Rankings(props) {
   const [
