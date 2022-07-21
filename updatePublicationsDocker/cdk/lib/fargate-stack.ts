@@ -8,22 +8,16 @@ import * as ecs from 'aws-cdk-lib/aws-ecs'
 import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import { VpcStack } from './vpc-stack';
 
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
-
-export class CdkStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+export class FargateStack extends Stack {
+  constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
     super(scope, id, props);
-
-    //Create a VPC for the cluster to reside in
-    const vpc = new ec2.Vpc(this, 'matthewVPC', {
-      cidr: '10.0.0.0/16',
-    });
 
     // Create a cluster to run the scheduled fargate task.
     // The cluster is in the vpc defined above
-    const cluster = new ecs.Cluster(this, 'myCluster', {
-      vpc,
+    const cluster = new ecs.Cluster(this, 'updatePublicationsCluster', {
+      vpc: vpcStack.vpc,
       enableFargateCapacityProviders: true,
     });
 
@@ -58,8 +52,8 @@ export class CdkStack extends Stack {
     });
 
     //Create and attach the docker container to the task
-    taskDefinition.addContainer('AppContainer', {
-      image: ecs.ContainerImage.fromAsset(path.join(__dirname, 'my-image')),
+    taskDefinition.addContainer('updatePublicationsContainer', {
+      image: ecs.ContainerImage.fromAsset(path.join(__dirname, 'updatePublicationsImage')),
       logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'my-log-group', logRetention: 30 }),
     });
 
@@ -74,12 +68,14 @@ export class CdkStack extends Stack {
         day: '1',
         month: '*',
       }),
+      subnetSelection: {subnetType: ec2.SubnetType.PUBLIC}, //vpcStack.vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC}),
       platformVersion: ecs.FargatePlatformVersion.LATEST,
     });
 
     /*
     FUTURE DEVELOPMENT NOTE!
-    The correct VPC will need to be assigned and you will need to change the updatePublicatiosn to get a variable path for the DB secrets
+      Need to change the updatePublicatiosn to get a variable path for the DB secrets
+      Inject Some Enviornmental Variable
     */
   }
 }
