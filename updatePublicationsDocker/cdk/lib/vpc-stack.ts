@@ -20,7 +20,7 @@ export class VpcStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // Vpc For the Application to reside in
+    // VPC for vpri application
     this.vpc = new ec2.Vpc(this, 'Vpc', {
         cidr: '10.0.0.0/16',
         natGateways: 0,
