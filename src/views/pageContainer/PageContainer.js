@@ -1,5 +1,5 @@
 import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/styles";
 import { connect } from "react-redux";
 import { updateMenuState } from "../../actions/menuActions";
 import { Grid } from "@mui/material";

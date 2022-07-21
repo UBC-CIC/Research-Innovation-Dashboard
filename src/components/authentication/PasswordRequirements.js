@@ -1,7 +1,7 @@
 import React from "react";
-import { makeStyles } from "@material-ui/core";
+import { makeStyles } from "@mui/styles";
 import { green, red } from "@mui/material/colors";
-import { List, ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
+import { List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
 import { CheckCircle, Cancel } from "@mui/icons-material";
 
 const PasswordRequirements = ({ requirements }) => {
