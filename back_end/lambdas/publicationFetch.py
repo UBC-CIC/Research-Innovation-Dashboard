@@ -2,19 +2,39 @@ import requests
 import json
 import boto3
 import psycopg2
+import os
 
 ssm_client = boto3.client('ssm')
 
+'''
+Fetches the rds database credentials from secrets manager
+'''
+def getCredentials():
+    credential = {}
+    
+    ssm_username = ssm_client.get_parameter(Name='/service/publicationDB/username', WithDecryption=True)
+    ssm_password = ssm_client.get_parameter(Name='/service/publicationDB/password', WithDecryption=True)
+    credential['username'] = ssm_username['Parameter']['Value']
+    credential['password'] = ssm_password['Parameter']['Value']
+    credential['host'] = 'vpripublicationdb.ct5odvmonthn.ca-central-1.rds.amazonaws.com'
+    credential['db'] = 'myDatabase'
+    return credential
+
+'''
+Given an authors Scopus id, fetches all their publication data (if it exists) 
+and returns the publications as a list of dicts
+'''
 def fetch_publications(author_id):
     instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
     apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
-    url = 'https://api.elsevier.com/content/search/scopus'
-    results_per_page = 25
+    url = os.environ.get('SCOPUS_SEARCH_URL')
+    results_per_page = int(os.environ.get('RESULTS_PER_PAGE'))
     
     headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
     query = {'query': 'AU-ID(' + author_id + ')', 'view' : 'COMPLETE', 'cursor': '*'}
     
     response = requests.get(url, headers=headers, params=query)
+    print(response.headers)
     rjson = response.json()
     stored_results = 0
     total_results = int(rjson['search-results']['opensearch:totalResults'])
@@ -23,16 +43,20 @@ def fetch_publications(author_id):
         results = rjson['search-results']['entry']
         for result in results:
             keys = result.keys()
+            doi = ''
             id = ''
             title = ''
             keywords = []
             journal = ''
             cited_by = None
             year_published = ''
+            link = ''
             # This will evaluate to false if the publication no longer exists
             if(list(keys).count('author-count')):
                 author_ids = []
                 author_names = []
+                if(list(keys).count('prism:doi')):
+                    doi = result['prism:doi']
                 if(list(keys).count('dc:identifier')):
                     for c in result['dc:identifier']:
                         if c.isdigit():
@@ -56,10 +80,12 @@ def fetch_publications(author_id):
                     for author in scopus_authors:
                         author_ids.append(author['authid'])
                         author_names.append(author['authname'])
-                
-                publications.append({'id': id, 'title': title, 
+                if (list(keys).count('link')):
+                    link = result['link'][2]['@href']
+                publications.append({'doi': doi, 'id': id, 'title': title, 
                     'keywords': keywords, 'journal': journal, 'cited_by': cited_by, 
-                    'year_published': year_published, 'author_ids': author_ids, 'author_names': author_names})
+                    'year_published': year_published, 'author_ids': author_ids, 
+                    'author_names': author_names, 'link': link})
             
             stored_results += 1
         if (stored_results >= total_results):
@@ -69,28 +95,10 @@ def fetch_publications(author_id):
         rjson = response.json()
     return(publications)
 
-def getCredentials():
-    credential = {}
-    
-    ssm_username = ssm_client.get_parameter(Name='/service/publicationDB/username', WithDecryption=True)
-    ssm_password = ssm_client.get_parameter(Name='/service/publicationDB/password', WithDecryption=True)
-    credential['username'] = ssm_username['Parameter']['Value']
-    credential['password'] = ssm_password['Parameter']['Value']
-    credential['host'] = 'vpripublicationdb.ct5odvmonthn.ca-central-1.rds.amazonaws.com'
-    credential['db'] = 'myDatabase'
-    return credential
-    
-def formatStringArray(arr):
-    for i, entry in enumerate(arr):
-        arr[i] = entry.replace('\"', "\'")
-    str_arr = str(arr).replace('\', \'', '", "')
-    str_arr = str_arr.replace('\', "', '", "')
-    str_arr = str_arr.replace('", \'', '", "')
-    str_arr = str_arr.replace('[\'', '["')
-    str_arr = str_arr.replace('\']', '"]')
-    str_arr = str_arr.replace('\'', '\'\'')
-    return str_arr
-    
+'''
+Given an array of publication data, stores the publications in the 
+publication_data table of the database
+'''
 def store_publications(publications):
     credentials = getCredentials()
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
@@ -101,27 +109,65 @@ def store_publications(publications):
         publication['id'] = publication['id']
         publication['title'] = publication['title'].replace('\'', "''")
         publication['author_ids'] = str(publication['author_ids']).replace('\'', '"').replace('[', '{').replace(']', '}')
-        publication['author_names'] = str(formatStringArray(publication['author_names'])).replace('[', '{').replace(']', '}')
-        publication['keywords'] = str(formatStringArray(publication['keywords'])).replace('[', '{').replace(']', '}')
+        publication['author_names'] = str(publication['author_names'])[2:-2].replace(" '", " ").replace("',", ",").replace("'", "''")
+        publication['keywords'] = str(publication['keywords'])[2:-2].replace(" '", " ").replace("',", ",").replace("'", "''")
         publication['journal'] = publication['journal'].replace("'", "''")
         publication['cited_by'] = str(publication['cited_by'])
         publication['year_published'] = publication['year_published']
-        
-        queryline1 = "INSERT INTO public.publication_data(id, title, author_ids, author_names, keywords, journal, cited_by, year_published) "
-        queryline2 = "VALUES ('" + publication['id'] + "'::text, '" + publication['title'] + "'::text, '" + publication['author_ids'] + "'::text[], '" + publication['author_names'] + "'::text[], '" + publication['keywords'] + "'::text[], '" + publication['journal'] + "'::text, '" + publication['cited_by'] + "'::integer, '" + publication['year_published'] + "'::text)"
+        queryline1 = "INSERT INTO public.publication_data(id, doi, title, author_ids, author_names, keywords, journal, cited_by, year_published, link) "
+        queryline2 = "VALUES ('" + publication['id'] + "', '" + publication['doi'] + "', '" + publication['title'] + "', '" + publication['author_ids'] + "', '" + publication['author_names'] + "', '" + publication['keywords'] + "', '" + publication['journal'] + "', '" + publication['cited_by'] + "', '" + publication['year_published'] + "', '" + publication['link'] + "')"
         queryline3 = "ON CONFLICT (id) DO UPDATE "
-        queryline4 = "SET cited_by='" + publication['cited_by'] + "', keywords='" + publication['keywords'] + "'"
+        queryline4 = "SET doi='" + publication['doi'] + "', title='" + publication['title'] + "', author_ids='" + publication['author_ids'] + "', author_names='" + publication['author_names'] + "', journal='" + publication['journal'] + "', year_published='" + publication['year_published'] + "', cited_by='" + publication['cited_by'] + "', keywords='" + publication['keywords'] + "', link='" + publication['link'] + "'"
         cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
     
     cursor.close()
     connection.commit()
 
+'''
+Given an author's Scopus id and the authors publications, stores all keywords 
+associated with a researcher as an unsorted list (contains duplicate keywords)
+'''
+def store_keywords(author_id, publications):
+    unsorted_keywords = []
+    for publication in publications:
+        for keyword in publication['keywords']:
+            unsorted_keywords.append(keyword)
+    
+    # Sort keywords, remove duplicates, and format the string
+    '''
+    sorted_keywords = sorted(unsorted_keywords, key = unsorted_keywords.count, reverse = True)
+    keywords = []
+    for element in sorted_keywords:
+        if element not in keywords:
+            keywords.append(element)
+    '''
+    keywords = unsorted_keywords
+    
+    for keyword in keywords:
+        keyword = keyword.replace(',', '')
+    # Get rid of all single quotes around each keyword
+    keywords_string = str(keywords)[1:-1].replace('"', '').replace("'", "")
+    
+    credentials = getCredentials()
+    connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
+    cursor = connection.cursor()
+    
+    query = "UPDATE public.researcher_data SET keywords='" + keywords_string + "' WHERE scopus_id='" + author_id + "'"
+    cursor.execute(query)
+    
+    cursor.close()
+    connection.commit()
+
+    
+'''
+Fetches publication data from the Scopus API and stores that data
+in the database. Takes an array of author ids as input.
+'''
 def lambda_handler(event, context):
     author_ids = event
-    #print(author_ids[0])
     for author_id in author_ids:
-        print(author_id)
         publications = fetch_publications(author_id[0])
+        store_keywords(author_id[0], publications)
         store_publications(publications)
     
     
