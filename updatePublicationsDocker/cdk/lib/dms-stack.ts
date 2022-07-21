@@ -14,36 +14,65 @@ import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePri
 import { OpensearchStack } from './opensearch-stack';
 import { VpcStack } from './vpc-stack';
 
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
-
 export class DmsStack extends Stack {
   constructor(scope: Construct, id: string, vpcStack: VpcStack, opensearchStack: OpensearchStack, props?: StackProps) {
     super(scope, id, props);
 
+    //Create Policy For DMS to access opensearch
+    const opensearchAccessPolicy = new iam.PolicyDocument({
+      statements: [
+        new iam.PolicyStatement({
+          resources: ['*'],
+          actions: [
+          "es:ESHttpDelete",
+          "es:ESHttpGet",
+          "es:ESHttpHead",
+          "es:ESHttpPost",
+          "es:ESHttpPut"
+          ],
+          effect: iam.Effect.ALLOW,
+        }),
+      ],
+    });
+
+    //Create Role For DMS to access opensearch
+    const role = new iam.Role(this, 'opensearch-access-role', {
+      assumedBy: new iam.ServicePrincipal('dms.amazonaws.com'),
+      description: 'DMS Role To Access OpenSearch',
+      inlinePolicies: {
+        opensearchAccessPolicy: opensearchAccessPolicy,
+      },
+    });
+
+    //Get the ID's of all the public subnets in the vpc
     let subnets = [];
     for(let i = 0; i<vpcStack.vpc.publicSubnets.length; i++){
         subnets.push(vpcStack.vpc.publicSubnets[i].subnetId);
     }
 
-    // Create a subnet group that allows DMS to access your data
+    // Create a subnet group in the VPC that has access to both the postgresql db and opensearch
     const subnet = new dms.CfnReplicationSubnetGroup(this, 'SubnetGroup', {
         replicationSubnetGroupIdentifier: 'cdk-subnetgroup',
         replicationSubnetGroupDescription: 'subnets that have access to my data source and target.',
         subnetIds: subnets,
     });
 
-    //Launch an instance in the subnet group
+    //Launch an instance in the subnet group created above
     const instance = new dms.CfnReplicationInstance(this, 'Instance', {
         replicationInstanceIdentifier: 'cdk-instance',
   
-        // Use the appropriate instance class: https://docs.aws.amazon.com/dms/latest/userguide/CHAP_ReplicationInstance.Types.html
+        // Other Potential Instance Classes (Smallest in canada is t3 micro): https://docs.aws.amazon.com/dms/latest/userguide/CHAP_ReplicationInstance.Types.html
         replicationInstanceClass: 'dms.t3.micro',
   
-        // Setup networking this.subnetGroup.ref
+        // Attach the subnet group to the replication instance
         replicationSubnetGroupIdentifier: subnet.ref,
+
+        // Attach the default VPC security group to the replication instance
         vpcSecurityGroupIds: [ vpcStack.vpc.vpcDefaultSecurityGroup ],
     });
 
+    // Create the postgresql source endpoint
+    // CURRENTLY NOT VARIABLE!
     const source = new dms.CfnEndpoint(this, 'Source', {
         endpointIdentifier: 'cdk-source',
         endpointType: 'source',
@@ -55,6 +84,7 @@ export class DmsStack extends Stack {
         password: 'Pv9FNYbhpSRNNXes'
     });
 
+    // Create the opensearch target endpoint
     const target = new dms.CfnEndpoint(this, 'Target', {
         endpointIdentifier: 'cdk-target',
         endpointType: 'target',
@@ -64,11 +94,12 @@ export class DmsStack extends Stack {
             endpointUri: opensearchStack.devDomain.domainEndpoint,
             errorRetryDuration: 300,
             fullLoadErrorPercentage: 10,
-            serviceAccessRoleArn: 'arn:aws:iam::649335657496:role/another-test-role'
+            serviceAccessRoleArn: role.roleArn
         },
     });
     
-    // Define the replication task
+    // Create a replication task to replicate the
+    // reseracher_data and publication_data tables into opensearch this will happen ongoing forever.
     const task = new dms.CfnReplicationTask(this, 'Task', {
         replicationInstanceArn: instance.ref,
   
