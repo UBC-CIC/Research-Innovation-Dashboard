@@ -1,5 +1,5 @@
 import "./App.css";
-import { StylesProvider } from "@material-ui/core/styles";
+import { StyledEngineProvider } from "@mui/material/styles";
 import { ThemeProvider } from "@mui/material/styles";
 import Amplify from "aws-amplify";
 import awsmobile from "./aws-exports";
@@ -40,7 +40,7 @@ function App(props) {
   }
 
   return (
-    <StylesProvider injectFirst>
+    <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
         <div style={{ width: "100vw", height: "100vh" }}>
           {currentLoginState !== "signedIn" && (
@@ -72,7 +72,7 @@ function App(props) {
           )}
         </div>
       </ThemeProvider>
-    </StylesProvider>
+    </StyledEngineProvider>
   );
 }
 

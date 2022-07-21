@@ -1,7 +1,7 @@
-import { Button, CircularProgress, Divider, Grid } from "@material-ui/core";
+import { Button, CircularProgress, Divider, Grid } from "@mui/material";
 import { Alert } from "@mui/lab";
 import { ArrowBack, AlternateEmail, Lock, Dialpad } from "@mui/icons-material";
-import { makeStyles, withStyles } from "@material-ui/core/styles";
+import { makeStyles, withStyles } from "@mui/styles";
 import { Auth } from "aws-amplify";
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";

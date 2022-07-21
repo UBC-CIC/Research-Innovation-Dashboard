@@ -173,15 +173,9 @@ export default function RankingsByDepartment(props) {
   }
 
   function ShowMoreRankingsButton() {
+    const smallScreen = useMediaQuery((theme) => theme.breakpoints.down("sm"));
+    const mediumScreen = useMediaQuery((theme) => theme.breakpoints.down("md"));
     if (numberOfRankingsToShow < props.researcherRankingsByDepartment.length) {
-      const smallScreen = useMediaQuery((theme) =>
-        theme.breakpoints.down("sm")
-      );
-      const mediumScreen = useMediaQuery((theme) =>
-        theme.breakpoints.down("md")
-      );
-      console.log(smallScreen);
-      console.log(mediumScreen);
       let buttonFontSize = "0.75rem";
       if (smallScreen) {
         buttonFontSize = "0.375rem";
