@@ -3,28 +3,28 @@
 
 export const putPub = /* GraphQL */ `
   mutation PutPub(
-    $id: ID!
-    $title: String!
-    $keywords: [String]
     $authors: [String!]
+    $id: ID!
     $journal: String
+    $keywords: [String]
+    $title: String!
   ) {
     putPub(
-      id: $id
-      title: $title
-      keywords: $keywords
       authors: $authors
+      id: $id
       journal: $journal
+      keywords: $keywords
+      title: $title
     ) {
-      id
-      title
-      keywords
       author_ids
       author_names
-      journal
       cited_by
-      year_published
+      id
+      journal
+      keywords
       link
+      title
+      year_published
     }
   }
 `;

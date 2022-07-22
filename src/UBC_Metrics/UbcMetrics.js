@@ -16,7 +16,7 @@ import "tippy.js/dist/tippy.css";
 import "tippy.js/animations/scale.css";
 
 function getCallback(callback) {
-  return function(word, event) {
+  return function (word, event) {
     const isActive = callback !== "onWordMouseOut";
     const element = event.target;
     const text = select(element);
@@ -64,6 +64,7 @@ export default function UbcMetrics(props) {
   const wordCloudQuery = async () => {
     const wordCloudResult = await API.graphql({
       query: wordCloud,
+      variables: { gte: 1908, lte: 2022 },
     });
     setWords(wordCloudResult.data.wordCloud);
   };
