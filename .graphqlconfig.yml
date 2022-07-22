@@ -1,5 +1,5 @@
 projects:
-  graphql2postgres:
+  vpriinnovationdashbo:
     schemaPath: src/graphql/schema.json
     includes:
       - src/graphql/**/*.js
@@ -10,8 +10,6 @@ projects:
         codeGenTarget: javascript
         generatedFileName: ''
         docsFilePath: src/graphql
-        region: ca-central-1
-        apiId: icovegqsmjb7pmcui2ajotb4gq
 extensions:
   amplify:
     version: 3

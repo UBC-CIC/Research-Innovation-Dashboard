@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "serviceConfiguration": {
+    "apiName": "vpriinnovationdashbo",
+    "serviceName": "AppSync",
+    "gqlSchemaPath": "C:\\Users\\christty\\Desktop\\vpri\\VPRI-innovation-dashboard\\amplify\\backend\\api\\vpriinnovationdashbo\\schema.graphql",
+    "defaultAuthType": {
+      "mode": "AMAZON_COGNITO_USER_POOLS",
+      "cognitoUserPoolId": "authvpriinnovationdashbo197a129c"
+    }
+  }
+}
