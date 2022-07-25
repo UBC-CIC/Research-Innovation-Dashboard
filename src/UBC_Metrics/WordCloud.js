@@ -25,6 +25,7 @@ const WordCloud = () => {
   const [words, setWords] = useState([]);
   const currentYear = new Date().getFullYear();
   const [dateRange, setDateRange] = useState([1908, currentYear]);
+  const [loading, setLoading] = useState(false);
   const options = {
     colors: ["#23D2DC", "#2376DC", "#23DC89"],
     enableTooltip: true,
@@ -57,7 +58,12 @@ const WordCloud = () => {
   };
 
   useEffect(() => {
-    dateRange && wordCloudQuery();
+    setLoading(false);
+  }, [words]);
+
+  useEffect(() => {
+    setLoading(true);
+    dateRange && setTimeout(wordCloudQuery(), 700);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange]);
 
@@ -117,11 +123,15 @@ const WordCloud = () => {
                 max={currentYear}
               />
             </Box>
-            <ReactWordcloud
-              callbacks={callbacks}
-              options={options}
-              words={words}
-            />
+            {loading ? (
+              <CircularProgress />
+            ) : (
+              <ReactWordcloud
+                callbacks={callbacks}
+                options={options}
+                words={words}
+              />
+            )}
           </Box>
         )
       )}
