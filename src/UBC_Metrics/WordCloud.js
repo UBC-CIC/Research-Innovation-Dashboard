@@ -63,7 +63,7 @@ const WordCloud = () => {
 
   useEffect(() => {
     setLoading(true);
-    dateRange && setTimeout(wordCloudQuery(), 700);
+    dateRange && setTimeout(wordCloudQuery, 700);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange]);
 
