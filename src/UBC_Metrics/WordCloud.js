@@ -123,13 +123,16 @@ const WordCloud = () => {
                 max={currentYear}
               />
             </Box>
-            <Box sx={{
-              height: "300px",
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              flexDirection: "row",
-            }}>
+            <Box
+              sx={{
+                height: "300px",
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
               {loading ? (
                 <CircularProgress />
               ) : (
