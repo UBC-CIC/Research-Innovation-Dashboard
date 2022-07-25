@@ -16,7 +16,11 @@ import { VpcStack } from './vpc-stack';
 
 export class DmsStack extends Stack {
   constructor(scope: Construct, id: string, vpcStack: VpcStack, opensearchStack: OpensearchStack, props?: StackProps) {
-    super(scope, id, props);
+    super(scope, id, {
+      env: {
+          region: 'ca-central-1'
+      },
+    });
 
     //Create Policy For DMS to access opensearch
     const opensearchAccessPolicy = new iam.PolicyDocument({
