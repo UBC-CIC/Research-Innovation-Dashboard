@@ -22,7 +22,7 @@ function getCallback(callback) {
 }
 
 const WordCloud = () => {
-  const [words, setWords] = useState([]);
+  const [words, setWords] = useState();
   const currentYear = new Date().getFullYear();
   const [dateRange, setDateRange] = useState([1908, currentYear]);
   const [loading, setLoading] = useState(false);
@@ -69,6 +69,7 @@ const WordCloud = () => {
 
   const handleChange = (event, newValue) => {
     setDateRange(newValue);
+    console.log(newValue);
   };
 
   const valueText = (value) => {
@@ -82,7 +83,7 @@ const WordCloud = () => {
       <Typography variant="h4" align="center">
         Top 100 Keywords In UBC Research
       </Typography>
-      {words.length === 0 ? (
+      {!words ? (
         <CircularProgress sx={{ py: "5em" }} />
       ) : (
         dateRange && (
@@ -90,7 +91,7 @@ const WordCloud = () => {
             sx={{
               display: "flex",
               flexDirection: "column",
-              pt: "2em",
+              mt: "2em",
               alignItems: "center",
               width: "100%",
             }}
@@ -123,26 +124,32 @@ const WordCloud = () => {
                 max={currentYear}
               />
             </Box>
-            <Box
-              sx={{
-                height: "300px",
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                flexDirection: "row",
-                justifyContent: "center",
-              }}
-            >
-              {loading ? (
-                <CircularProgress />
-              ) : (
-                <ReactWordcloud
-                  callbacks={callbacks}
-                  options={options}
-                  words={words}
-                />
-              )}
-            </Box>
+            {words.length === 0 ? (
+              <Typography sx={{ my: "4em" }}>
+                There is no data available for the current date range
+              </Typography>
+            ) : (
+              <Box
+                sx={{
+                  height: "300px",
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                }}
+              >
+                {loading ? (
+                  <CircularProgress />
+                ) : (
+                  <ReactWordcloud
+                    callbacks={callbacks}
+                    options={options}
+                    words={words}
+                  />
+                )}
+              </Box>
+            )}
           </Box>
         )
       )}
