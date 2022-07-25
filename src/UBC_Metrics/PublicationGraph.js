@@ -60,7 +60,7 @@ const PublicationGraph = () => {
   const getFacultyData = async () => {
     const facultyMetricDataRes = await API.graphql({
       query: facultyMetrics,
-      variables: { faculty: selectedFaculty && selectedFaculty },
+      variables: { faculty: selectedFaculty },
     });
     const facultyMetricData = facultyMetricDataRes.data.facultyMetrics;
     const pastTenYearsFacultyMetricData =
@@ -78,7 +78,8 @@ const PublicationGraph = () => {
   }, []);
 
   useEffect(() => {
-    getFacultyData();
+    selectedFaculty && getFacultyData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFaculty]);
 
   return (
