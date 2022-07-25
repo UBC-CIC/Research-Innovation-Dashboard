@@ -123,15 +123,23 @@ const WordCloud = () => {
                 max={currentYear}
               />
             </Box>
-            {loading ? (
-              <CircularProgress />
-            ) : (
-              <ReactWordcloud
-                callbacks={callbacks}
-                options={options}
-                words={words}
-              />
-            )}
+            <Box sx={{
+              height: "300px",
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              flexDirection: "row",
+            }}>
+              {loading ? (
+                <CircularProgress />
+              ) : (
+                <ReactWordcloud
+                  callbacks={callbacks}
+                  options={options}
+                  words={words}
+                />
+              )}
+            </Box>
           </Box>
         )
       )}
