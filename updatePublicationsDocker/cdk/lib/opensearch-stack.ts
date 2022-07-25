@@ -16,9 +16,14 @@ import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePri
 
 export class OpensearchStack extends Stack {
     public readonly devDomain: opensearch.Domain;
+    public readonly opensearchFunction: lambda.Function;
 
     constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
-    super(scope, id, props);
+    super(scope, id, {
+      env: {
+          region: 'ca-central-1'
+      },
+    });
 
     //Create a role for lambda to access opensearch
     const lambdaRole = new Role(this, 'OpenSearchLambdaRole', {
@@ -111,7 +116,7 @@ export class OpensearchStack extends Stack {
     });
 
     // Create the openserach query function.
-    const fn = new lambda.Function(this, 'MyFunction', {
+    this.opensearchFunction = new lambda.Function(this, 'MyFunction', {
         functionName: "QueryOpensearch",
         runtime: lambda.Runtime.NODEJS_16_X,
         handler: 'index.handler',

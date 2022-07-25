@@ -1,24 +1,17 @@
 import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as ecr from 'aws-cdk-lib/aws-ecr';
-import { DockerImageAsset, NetworkMode } from 'aws-cdk-lib/aws-ecr-assets';
-import * as path from 'path';
-import * as opensearch from 'aws-cdk-lib/aws-opensearchservice';
-import * as dms from 'aws-cdk-lib/aws-dms';
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
-import * as iam from 'aws-cdk-lib/aws-iam'
-import * as rds from 'aws-cdk-lib/aws-rds'
-import * as cdk from 'aws-cdk-lib'
-import * as lambda from 'aws-cdk-lib/aws-lambda'
-import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class VpcStack extends Stack {
     public readonly vpc: ec2.Vpc;
 
     constructor(scope: Construct, id: string, props?: StackProps) {
-    super(scope, id, props);
+    super(scope, id, {
+      env: {
+          region: 'ca-central-1'
+      },
+    });
 
     // VPC for vpri application
     this.vpc = new ec2.Vpc(this, 'Vpc', {

@@ -12,7 +12,11 @@ import { VpcStack } from './vpc-stack';
 
 export class FargateStack extends Stack {
   constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
-    super(scope, id, props);
+    super(scope, id, {
+      env: {
+          region: 'ca-central-1'
+      },
+    });
 
     // Create a cluster to run the scheduled fargate task.
     // The cluster is in the vpc defined above

@@ -1,0 +1,163 @@
+﻿schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Department {
+  prime_department: String
+}
+
+type Faculty {
+  prime_faculty: String
+}
+
+type Mutation {
+  putPub(authors: [String!], id: ID!, journal: String, keywords: [String], title: String!): Publication
+}
+
+type Publication {
+  author_ids: [String!]
+  author_names: String!
+  cited_by: Int
+  id: ID!
+  journal: String
+  keywords: String!
+  link: String
+  title: String!
+  year_published: String
+}
+
+type Query {
+  advancedSearchPublications(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, journal: String!, noneOfTheseWords: String!, table: String!, year_gte: Int!, year_lte: Int!): [Publication]
+  advancedSearchResearchers(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, prime_department: String!, prime_faculty: String!, table: String!): [ResearcherOpenSearch]
+  allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
+  facultyMetrics(faculty: String!): [facultyMetric]
+  getAllDepartments: [String]
+  getAllDistinctJournals: [String]
+  getAllFaculty: [String]
+  getAllResearchersRankings: [Ranking]
+  getNumberOfResearcherPubsAllYears(id: ID!): graphDataAllYears
+  getNumberOfResearcherPubsLastFiveYears(id: ID!): graphData
+  getPub(id: ID!): Publication
+  getResearcher(id: ID!): Researcher
+  getResearcherElsevier(id: ID!): ResearcherElsevier
+  getResearcherFull(id: ID!): ResearcherFull
+  getResearcherOrcid(id: ID!): ResearcherOrcid
+  getResearcherPubsByCitations(id: ID!): [Publication]
+  getResearcherPubsByTitle(id: ID!): [Publication]
+  getResearcherPubsByYear(id: ID!): [Publication]
+  getResearcherRankingsByDepartment(prime_department: String!): [Ranking]
+  getResearcherRankingsByFaculty(prime_faculty: String!): [Ranking]
+  searchPublications(search_value: String!): [Publication]
+  searchResearcher(search_value: String!): [ResearcherOpenSearch]
+  similarResearchers(keywordsString: String!, scopus_id: String!): [ResearcherOpenSearch]
+  totalPublicationPerYear: [pubsPerYear]
+  wordCloud: [wordCloud]
+}
+
+type Ranking {
+  h_index: Float
+  num_citations: Int
+  preferred_name: String
+  prime_department: String
+  prime_faculty: String
+  scopus_id: String
+}
+
+type Researcher {
+  areas_of_interest: String
+  campus: String
+  email: String
+  first_name: String
+  job_stream: String
+  last_name: String
+  orcid_id: String
+  preferred_name: String
+  prime_department: String
+  prime_faculty: String
+  rank: String
+  scopus_id: String!
+  second_department: String
+  second_faculty: String
+}
+
+type ResearcherElsevier {
+  h_index: Float
+  id: ID!
+  num_citations: Int
+  num_documents: Int
+}
+
+type ResearcherFull {
+  areas_of_interest: String
+  campus: String
+  email: String
+  first_name: String
+  h_index: Float
+  job_stream: String
+  keywords: String!
+  last_name: String
+  num_citations: Int
+  num_documents: Int
+  num_patents_filed: Int
+  orcid_id: String
+  preferred_name: String
+  prime_department: String
+  prime_faculty: String
+  rank: String
+  scopus_id: String!
+  second_department: String
+  second_faculty: String
+}
+
+type ResearcherOpenSearch {
+  campus: String
+  email: String
+  first_name: String
+  job_stream: String
+  keywords: String!
+  last_name: String
+  preferred_name: String
+  prime_department: String
+  prime_faculty: String
+  rank: String
+  scopus_id: String!
+  second_department: String
+  second_faculty: String
+}
+
+type ResearcherOrcid {
+  id: ID!
+  num_patents_filed: Int
+}
+
+type facultyMetric {
+  faculty: String
+  num_publications: String
+  year: String
+}
+
+type graphData {
+  lastFiveYears: [String]
+  publicationsPerYear: [String]
+}
+
+type graphDataAllYears {
+  allyears: [String]
+  publicationsPerYear: [String]
+}
+
+type pubsPerYear {
+  count: String
+  year_published: String
+}
+
+type totalPubsPerFaculty {
+  faculty: String
+  sum: Int
+}
+
+type wordCloud {
+  text: String
+  value: Int
+}
