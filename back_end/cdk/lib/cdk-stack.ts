@@ -7,6 +7,7 @@ import  { aws_s3 as s3 } from 'aws-cdk-lib'
 import { aws_s3_deployment as deployment } from 'aws-cdk-lib';
 import { aws_stepfunctions as sfn} from 'aws-cdk-lib';
 import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
+import { SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class CdkStack extends cdk.Stack {
@@ -46,7 +47,7 @@ export class CdkStack extends cdk.Stack {
         ec2.InstanceSize.MICRO,
       ),
       credentials: rds.Credentials.fromGeneratedSecret('postgres', {
-        secretName: 'credentials/dbCredentials'
+        secretName: 'vpri/credentials/dbCredentials'
       }),
       multiAz: false,
       allocatedStorage: 100,
@@ -61,7 +62,10 @@ export class CdkStack extends cdk.Stack {
       publiclyAccessible: true,
     });
 
-    dbInstance.connections.securityGroups[0].addIngressRule(ec2.Peer.ipv4('0.0.0.0/0'), ec2.Port.tcp(5432), 'Postgres Ingress');
+    dbInstance.connections.securityGroups.forEach(function (securityGroup) {
+      securityGroup.addIngressRule(ec2.Peer.ipv4('0.0.0.0/0'), ec2.Port.tcp(5432), 'Postgres Ingress');
+    });
+    // dbInstance.connections.securityGroups[0].addIngressRule(ec2.Peer.ipv4('0.0.0.0/0'), ec2.Port.tcp(5432), 'Postgres Ingress');
 
     /*
       Define Lambda Layers

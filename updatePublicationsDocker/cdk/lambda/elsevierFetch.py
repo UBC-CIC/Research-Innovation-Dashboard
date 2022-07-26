@@ -17,15 +17,15 @@ elsevier_headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Para
 Fetches the rds database credentials from secrets manager
 '''
 def getCredentials():
-    credential = {}
-    
-    ssm_username = ssm_client.get_parameter(Name='/service/publicationDB/username', WithDecryption=True)
-    ssm_password = ssm_client.get_parameter(Name='/service/publicationDB/password', WithDecryption=True)
-    credential['username'] = ssm_username['Parameter']['Value']
-    credential['password'] = ssm_password['Parameter']['Value']
-    credential['host'] = 'vpripublicationdb.ct5odvmonthn.ca-central-1.rds.amazonaws.com'
-    credential['db'] = 'myDatabase'
-    return credential 
+    credentials = {}
+
+    response = sm_client.get_secret_value(SecretId='vpri/credentials/dbCredentials')
+    secrets = json.loads(response['SecretString'])
+    credentials['username'] = secrets['username']
+    credentials['password'] = secrets['password']
+    credentials['host'] = secrets['host']
+    credentials['db'] = secrets['dbname']
+    return credentials
 
 '''
 Given an array of authors, stores the authors attached information in the 

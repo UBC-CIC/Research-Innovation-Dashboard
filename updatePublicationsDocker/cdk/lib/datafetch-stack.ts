@@ -9,18 +9,9 @@ import { aws_stepfunctions as sfn} from 'aws-cdk-lib';
 import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
-export class CdkStack extends cdk.Stack {
+export class DataFetchStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-
-    // VPC DEFINED IN vpc-stack
-    // Look at how database-stack imports it
-
-    //
-    // DATABASE DEFINED IN database-stack.ts import it if you want to use it
-    //
-    // LOOK at how database-stack imports the vpc!
-    //
 
     /*
       Define Lambda Layers
@@ -112,27 +103,6 @@ export class CdkStack extends cdk.Stack {
     );
 
     /*
-    const graphQLResolver = new lambda.Function(this, 'graphQLResolver', {
-      runtime: lambda.Runtime.NODEJS_14_X,
-      handler: 'graphQLResolver.lambda_handler',
-      layers: [postgres],
-      code: lambda.Code.fromAsset('../lambdas/'),
-      timeout: cdk.Duration.minutes(5),
-      memorySize: 512,
-    });
-    graphQLResolver.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'service-role/AWSLambdaVPCAccessExecutionRole',
-      ),
-    );
-    graphQLResolver.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'SecretsManagerReadWrite',
-      ),
-    );
-    */
-
-    /*
         Set up step function
     */
     const researcherFetchInvoke = new tasks.LambdaInvoke(this, 'Fetch Researchers', {
@@ -150,8 +120,10 @@ export class CdkStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
 
-    // TODO: Replace this
-    const orcidFetchInvoke = new sfn.Pass(this, 'Fetch Orcid Data');
+    const orcidFetchInvoke = new tasks.LambdaInvoke(this, 'Fetch Elsevier Data', {
+      lambdaFunction: orcidFetch,
+      outputPath: '$.Payload',
+    });
 
     const publicationFetchInvoke = new tasks.LambdaInvoke(this, 'Fetch Publications', {
       lambdaFunction: publicationFetch,

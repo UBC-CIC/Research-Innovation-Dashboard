@@ -47,9 +47,8 @@ export class DatabaseStack extends Stack {
       publiclyAccessible: true,
     });
 
-    console.log(this.dbInstance.secret);
-    console.log(this.dbInstance.dbInstanceEndpointAddress);
-
-    this.dbInstance.connections.securityGroups[0].addIngressRule(ec2.Peer.ipv4('0.0.0.0/0'), ec2.Port.tcp(5432), 'Postgres Ingress');
+    this.dbInstance.connections.securityGroups.forEach(function (securityGroup) {
+      securityGroup.addIngressRule(ec2.Peer.ipv4('0.0.0.0/0'), ec2.Port.tcp(5432), 'Postgres Ingress');
+    });
   }
 }
