@@ -8,15 +8,15 @@ ssm_client = boto3.client('ssm')
 s3_client = boto3.client("s3")
 
 def getCredentials():
-    credential = {}
-    
-    ssm_username = ssm_client.get_parameter(Name='/service/publicationDB/username', WithDecryption=True)
-    ssm_password = ssm_client.get_parameter(Name='/service/publicationDB/password', WithDecryption=True)
-    credential['username'] = ssm_username['Parameter']['Value']
-    credential['password'] = ssm_password['Parameter']['Value']
-    credential['host'] = 'vpripublicationdb.ct5odvmonthn.ca-central-1.rds.amazonaws.com'
-    credential['db'] = 'myDatabase'
-    return credential
+    credentials = {}
+
+    response = sm_client.get_secret_value(SecretId='vpri/credentials/dbCredentials')
+    secrets = json.loads(response['SecretString'])
+    credentials['username'] = secrets['username']
+    credentials['password'] = secrets['password']
+    credentials['host'] = secrets['host']
+    credentials['db'] = secrets['dbname']
+    return credentials
 
 def standardizeDepartment(department):
     return department.replace('&', 'and').replace('Department of ', '').replace(' ', '').replace('-', '')
