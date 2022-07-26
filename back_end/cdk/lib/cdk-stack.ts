@@ -45,7 +45,9 @@ export class CdkStack extends cdk.Stack {
         ec2.InstanceClass.BURSTABLE3,
         ec2.InstanceSize.MICRO,
       ),
-      credentials: rds.Credentials.fromGeneratedSecret('postgres'),
+      credentials: rds.Credentials.fromGeneratedSecret('postgres', {
+        secretName: 'credentials/dbCredentials'
+      }),
       multiAz: false,
       allocatedStorage: 100,
       maxAllocatedStorage: 105,
@@ -59,14 +61,7 @@ export class CdkStack extends cdk.Stack {
       publiclyAccessible: true,
     });
 
-    new cdk.CfnOutput(this, 'dbEndpoint', {
-      value: dbInstance.instanceEndpoint.hostname,
-    });
-
-    new cdk.CfnOutput(this, 'secretName', {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-      value: dbInstance.secret?.secretName!,
-    });
+    dbInstance.connections.securityGroups[0].addIngressRule(ec2.Peer.ipv4('0.0.0.0/0'), ec2.Port.tcp(5432), 'Postgres Ingress');
 
     /*
       Define Lambda Layers
@@ -128,7 +123,19 @@ export class CdkStack extends cdk.Stack {
       ),
     );
 
-    // orcidFetch
+    const orcidFetch = new lambda.Function(this, 'orcidFetch', {
+      runtime: lambda.Runtime.PYTHON_3_6,
+      handler: 'orcidFetch.lambda_handler',
+      layers: [requests, psycopg2],
+      code: lambda.Code.fromAsset('../lambdas/'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    orcidFetch.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonSSMReadOnlyAccess',
+      ),
+    );
 
     const publicationFetch = new lambda.Function(this, 'publicationFetch', {
       runtime: lambda.Runtime.PYTHON_3_6,
@@ -144,6 +151,7 @@ export class CdkStack extends cdk.Stack {
       ),
     );
 
+    /*
     const graphQLResolver = new lambda.Function(this, 'graphQLResolver', {
       runtime: lambda.Runtime.NODEJS_14_X,
       handler: 'graphQLResolver.lambda_handler',
@@ -162,6 +170,7 @@ export class CdkStack extends cdk.Stack {
         'SecretsManagerReadWrite',
       ),
     );
+    */
 
     /*
         Set up step function
