@@ -2,6 +2,7 @@ import requests
 import json
 import boto3
 import psycopg2
+import os
 
 print("Starting Update Publications")
 
@@ -17,6 +18,7 @@ def getCredentials():
     credential['password'] = ssm_password['Parameter']['Value']
     credential['host'] = 'vpripublicationdb.ct5odvmonthn.ca-central-1.rds.amazonaws.com'
     credential['db'] = 'myDatabase'
+
     return credential
 
 #This function takes an array of up to 25 reseracher IDs.

@@ -13,9 +13,11 @@ import * as lambda from 'aws-cdk-lib/aws-lambda'
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { OpensearchStack } from './opensearch-stack';
 import { VpcStack } from './vpc-stack';
+import { DatabaseStack } from './database-stack';
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 export class DmsStack extends Stack {
-  constructor(scope: Construct, id: string, vpcStack: VpcStack, opensearchStack: OpensearchStack, props?: StackProps) {
+  constructor(scope: Construct, id: string, vpcStack: VpcStack, opensearchStack: OpensearchStack, databaseStack: DatabaseStack, props?: StackProps) {
     super(scope, id, {
       env: {
           region: 'ca-central-1'
@@ -75,17 +77,19 @@ export class DmsStack extends Stack {
         vpcSecurityGroupIds: [ vpcStack.vpc.vpcDefaultSecurityGroup ],
     });
 
+    // Get database credentials here
+    const mySecretFromName = secretsmanager.Secret.fromSecretNameV2(this, 'SecretFromName', "credentials/dbCredentials");
+
     // Create the postgresql source endpoint
-    // CURRENTLY NOT VARIABLE!
     const source = new dms.CfnEndpoint(this, 'Source', {
         endpointIdentifier: 'cdk-source',
         endpointType: 'source',
         engineName: 'postgres',
-        serverName: 'vpripublicationdb.ct5odvmonthn.ca-central-1.rds.amazonaws.com',
+        serverName: mySecretFromName.secretValueFromJson("host").unsafeUnwrap(),
         port: 5432,
-        databaseName: 'myDatabase',
-        username: 'vpri',
-        password: 'Pv9FNYbhpSRNNXes'
+        databaseName: mySecretFromName.secretValueFromJson("dbname").unsafeUnwrap(),
+        username: mySecretFromName.secretValueFromJson("username").unsafeUnwrap(),
+        password: mySecretFromName.secretValueFromJson("password").unsafeUnwrap()
     });
 
     // Create the opensearch target endpoint
@@ -133,5 +137,10 @@ export class DmsStack extends Stack {
           }]
         })
     })
+
+    //
+    // NEED TO CHECK ON SCHEMA NAME!
+    //
+    //
   }
 }
