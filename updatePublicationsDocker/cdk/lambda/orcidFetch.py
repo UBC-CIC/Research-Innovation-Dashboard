@@ -6,7 +6,7 @@ import csv
 import codecs
 import os
 
-ssm_client = boto3.client('ssm')
+sm_client = boto3.client('secretmanager')
 s3_client = boto3.client("s3")
 
 BASE_HEADERS = {'Accept':'application/orcid+json'}

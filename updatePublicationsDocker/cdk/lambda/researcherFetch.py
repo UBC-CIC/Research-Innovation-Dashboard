@@ -4,7 +4,7 @@ import psycopg2
 import csv
 import codecs
 
-ssm_client = boto3.client('ssm')
+sm_client = boto3.client('secretmanager')
 s3_client = boto3.client("s3")
 
 def getCredentials():

@@ -4,7 +4,7 @@ import boto3
 import psycopg2
 import os
 
-ssm_client = boto3.client('ssm')
+sm_client = boto3.client('secretmanager')
 
 '''
 Fetches the rds database credentials from secrets manager
