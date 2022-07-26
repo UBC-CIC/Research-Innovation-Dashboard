@@ -52,5 +52,21 @@
         }
       }
     }
+  },
+  "custom": {
+    "parameterstoreGraphQL": {
+      "service": "customCDK",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "api",
+          "resourceName": "vpriinnovationdashbo",
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ]
+        }
+      ]
+    }
   }
 }
