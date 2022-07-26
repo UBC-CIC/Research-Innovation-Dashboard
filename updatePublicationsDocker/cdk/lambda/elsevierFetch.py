@@ -8,6 +8,7 @@ import math
 import os
 
 ssm_client = boto3.client('ssm')
+sm_client = boto3.client('secretmanager')
 s3_client = boto3.client("s3")
 instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
 apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
