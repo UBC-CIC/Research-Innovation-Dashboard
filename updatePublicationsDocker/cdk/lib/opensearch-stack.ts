@@ -116,8 +116,8 @@ export class OpensearchStack extends Stack {
     });
 
     // Create the openserach query function.
-    this.opensearchFunction = new lambda.Function(this, 'MyFunction', {
-        functionName: "QueryOpensearch",
+    this.opensearchFunction = new lambda.Function(this, 'opensearchQuery', {
+        functionName: "opensearchQuery",
         runtime: lambda.Runtime.NODEJS_16_X,
         handler: 'index.handler',
         timeout: cdk.Duration.seconds(300),

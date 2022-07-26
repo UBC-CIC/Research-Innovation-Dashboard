@@ -72,7 +72,7 @@ export class FargateStack extends Stack {
         day: '1',
         month: '*',
       }),
-      subnetSelection: {subnetType: ec2.SubnetType.PUBLIC}, //vpcStack.vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC}),
+      subnetSelection: {subnetType: ec2.SubnetType.PUBLIC},
       platformVersion: ecs.FargatePlatformVersion.LATEST,
     });
 

@@ -7,7 +7,7 @@ import { VpcStack } from './vpc-stack';
 import { aws_appsync as appsync } from 'aws-cdk-lib';
 import * as cdk from 'aws-cdk-lib'
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 
 export class AppsyncStack extends Stack {
   constructor(scope: Construct, id: string, opensearchStack: OpensearchStack, vpcStack: VpcStack, props?: StackProps) {
@@ -16,6 +16,10 @@ export class AppsyncStack extends Stack {
           region: 'ca-central-1'
       },
     });
+
+    const APIID = ssm.StringParameter.fromStringParameterAttributes(this, 'VPRIGraphQLAPIIdOutput', {
+      parameterName: 'VPRIGraphQLAPIIdOutput',
+    }).stringValue;
 
     //Create a role for lambda to access the postgresql database
     const lambdaRole = new Role(this, 'PostgresLambdaRole', {
@@ -81,7 +85,6 @@ export class AppsyncStack extends Stack {
     const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, vpcStack.vpc.vpcDefaultSecurityGroup);
 
     // Create the postgresql db query function.
-    // NEED TO PUT THIS IN RIGHT VPC!
     const queryDbFunction = new lambda.Function(this, 'postgresQuery', {
       functionName: "postgresQuery",
       runtime: lambda.Runtime.NODEJS_14_X,
@@ -90,17 +93,16 @@ export class AppsyncStack extends Stack {
       role: lambdaRole,
       memorySize: 512,
       environment: {
-          "SM_DB_CREDENTIALS": "/service/publicationDB/dbcredentials",
-          "URL_RDS_PROXY": "vpripublicationdb.ct5odvmonthn.ca-central-1.rds.amazonaws.com"
+          "SM_DB_CREDENTIALS": "vpri/credentials/dbCredentials",
       },
       securityGroups: [ defaultSecurityGroup ],
       vpc: vpcStack.vpc,
-      code: lambda.Code.fromAsset('lambda/postgresQuery'),
+      code: lambda.Code.fromAsset('./lambda/postgresQuery/'),
       layers: [postgresLayer]
     });
 
     const opensearchDataSource = new appsync.CfnDataSource(this, 'opensearchDataSource', {
-      apiId: "gybfw6yxt5aotji7o36inctt7q",
+      apiId: APIID,
       name: "opensearchDataSource",
       type: "AWS_LAMBDA",
       lambdaConfig: {
@@ -110,7 +112,7 @@ export class AppsyncStack extends Stack {
     });
 
     const postgresqlDataSource = new appsync.CfnDataSource(this, 'postgresqlDataSource', {
-      apiId: "gybfw6yxt5aotji7o36inctt7q",
+      apiId: APIID,
       name: "postgresqlDataSource",
       type: "AWS_LAMBDA",
       lambdaConfig: {
@@ -120,7 +122,7 @@ export class AppsyncStack extends Stack {
     });
 
     const apiSchema = new appsync.CfnGraphQLSchema(this, 'MyCfnGraphQLSchema', {
-      apiId: "gybfw6yxt5aotji7o36inctt7q",
+      apiId: APIID,
 
       definition: `
       schema {
@@ -291,7 +293,7 @@ export class AppsyncStack extends Stack {
     });
 
     const SearchResearcherResolver = new appsync.CfnResolver(this, 'searchResearcher', {
-      apiId: 'gybfw6yxt5aotji7o36inctt7q',
+      apiId: APIID,
       fieldName: 'searchResearcher',
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
@@ -299,7 +301,7 @@ export class AppsyncStack extends Stack {
     SearchResearcherResolver.addDependsOn(opensearchDataSource);
 
     const SearchPublicationsResolver = new appsync.CfnResolver(this, 'searchPublications', {
-      apiId: 'gybfw6yxt5aotji7o36inctt7q',
+      apiId: APIID,
       fieldName: 'searchPublications',
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
@@ -307,7 +309,7 @@ export class AppsyncStack extends Stack {
     SearchPublicationsResolver.addDependsOn(opensearchDataSource);
 
     const SimilarResearchersResolver = new appsync.CfnResolver(this, 'similarResearchers', {
-      apiId: 'gybfw6yxt5aotji7o36inctt7q',
+      apiId: APIID,
       fieldName: 'similarResearchers',
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
@@ -315,7 +317,7 @@ export class AppsyncStack extends Stack {
     SimilarResearchersResolver.addDependsOn(opensearchDataSource);
 
     const AdvancedSearchResearchersResolver = new appsync.CfnResolver(this, 'advancedSearchResearchers', {
-      apiId: 'gybfw6yxt5aotji7o36inctt7q',
+      apiId: APIID,
       fieldName: 'advancedSearchResearchers',
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
@@ -323,7 +325,7 @@ export class AppsyncStack extends Stack {
     AdvancedSearchResearchersResolver.addDependsOn(opensearchDataSource);
 
     const AdvancedSearchPublicationsResolver = new appsync.CfnResolver(this, 'advancedSearchPublications', {
-      apiId: 'gybfw6yxt5aotji7o36inctt7q',
+      apiId: APIID,
       fieldName: 'advancedSearchPublications',
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
@@ -338,7 +340,7 @@ export class AppsyncStack extends Stack {
 
     for(var i = 0; i<postgresqlDBQueryList.length; i++){
       const resolver = new appsync.CfnResolver(this, postgresqlDBQueryList[i], {
-        apiId: 'gybfw6yxt5aotji7o36inctt7q',
+        apiId: APIID,
         fieldName: postgresqlDBQueryList[i],
         typeName: 'Query',
         dataSourceName: postgresqlDataSource.name,

@@ -1,7 +1,7 @@
 import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 export class VpcStack extends Stack {
     public readonly vpc: ec2.Vpc;
@@ -31,5 +31,8 @@ export class VpcStack extends Stack {
           }
         ],
     });
+
+    const mySecretFromName = secretsmanager.Secret.fromSecretNameV2(this, 'SecretFromName', "credentials/dbCredentials");
+    console.log(mySecretFromName.secretValue.toJSON().host);
   }
 }
