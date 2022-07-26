@@ -96,19 +96,14 @@ function Login(props) {
     type,
     title,
     darkMode,
-    logo,
     themeColor,
     disableSignUp,
   } = props;
   const [formState, updateFormState] = useState(initialFormState);
-  const [
-    accountCreationEmailExistError,
-    setAccountCreationEmailExistError,
-  ] = useState(false);
-  const [
-    accountCreationPasswordError,
-    setAccountCreationPasswordError,
-  ] = useState(false);
+  const [accountCreationEmailExistError, setAccountCreationEmailExistError] =
+    useState(false);
+  const [accountCreationPasswordError, setAccountCreationPasswordError] =
+    useState(false);
   const [accountLoginError, setAccountLoginError] = useState(false);
   const [verificationError, setVerificationError] = useState(false);
   const [newPasswordError, setNewPasswordError] = useState(false);
@@ -170,6 +165,18 @@ function Login(props) {
     clearErrors();
 
     updateFormState({ ...formState, [e.target.name]: e.target.value });
+  }
+
+  function onKeyDownSignIn(e) {
+    if (e.keyCode === 13) {
+      signIn();
+    }
+  }
+
+  function onKeyDownSignUp(e) {
+    if (e.keyCode === 13) {
+      signUp();
+    }
   }
 
   function onChangePassword(e) {
@@ -535,6 +542,7 @@ function Login(props) {
                   name={"email"}
                   type={"email"}
                   onChange={onChange}
+                  onKeyDown={onKeyDownSignIn}
                 />
                 {/* password */}
                 <TextFieldStartAdornment
@@ -543,6 +551,7 @@ function Login(props) {
                   name={"password"}
                   type={"password"}
                   onChange={onChange}
+                  onKeyDown={onKeyDownSignIn}
                 />
                 <Grid
                   className={`${classes.flexDisplay} ${classes.forgetPassword} ${classes.cursor}`}
@@ -717,6 +726,7 @@ function Login(props) {
                   type="text"
                   autoComplete={"new-password"}
                   onChange={onChange}
+                  onKeyDown={onKeyDownSignUp}
                 />
                 <TextFieldStartAdornment
                   startIcon={false}
@@ -725,6 +735,7 @@ function Login(props) {
                   type="text"
                   autoComplete={"new-password"}
                   onChange={onChange}
+                  onKeyDown={onKeyDownSignUp}
                 />
                 <TextFieldStartAdornment
                   startIcon={false}
@@ -739,6 +750,7 @@ function Login(props) {
                     (!!invalidEmailError && "Please enter a valid email.")
                   }
                   onChange={onChange}
+                  onKeyDown={onKeyDownSignUp}
                 />
                 <TextFieldStartAdornment
                   startIcon={false}
@@ -749,6 +761,7 @@ function Login(props) {
                   helperText={"Your password must have the following:"}
                   autoComplete={"new-password"}
                   onChange={onChangePassword}
+                  onKeyDown={onKeyDownSignUp}
                 />
                 <Grid
                   container
@@ -771,6 +784,7 @@ function Login(props) {
                   }
                   autoComplete={"new-password"}
                   value={confirmPasswordString}
+                  onKeyDown={onKeyDownSignUp}
                   onChange={(e) => {
                     setConfirmPasswordString(e.target.value); // update current input state
                     // check if "password" is the same as "confirm-password"
