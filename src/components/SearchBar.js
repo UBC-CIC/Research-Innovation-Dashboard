@@ -1,7 +1,6 @@
 import * as React from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import InputBase from "@mui/material/InputBase";
-import "./stylesheet.css";
 import Stack from "@mui/material/Stack";
 import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
@@ -11,7 +10,7 @@ import { useParams } from "react-router-dom";
 
 import { API } from "aws-amplify";
 
-import { searchResearcher, searchPublications } from "./graphql/queries";
+import { searchResearcher, searchPublications } from "../graphql/queries";
 
 export default function Search_Bar(props) {
   let { searchValue } = useParams();
@@ -44,7 +43,6 @@ export default function Search_Bar(props) {
   };
 
   const searchPublicationsQuery = async () => {
-    console.log(searchValue);
     const searchPublicationsResult = await API.graphql({
       query: searchPublications,
       variables: { search_value: searchValue },

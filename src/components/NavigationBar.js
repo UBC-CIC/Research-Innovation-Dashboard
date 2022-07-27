@@ -40,6 +40,7 @@ headerTheme.typography.h3 = {
 };
 const NavButton = styled(Button)`
   color: #ffffff;
+  font-family: Arial;
   :hover {
     opacity: 0.7;
   }
