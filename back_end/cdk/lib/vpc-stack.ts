@@ -32,7 +32,18 @@ export class VpcStack extends Stack {
         ],
     });
 
-    const mySecretFromName = secretsmanager.Secret.fromSecretNameV2(this, 'SecretFromName', "credentials/dbCredentials");
-    console.log(mySecretFromName.secretValue.toJSON().host);
+    const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, this.vpc.vpcDefaultSecurityGroup);
+
+    this.vpc.addInterfaceEndpoint("Secrets Manager Endpoint", {
+      service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+      securityGroups: [defaultSecurityGroup],
+      subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED},
+    });
+
+    this.vpc.addInterfaceEndpoint("RDS Endpoint", {
+      service: ec2.InterfaceVpcEndpointAwsService.RDS,
+      securityGroups: [defaultSecurityGroup],
+      subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED},
+    });
   }
 }

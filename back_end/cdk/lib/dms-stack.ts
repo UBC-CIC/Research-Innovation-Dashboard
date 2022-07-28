@@ -78,7 +78,7 @@ export class DmsStack extends Stack {
     });
 
     // Get database credentials here
-    const mySecretFromName = secretsmanager.Secret.fromSecretNameV2(this, 'SecretFromName', "credentials/dbCredentials");
+    const mySecretFromName = secretsmanager.Secret.fromSecretNameV2(this, 'SecretFromName', databaseStack.secretPath);
 
     // Create the postgresql source endpoint
     const source = new dms.CfnEndpoint(this, 'Source', {
@@ -137,10 +137,5 @@ export class DmsStack extends Stack {
           }]
         })
     })
-
-    //
-    // NEED TO CHECK ON SCHEMA NAME!
-    //
-    //
   }
 }

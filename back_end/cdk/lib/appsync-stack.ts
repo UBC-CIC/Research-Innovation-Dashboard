@@ -8,9 +8,10 @@ import { aws_appsync as appsync } from 'aws-cdk-lib';
 import * as cdk from 'aws-cdk-lib'
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import { DatabaseStack } from './database-stack';
 
 export class AppsyncStack extends Stack {
-  constructor(scope: Construct, id: string, opensearchStack: OpensearchStack, vpcStack: VpcStack, props?: StackProps) {
+  constructor(scope: Construct, id: string, opensearchStack: OpensearchStack, vpcStack: VpcStack, databaseStack: DatabaseStack, props?: StackProps) {
     super(scope, id, {
       env: {
           region: 'ca-central-1'
@@ -93,7 +94,7 @@ export class AppsyncStack extends Stack {
       role: lambdaRole,
       memorySize: 512,
       environment: {
-          "SM_DB_CREDENTIALS": "vpri/credentials/dbCredentials",
+          "SM_DB_CREDENTIALS": databaseStack.secretPath,
       },
       securityGroups: [ defaultSecurityGroup ],
       vpc: vpcStack.vpc,
