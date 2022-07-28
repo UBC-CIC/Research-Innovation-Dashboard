@@ -91,7 +91,7 @@ export class OpensearchStack extends Stack {
           lambda.Runtime.NODEJS_14_X,
           lambda.Runtime.NODEJS_16_X,
         ],
-        code: lambda.Code.fromAsset('layers/aws4'),
+        code: lambda.Code.fromAsset('./layers/aws4.zip'),
         description: 'aws4',
     });
 
@@ -101,7 +101,7 @@ export class OpensearchStack extends Stack {
           lambda.Runtime.NODEJS_14_X,
           lambda.Runtime.NODEJS_16_X,
         ],
-        code: lambda.Code.fromAsset('layers/aws-sdk-credential-provider-node'),
+        code: lambda.Code.fromAsset('./layers/aws-sdk-credential-provider-node.zip'),
         description: 'aws-sdk-credential-provider-node',
     });
 
@@ -111,7 +111,7 @@ export class OpensearchStack extends Stack {
           lambda.Runtime.NODEJS_14_X,
           lambda.Runtime.NODEJS_16_X,
         ],
-        code: lambda.Code.fromAsset('layers/opensearch'),
+        code: lambda.Code.fromAsset('./layers/opensearch.zip'),
         description: 'opensearch',
     });
 

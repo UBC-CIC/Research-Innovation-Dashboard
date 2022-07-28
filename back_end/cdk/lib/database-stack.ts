@@ -18,6 +18,20 @@ export class DatabaseStack extends Stack {
 
     this.secretPath = 'vpri/credentials/dbCredentials';
 
+    // Need to rename this parameter group to not be hi!!
+    const parameterGroup = new rds.ParameterGroup(this, "hi", {
+      engine: rds.DatabaseInstanceEngine.postgres({
+        version: rds.PostgresEngineVersion.VER_13_4,
+      }),
+      description: "Custom Parameter Group To Allow DMS Replication",
+      parameters: {
+        "rds.logical_replication": "1",
+        // "max_replication_slots": "1",
+        // "max_logical_replication_workers": "1",
+        // "max_worker_processes": "1",
+      }
+    })
+
     // Define the postgres database
     this.dbInstance = new rds.DatabaseInstance(this, 'db-instance', {
       vpc: vpcStack.vpc,
@@ -45,6 +59,7 @@ export class DatabaseStack extends Stack {
       deletionProtection: false,
       databaseName: 'vpriDatabase',
       publiclyAccessible: true,
+      parameterGroup: parameterGroup,
     });
 
     this.dbInstance.connections.securityGroups.forEach(function (securityGroup) {
