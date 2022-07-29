@@ -9,9 +9,10 @@ import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { VpcStack } from './vpc-stack';
+import { DatabaseStack } from './database-stack';
 
 export class FargateStack extends Stack {
-  constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
+  constructor(scope: Construct, id: string, vpcStack: VpcStack, databaseStack: DatabaseStack, props?: StackProps) {
     super(scope, id, {
       env: {
           region: 'ca-central-1'
@@ -59,6 +60,9 @@ export class FargateStack extends Stack {
     taskDefinition.addContainer('updatePublicationsContainer', {
       image: ecs.ContainerImage.fromAsset(path.join(__dirname, 'updatePublicationsImage')),
       logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'my-log-group', logRetention: 30 }),
+      environment: {
+        "DB_CREDENTIALS_PATH": databaseStack.secretPath
+      }
     });
 
     //Create a scheduled fargate task that runs at 8:00 UTC on the first of every month

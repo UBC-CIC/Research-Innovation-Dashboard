@@ -7,19 +7,20 @@ import os
 print("Starting Update Publications")
 
 ssm_client = boto3.client('ssm', region_name='ca-central-1')
+sm_client = boto3.client('secretsmanager')
 
 #Will Need To Think About Where To Get Credentials From With CDK!!!!
 def getCredentials():
     """Using AWS secrets manager the function returns the databases credentials"""
-    credential = {}
-    ssm_username = ssm_client.get_parameter(Name='/service/publicationDB/username', WithDecryption=True)
-    ssm_password = ssm_client.get_parameter(Name='/service/publicationDB/password', WithDecryption=True)
-    credential['username'] = ssm_username['Parameter']['Value']
-    credential['password'] = ssm_password['Parameter']['Value']
-    credential['host'] = 'vpripublicationdb.ct5odvmonthn.ca-central-1.rds.amazonaws.com'
-    credential['db'] = 'myDatabase'
-
-    return credential
+    credentials = {}
+    DB_CREDENTIALS_PATH = os.environ['DB_CREDENTIALS_PATH']
+    response = sm_client.get_secret_value(SecretId=DB_CREDENTIALS_PATH)
+    secrets = json.loads(response['SecretString'])
+    credentials['username'] = secrets['username']
+    credentials['password'] = secrets['password']
+    credentials['host'] = secrets['host']
+    credentials['db'] = secrets['dbname']
+    return credentials
 
 #This function takes an array of up to 25 reseracher IDs.
 # The function returns an array of the same lenght with their number of documents. 

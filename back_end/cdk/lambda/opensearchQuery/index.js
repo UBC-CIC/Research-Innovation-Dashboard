@@ -92,20 +92,50 @@ switch(event.info.fieldName) {
       queryArray.push(keywordQueryObject);
     }
     
+    //Create Researcher Filters
+    let departmentsToInclude = event.arguments.departmentsToFilterBy;
+    let facultiesToInclude = event.arguments.facultiesToFilterBy;
+    let filters = [];
+    
+    if(departmentsToInclude.length != 0){
+      let queryString = '"' + departmentsToInclude[0] + '"';
+      for(let i = 1; i<departmentsToInclude.length; i++){
+        queryString += ' | "' +  departmentsToInclude[i] + '"';
+      }
+      let departmentsFilter = {
+        simple_query_string: {
+          "query": queryString,
+          "fields": ["prime_department"]
+        }
+      }
+      filters.push(departmentsFilter);
+    }
+    if(facultiesToInclude.length != 0){
+      let queryString = '"' + facultiesToInclude[0] + '"';
+      for(let i = 1; i<facultiesToInclude.length; i++){
+        queryString += ' | "' +  facultiesToInclude[i] + '"';
+      }
+      let facultyFilter = {
+        simple_query_string: {
+          "query": queryString,
+          "fields": ["prime_faculty"]
+        }
+      }
+      filters.push(facultyFilter);
+    }
+    
+    if(event.arguments.search_value.length == 0){
+      queryArray = [{match_all: {}}]
+    }
+    
     query = {
       query: {
         bool: {
-          should: queryArray
+          should: queryArray,
+          filter: filters
         }
       },
     };
-    if(event.arguments.search_value.length == 0){
-      query = {
-        query: {
-          match_all: {}
-        }
-      }
-    }
     
     console.log(query);
     
@@ -191,6 +221,9 @@ switch(event.info.fieldName) {
       queryArray.push(matchAuthorNames);
       queryArray.push(matchKeyword);
     }
+    if(event.arguments.search_value.length == 0){
+      queryArray = [{match_all: {}}]
+    }
     query = {
       query: {
         bool: {
@@ -198,13 +231,6 @@ switch(event.info.fieldName) {
         }
       },
     };
-    if(event.arguments.search_value.length == 0){
-      query = {
-        query: {
-          match_all: {}
-        }
-      }
-    }
 
     searchResult = await search(query, "publication_data", 200);
     break;
