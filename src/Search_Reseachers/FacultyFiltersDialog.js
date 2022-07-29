@@ -16,6 +16,7 @@ const FacultyFiltersDialog = ({
   handleClose,
   allFaculties,
   selectedFaculties,
+  handleCheckFaculty,
 }) => {
   //query will go here to apply filter
 
@@ -37,6 +38,7 @@ const FacultyFiltersDialog = ({
                 control={<Checkbox />}
                 label={<Typography variant="body2">{faculty}</Typography>}
                 checked={selectedFaculties.includes(faculty)}
+                onChange={(e) => handleCheckFaculty(e, faculty)}
               />
             ))}
           </FormGroup>
@@ -57,7 +59,11 @@ const FacultyFiltersDialog = ({
       <Box sx={{ p: "2em", display: "flex", flexDirection: "column" }}>
         <Typography>All Faculties</Typography>
         {renderAllFaculties()}
-        <Button variant="outlined" sx={{ color: "#0055b7" }}>
+        <Button
+          variant="outlined"
+          sx={{ color: "#0055b7" }}
+          onClick={() => handleClose()}
+        >
           Apply Filters
         </Button>
       </Box>

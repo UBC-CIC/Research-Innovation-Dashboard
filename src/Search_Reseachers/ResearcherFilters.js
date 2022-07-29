@@ -22,10 +22,6 @@ const ResearcherFilters = ({
   selectedFaculties,
   setSelectedFaculties,
 }) => {
-  // const [departmentOptions, setDepartmentOptions] = useState();
-  // const [facultyOptions, setFacultyOptions] = useState();
-  // const [selectedDepartments, setSelectedDeparments] = useState([]);
-  // const [selectedFaculties, setSelectedFaculties] = useState([]);
   const [openDepartmentFiltersDialog, setOpenDepartmentFiltersDialog] =
     useState(false);
   const [openFacultyFiltersDialog, setOpenFacultyFiltersDialog] =
@@ -88,6 +84,7 @@ const ResearcherFilters = ({
                 <FormControlLabel
                   key={index}
                   control={<Checkbox />}
+                  checked={selectedDepartments.includes(department)}
                   label={<Typography variant="body2">{department}</Typography>}
                   onChange={(e) => handleCheckDepartment(e, department)}
                 />
@@ -137,9 +134,9 @@ const ResearcherFilters = ({
   return (
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
       <Typography variant="h6">Filter for Researchers:</Typography>
-      <Typography sx={{ mt: "0.5em", color: "#002145" }}>Department</Typography>
+      <Typography sx={{ my: "1em", color: "#002145" }}>Department</Typography>
       {renderDepartmentOptions()}
-      <Typography sx={{ mt: "1em", color: "#002145" }}>Faculty</Typography>
+      <Typography sx={{ my: "1em", color: "#002145" }}>Faculty</Typography>
       {renderFacultyOptions()}
       <DepartmentFiltersDialog
         open={openDepartmentFiltersDialog}
@@ -152,12 +149,14 @@ const ResearcherFilters = ({
         handleClose={handleClose}
         allDepartments={departmentOptions}
         selectedDepartments={selectedDepartments}
+        handleCheckDepartment={handleCheckDepartment}
       />
       <FacultyFiltersDialog
         open={openFacultyFiltersDialog}
         handleClose={handleClose}
         allFaculties={facultyOptions}
         selectedFaculties={selectedFaculties}
+        handleCheckFaculty={handleCheckFaculty}
       />
     </Box>
   );

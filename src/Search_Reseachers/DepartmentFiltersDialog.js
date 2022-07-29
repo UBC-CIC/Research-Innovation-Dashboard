@@ -16,6 +16,7 @@ const DepartmentFiltersDialog = ({
   handleClose,
   allDepartments,
   selectedDepartments,
+  handleCheckDepartment,
 }) => {
   //query will go here to apply filter
 
@@ -37,6 +38,7 @@ const DepartmentFiltersDialog = ({
                 control={<Checkbox />}
                 label={<Typography variant="body2">{department}</Typography>}
                 checked={selectedDepartments.includes(department)}
+                onChange={(e) => handleCheckDepartment(e, department)}
               />
             ))}
           </FormGroup>
@@ -57,7 +59,11 @@ const DepartmentFiltersDialog = ({
       <Box sx={{ p: "2em", display: "flex", flexDirection: "column" }}>
         <Typography>All Departments</Typography>
         {renderAllDepartments()}
-        <Button variant="outlined" sx={{ color: "#0055b7" }}>
+        <Button
+          variant="outlined"
+          sx={{ color: "#0055b7" }}
+          onClick={() => handleClose()}
+        >
           Apply Filters
         </Button>
       </Box>
