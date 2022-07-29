@@ -13,22 +13,60 @@ import { API } from "aws-amplify";
 import { searchResearcher, searchPublications } from "../graphql/queries";
 
 export default function Search_Bar(props) {
+  const {
+    whatToSearch,
+    selectedDepartments,
+    selectedFaculties,
+    setPublicationSearchResults,
+    setResearcherSearchResults,
+    departmentPath,
+    facultyPath,
+  } = props;
+
   let { searchValue } = useParams();
   if (!searchValue) {
     searchValue = "";
   }
+  const [path, setPath] = useState("/");
   const [searchBarValue, setSearchBarValue] = useState(searchValue);
-  const [prevRoute, setPrevRoute] = useState();
+  let navigate = useNavigate();
+
+  useEffect(() => {
+    if (whatToSearch === "Publications") {
+      setPath("/Search/Publications/");
+    } else if (whatToSearch === "Researchers") {
+      setPath("/Search/Researchers/");
+    }
+  }, [whatToSearch]);
+
+  useEffect(() => {
+    let newPath;
+    if (whatToSearch === "Researchers") {
+      newPath = "/Search/Researchers/".concat(departmentPath, "/", facultyPath);
+    } else {
+      newPath = "/".concat(departmentPath, "/", facultyPath);
+    }
+    //add in conditional for if whatToSearch === Publications
+    setPath(newPath);
+  }, [departmentPath, facultyPath]);
+
+  useEffect(() => {
+    search();
+    if (path && path !== "/") {
+      navigate(path);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [path]);
 
   function search() {
-    if (props.whatToSearch === "Everything") {
+    if (whatToSearch === "Everything") {
       searchResearchersQuery();
       searchPublicationsQuery();
-    } else if (props.whatToSearch === "Researchers") {
+    } else if (whatToSearch === "Researchers") {
       searchResearchersQuery();
-      props.setPublicationSearchResults([]);
-    } else if (props.whatToSearch === "Publications") {
-      props.setResearcherSearchResults([]);
+      setPublicationSearchResults([]);
+    } else if (whatToSearch === "Publications") {
+      setResearcherSearchResults([]);
       searchPublicationsQuery();
     }
   }
@@ -37,9 +75,9 @@ export default function Search_Bar(props) {
     const researcherSearchResult = await API.graphql({
       query: searchResearcher,
       variables: {
-        search_value: searchValue,
-        departmentsToFilterBy: props.selectedDepartments,
-        facultiesToFilterBy: props.selectedFaculties,
+        search_value: searchBarValue,
+        departmentsToFilterBy: selectedDepartments,
+        facultiesToFilterBy: selectedFaculties,
       },
     });
     props.setResearcherSearchResults(
@@ -58,36 +96,13 @@ export default function Search_Bar(props) {
     );
   };
 
-  let navigate = useNavigate();
   const routeChange = () => {
-    console.log(searchBarValue);
-    navigate(props.path + searchBarValue);
+    if (path && path !== "/") {
+      navigate(path.concat("/", searchBarValue));
+    } else {
+      navigate(path + searchBarValue);
+    }
   };
-
-  useEffect(() => {
-    search();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue]);
-
-  // useEffect(() => {
-  //   console.log(props.path);
-  //   search();
-  //   if (props.path) {
-  //     let currentUrl = window.location.toString();
-  //     console.log(currentUrl);
-  //     if (prevRoute && prevRoute !== "/") {
-  //       let newUrl = currentUrl.replace(prevRoute, props.path);
-  //       console.log(newUrl);
-  //       // window.location.replace(newUrl);
-  //       //navigate(newUrl);
-  //     } else {
-  //       navigate(props.path);
-  //     }
-  //     setPrevRoute(props.path);
-
-  //     // navigate(newUrl);
-  //   }
-  // }, [props.path]);
 
   return (
     <Paper

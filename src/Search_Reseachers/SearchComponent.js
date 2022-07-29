@@ -8,7 +8,6 @@ import { useState, useEffect } from "react";
 import ResearcherSearchResultsComponent from "./ResearcherSearchResultsComponent";
 import PublicationSearchResultsComponent from "./PublicationSearchResultsComponent";
 import ResearcherFilters from "./ResearcherFilters";
-import { useNavigate } from "react-router-dom";
 
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
@@ -19,26 +18,33 @@ export default function SearchComponent(props) {
   const [facultyOptions, setFacultyOptions] = useState();
   const [selectedDepartments, setSelectedDeparments] = useState([]);
   const [selectedFaculties, setSelectedFaculties] = useState([]);
-
-  const [path, setPath] = useState("/");
-  const navigate = useNavigate();
+  const [departmentPath, setDepartmentPath] = useState("%20");
+  const [facultyPath, setFacultyPath] = useState("%20");
   //for publication filters
 
   useEffect(() => {
-    const selectedDepartmentString = selectedDepartments.join("&&");
-    const selectedDepartmentStringNoSpaces =
-      selectedDepartmentString.replaceAll(" ", "%20");
-    // const link = window.location.href.concat(selectedDepartmentStringNoSpaces);
-    setPath(selectedDepartmentStringNoSpaces);
+    if (selectedDepartments.length > 0) {
+      const selectedDepartmentString = selectedDepartments.join("&&");
+      const selectedDepartmentStringNoSpaces =
+        selectedDepartmentString.replaceAll(" ", "%20");
+      setDepartmentPath(selectedDepartmentStringNoSpaces);
+    } else {
+      setDepartmentPath("%20");
+    }
   }, [selectedDepartments]);
 
   useEffect(() => {
-    if (props.whatToSearch === "Publications") {
-      setPath("/Search/Publications/");
-    } else if (props.whatToSearch === "Researchers") {
-      setPath("/Search/Researchers/");
+    if (selectedFaculties.length > 0) {
+      const selectedFacultyString = selectedFaculties.join("&&");
+      const selectedFacultyStringNoSpaces = selectedFacultyString.replaceAll(
+        " ",
+        "%20"
+      );
+      setFacultyPath(selectedFacultyStringNoSpaces);
+    } else {
+      setFacultyPath("%20");
     }
-  }, [props.whatToSearch]);
+  }, [selectedFaculties]);
 
   return (
     <div>
@@ -58,7 +64,8 @@ export default function SearchComponent(props) {
                   whatToSearch={props.whatToSearch}
                   selectedDepartments={selectedDepartments}
                   selectedFaculties={selectedFaculties}
-                  path={path}
+                  departmentPath={departmentPath}
+                  facultyPath={facultyPath}
                 />
                 <Paper
                   square={true}
