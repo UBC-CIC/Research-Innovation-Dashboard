@@ -32,14 +32,17 @@ export class VpcStack extends Stack {
         ],
     });
 
+    // Get default security group for VPC
     const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, this.vpc.vpcDefaultSecurityGroup);
 
+    // Add secrets manager endpoint to VPC
     this.vpc.addInterfaceEndpoint("Secrets Manager Endpoint", {
       service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
       securityGroups: [defaultSecurityGroup],
       subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED},
     });
 
+    // Add RDS endpoint to VPC
     this.vpc.addInterfaceEndpoint("RDS Endpoint", {
       service: ec2.InterfaceVpcEndpointAwsService.RDS,
       securityGroups: [defaultSecurityGroup],

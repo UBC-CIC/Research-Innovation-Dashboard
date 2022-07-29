@@ -18,6 +18,8 @@ export class AppsyncStack extends Stack {
       },
     });
 
+    // Get the API ID from paramter Store
+    // During Amplify Deployment the APIID is stored in parameter store
     const APIID = ssm.StringParameter.fromStringParameterAttributes(this, 'VPRIGraphQLAPIIdOutput', {
       parameterName: 'VPRIGraphQLAPIIdOutput',
     }).stringValue;
@@ -57,6 +59,7 @@ export class AppsyncStack extends Stack {
         },
     });
 
+    //Create Lamabda Service role for the Appsync datasources
     const appsyncLambdaServiceRole = new Role(this, 'appsyncLambdaServiceRole', {
       roleName: 'appsyncLambdaServiceRole',
         assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
@@ -83,6 +86,7 @@ export class AppsyncStack extends Stack {
       description: 'Contains the postgres library',
     });
 
+    //Get default secuirty group
     const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, vpcStack.vpc.vpcDefaultSecurityGroup);
 
     // Create the postgresql db query function.
@@ -102,6 +106,7 @@ export class AppsyncStack extends Stack {
       layers: [postgresLayer]
     });
 
+    //Create Opensearch Appsync Data Source
     const opensearchDataSource = new appsync.CfnDataSource(this, 'opensearchDataSource', {
       apiId: APIID,
       name: "opensearchDataSource",
@@ -112,6 +117,7 @@ export class AppsyncStack extends Stack {
       serviceRoleArn: appsyncLambdaServiceRole.roleArn
     });
 
+    //Create PostgreSQL Appsync Data Source
     const postgresqlDataSource = new appsync.CfnDataSource(this, 'postgresqlDataSource', {
       apiId: APIID,
       name: "postgresqlDataSource",
@@ -122,6 +128,7 @@ export class AppsyncStack extends Stack {
       serviceRoleArn: appsyncLambdaServiceRole.roleArn
     });
 
+    //Upload the right schema to appsync
     const apiSchema = new appsync.CfnGraphQLSchema(this, 'MyCfnGraphQLSchema', {
       apiId: APIID,
 
@@ -290,9 +297,9 @@ export class AppsyncStack extends Stack {
         value: Int
       }      
       `
-      //definitionS3Location: "s3://personalize-test-bucket-matthew/schema.graphql"
     });
 
+    //Create All the resolvers for the schema
     const SearchResearcherResolver = new appsync.CfnResolver(this, 'searchResearcher', {
       apiId: APIID,
       fieldName: 'searchResearcher',
@@ -333,6 +340,7 @@ export class AppsyncStack extends Stack {
     });
     AdvancedSearchPublicationsResolver.addDependsOn(opensearchDataSource);
 
+    //Create all the PostgreSQL resolvers
     let postgresqlDBQueryList = ["allPublicationsPerFacultyQuery", "facultyMetrics", "getAllDepartments",
     "getAllDistinctJournals", "getAllFaculty", "getAllResearchersRankings", "getNumberOfResearcherPubsAllYears",
     "getNumberOfResearcherPubsLastFiveYears", "getPub", "getResearcher", "getResearcherElsevier", "getResearcherFull",
