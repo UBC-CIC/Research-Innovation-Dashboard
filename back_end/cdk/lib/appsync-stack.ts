@@ -183,7 +183,7 @@ export class AppsyncStack extends Stack {
         getResearcherPubsByYear(id: ID!): [Publication]
         getResearcherRankingsByDepartment(prime_department: String!): [Ranking]
         getResearcherRankingsByFaculty(prime_faculty: String!): [Ranking]
-        searchPublications(search_value: String!): [Publication]
+        searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
         searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]!]): [ResearcherOpenSearch]
         similarResearchers(keywordsString: String!, scopus_id: String!): [ResearcherOpenSearch]
         totalPublicationPerYear: [pubsPerYear]

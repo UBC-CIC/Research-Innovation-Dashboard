@@ -46,6 +46,7 @@ async function search(query, index, numberOfResults) {
 
 let stringSplitArray;
 let queryArray = [];
+let filters = [];
 let searchResult;
 let query;
 
@@ -95,7 +96,6 @@ switch(event.info.fieldName) {
     //Create Researcher Filters
     let departmentsToInclude = event.arguments.departmentsToFilterBy;
     let facultiesToInclude = event.arguments.facultiesToFilterBy;
-    let filters = [];
     
     if(departmentsToInclude.length != 0){
       let queryString = '"' + departmentsToInclude[0] + '"';
@@ -221,13 +221,33 @@ switch(event.info.fieldName) {
       queryArray.push(matchAuthorNames);
       queryArray.push(matchKeyword);
     }
+    
+    //Create Publication Filters
+    let journalsToInclude = event.arguments.journalsToFilterBy;
+    
+    if(journalsToInclude.length != 0){
+      let queryString = '"' + journalsToInclude[0] + '"';
+      for(let i = 1; i<journalsToInclude.length; i++){
+        queryString += ' | "' +  journalsToInclude[i] + '"';
+      }
+      let journalsFilter = {
+        simple_query_string: {
+          "query": queryString,
+          "fields": ["journal"]
+        }
+      }
+      filters.push(journalsFilter);
+    }
+    
     if(event.arguments.search_value.length == 0){
       queryArray = [{match_all: {}}]
     }
+    
     query = {
       query: {
         bool: {
-          should: queryArray
+          should: queryArray,
+          filter: filters
         }
       },
     };
