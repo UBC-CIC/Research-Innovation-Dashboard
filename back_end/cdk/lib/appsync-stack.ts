@@ -177,7 +177,7 @@ export class AppsyncStack extends Stack {
         getResearcherRankingsByDepartment(prime_department: String!): [Ranking]
         getResearcherRankingsByFaculty(prime_faculty: String!): [Ranking]
         searchPublications(search_value: String!): [Publication]
-        searchResearcher(search_value: String!): [ResearcherOpenSearch]
+        searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]!]): [ResearcherOpenSearch]
         similarResearchers(keywordsString: String!, scopus_id: String!): [ResearcherOpenSearch]
         totalPublicationPerYear: [pubsPerYear]
         wordCloud(gte: Int!, lte: Int!): [wordCloud]
