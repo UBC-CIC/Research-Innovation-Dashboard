@@ -8,7 +8,7 @@ import math
 import os
 
 ssm_client = boto3.client('ssm')
-sm_client = boto3.client('secretmanager')
+sm_client = boto3.client('secretsmanager')
 s3_client = boto3.client("s3")
 instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
 apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
@@ -149,3 +149,6 @@ def lambda_handler(event, context):
     storeAuthors(authors)
     max_authors = int(os.environ.get('SCOPUS_MAX_AUTHORS'))
     return split_array(author_scopus_ids, max_authors)
+    
+    
+
