@@ -250,13 +250,13 @@ export class AppsyncStack extends Stack {
         email: String
         first_name: String
         job_stream: String
-        keywords: String!
+        keywords: String
         last_name: String
         preferred_name: String
         prime_department: String
         prime_faculty: String
         rank: String
-        scopus_id: String!
+        scopus_id: String
         second_department: String
         second_faculty: String
       }
