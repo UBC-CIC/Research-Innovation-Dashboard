@@ -79,11 +79,5 @@ export class FargateStack extends Stack {
       subnetSelection: {subnetType: ec2.SubnetType.PUBLIC},
       platformVersion: ecs.FargatePlatformVersion.LATEST,
     });
-
-    /*
-    FUTURE DEVELOPMENT NOTE!
-      Need to change the updatePublicatiosn to get a variable path for the DB secrets
-      Inject Some Enviornmental Variable
-    */
   }
 }
