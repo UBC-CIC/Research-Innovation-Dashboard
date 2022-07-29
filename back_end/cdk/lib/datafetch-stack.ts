@@ -18,33 +18,25 @@ export class DataFetchStack extends cdk.Stack {
     // The layer containing the requests library
     const requests = new lambda.LayerVersion(this, 'requests', {
       code: lambda.Code.fromAsset('layers/requests.zip'),
-      compatibleRuntimes: [lambda.Runtime.PYTHON_3_6],
+      compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
       description: 'Contains the requests library',
     });
 
     // The layer containing the psycopg2 library
     const psycopg2 = new lambda.LayerVersion(this, 'psycopg2', {
       code: lambda.Code.fromAsset('layers/psycopg2.zip'),
-      compatibleRuntimes: [lambda.Runtime.PYTHON_3_6],
+      compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
       description: 'Contains the psycopg2 library',
-    });
-
-    // The layer containing the postgres library
-    // I defined this in one of my stacks do we want to have a layers stack?? -Matt
-    const postgres = new lambda.LayerVersion(this, 'postgres', {
-      code: lambda.Code.fromAsset('layers/postgres.zip'),
-      compatibleRuntimes: [lambda.Runtime.NODEJS_14_X],
-      description: 'Contains the postgres library',
     });
 
     /*
       Define Lambdas and add correct permissions
     */
     const researcherFetch = new lambda.Function(this, 'researcherFetch', {
-      runtime: lambda.Runtime.PYTHON_3_6,
+      runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'researcherFetch.lambda_handler',
       layers: [psycopg2],
-      code: lambda.Code.fromAsset('lambdas/researcherFetch'),
+      code: lambda.Code.fromAsset('lambda/researcherFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
     });
@@ -58,46 +50,79 @@ export class DataFetchStack extends cdk.Stack {
         'AmazonSSMReadOnlyAccess',
       ),
     );
+    researcherFetch.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'SecretsManagerReadWrite',
+      ),
+    );
 
     const elsevierFetch = new lambda.Function(this, 'elsevierFetch', {
-      runtime: lambda.Runtime.PYTHON_3_6,
+      runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'elsevierFetch.lambda_handler',
       layers: [requests, psycopg2],
-      code: lambda.Code.fromAsset('lambdas/'),
+      code: lambda.Code.fromAsset('lambda/elsevierFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
+      environment: {
+        SCIVAL_MAX_AUTHORS: '100',
+        SCIVAL_URL: 'https://api.elsevier.com/analytics/scival/author/metrics',
+        SCOPUS_MAX_AUTHORS: '25',
+        SCOPUS_URL: 'https://api.elsevier.com/content/author',
+      },
     });
     elsevierFetch.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
         'AmazonSSMReadOnlyAccess',
       ),
     );
+    elsevierFetch.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'SecretsManagerReadWrite',
+      ),
+    );
 
     const orcidFetch = new lambda.Function(this, 'orcidFetch', {
-      runtime: lambda.Runtime.PYTHON_3_6,
+      runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'orcidFetch.lambda_handler',
       layers: [requests, psycopg2],
-      code: lambda.Code.fromAsset('lambdas/'),
+      code: lambda.Code.fromAsset('lambda/orcidFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
+      environment: {
+        ORCID_URL: 'http://pub.orcid.org/'
+      },
     });
     orcidFetch.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
         'AmazonSSMReadOnlyAccess',
       ),
     );
+    orcidFetch.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'SecretsManagerReadWrite',
+      ),
+    );
 
     const publicationFetch = new lambda.Function(this, 'publicationFetch', {
-      runtime: lambda.Runtime.PYTHON_3_6,
+      runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'publicationFetch.lambda_handler',
       layers: [requests, psycopg2],
-      code: lambda.Code.fromAsset('lambdas/'),
+      code: lambda.Code.fromAsset('lambda/publicationFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
+      environment: {
+        RESULTS_PER_PAGE: '25',
+        SCOPUS_SEARCH_URL: 'https://api.elsevier.com/content/search/scopus'
+      },
     });
     publicationFetch.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
         'AmazonSSMReadOnlyAccess',
+      ),
+    );
+    publicationFetch.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'SecretsManagerReadWrite',
       ),
     );
 
@@ -119,7 +144,7 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
 
-    const orcidFetchInvoke = new tasks.LambdaInvoke(this, 'Fetch Elsevier Data', {
+    const orcidFetchInvoke = new tasks.LambdaInvoke(this, 'Fetch Orcid Data', {
       lambdaFunction: orcidFetch,
       outputPath: '$.Payload',
     });

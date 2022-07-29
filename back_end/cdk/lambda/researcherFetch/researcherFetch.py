@@ -4,7 +4,8 @@ import psycopg2
 import csv
 import codecs
 
-sm_client = boto3.client('secretmanager')
+ssm_client = boto3.client('ssm')
+sm_client = boto3.client('secretsmanager')
 s3_client = boto3.client("s3")
 
 def getCredentials():
@@ -26,7 +27,7 @@ def standardizeFaculty(faculty):
 
 def getResearcher(scopus_row):
     bucket_name = 'vpriprofiledata'
-    key = 'researcher_data/20220501.csv'
+    key = 'researcher_data/ubc_data.csv'
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
     rows = []
     ret_row = None
@@ -58,6 +59,7 @@ def storeResearcher(researcher, scopus_id):
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     
+    employee_id = researcher['UBC_EMPLOYEE_ID']
     first_name = researcher['PREFERRED_FIRST_NAME'].replace("'", "''")
     preferred_name = researcher['PREFERRED_FULL_NAME'].replace("'", "''")
     last_name = researcher['PREFERRED_LAST_NAME'].replace("'", "''")
@@ -69,9 +71,9 @@ def storeResearcher(researcher, scopus_id):
     prime_faculty = researcher['PRIMARY_FACULTY_AFFILIATION'].replace("'", "''")
     second_faculty = researcher['SECONDARY_FACULTY_AFFILIATION'].replace("'", "''")
     campus = researcher['PRIMARY_CAMPUS_LOCATION'].replace("'", "''")
-    queryline1 = "INSERT INTO public.researcher_data(first_name, preferred_name, last_name, email, rank, job_stream, prime_department, second_department, prime_faculty, second_faculty, campus, scopus_id) "
-    queryline2 = "VALUES ('" + first_name + "'::text, '" + preferred_name + "'::text, '" + last_name + "'::text, '" + email + "'::text, '" + rank + "'::text, '" + job_stream + "'::text, '" + prime_department + "'::text, '" + second_department + "'::text, '" + prime_faculty + "'::text, '" + second_faculty + "'::text, '" + campus + "'::text, '" + scopus_id + "'::text)"
-    queryline3 = "ON CONFLICT (scopus_id) DO UPDATE "
+    queryline1 = "INSERT INTO public.researcher_data(employee_id, first_name, preferred_name, last_name, email, rank, job_stream, prime_department, second_department, prime_faculty, second_faculty, campus, scopus_id, keywords) "
+    queryline2 = "VALUES ('" + employee_id + "', '" + first_name + "', '" + preferred_name + "', '" + last_name + "', '" + email + "', '" + rank + "', '" + job_stream + "', '" + prime_department + "', '" + second_department + "', '" + prime_faculty + "', '" + second_faculty + "', '" + campus + "', '" + scopus_id + "', '')"
+    queryline3 = "ON CONFLICT (employee_id) DO UPDATE "
     queryline4 = "SET first_name='" + first_name + "', preferred_name='" + preferred_name + "', last_name='" + last_name + "', email='" + email + "', rank='" + rank + "', job_stream='" + job_stream + "', prime_department='" + prime_department + "', second_department='" + second_department + "', prime_faculty='" + prime_faculty + "', second_faculty='" + second_faculty + "', campus='" + campus + "', scopus_id='" + scopus_id + "'"
     cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
     cursor.close()

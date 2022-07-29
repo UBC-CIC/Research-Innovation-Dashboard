@@ -4,15 +4,18 @@ import boto3
 import psycopg2
 import csv
 import codecs
+import json
 import os
 
-sm_client = boto3.client('secretmanager')
+ssm_client = boto3.client('ssm')
+sm_client = boto3.client('secretsmanager')
 s3_client = boto3.client("s3")
 
 BASE_HEADERS = {'Accept':'application/orcid+json'}
 
 '''
-Fetches the rds database credentials from secrets manager
+Fetches Scopus/Scival API credentials (API key nad insitution key) and also
+fetches the rds database credentials from secrets manager
 '''
 def getCredentials():
     credentials = {}
