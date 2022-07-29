@@ -13,15 +13,13 @@ import DepartmentFiltersDialog from "./DepartmentFiltersDialog";
 import FacultyFiltersDialog from "./FacultyFiltersDialog";
 
 const ResearcherFilters = ({
-  departmentOptions,
-  setDepartmentOptions,
-  facultyOptions,
-  setFacultyOptions,
   selectedDepartments,
   setSelectedDeparments,
   selectedFaculties,
   setSelectedFaculties,
 }) => {
+  const [departmentOptions, setDepartmentOptions] = useState();
+  const [facultyOptions, setFacultyOptions] = useState();
   const [openDepartmentFiltersDialog, setOpenDepartmentFiltersDialog] =
     useState(false);
   const [openFacultyFiltersDialog, setOpenFacultyFiltersDialog] =
@@ -134,16 +132,10 @@ const ResearcherFilters = ({
   return (
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
       <Typography variant="h6">Filter for Researchers:</Typography>
-      <Typography sx={{ my: "1em", color: "#002145" }}>Department</Typography>
+      <Typography sx={{ my: "1em", color: "#0055B7" }}>Department</Typography>
       {renderDepartmentOptions()}
-      <Typography sx={{ my: "1em", color: "#002145" }}>Faculty</Typography>
+      <Typography sx={{ my: "1em", color: "#0055B7" }}>Faculty</Typography>
       {renderFacultyOptions()}
-      <DepartmentFiltersDialog
-        open={openDepartmentFiltersDialog}
-        handleClose={handleClose}
-        allDepartments={departmentOptions}
-        selectedDepartments={selectedDepartments}
-      />
       <DepartmentFiltersDialog
         open={openDepartmentFiltersDialog}
         handleClose={handleClose}
