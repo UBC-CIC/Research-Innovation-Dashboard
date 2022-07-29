@@ -18,6 +18,7 @@ export default function Search_Bar(props) {
     searchValue = "";
   }
   const [searchBarValue, setSearchBarValue] = useState(searchValue);
+  const [prevRoute, setPrevRoute] = useState();
 
   function search() {
     if (props.whatToSearch === "Everything") {
@@ -35,7 +36,11 @@ export default function Search_Bar(props) {
   const searchResearchersQuery = async () => {
     const researcherSearchResult = await API.graphql({
       query: searchResearcher,
-      variables: { search_value: searchValue },
+      variables: {
+        search_value: searchValue,
+        departmentsToFilterBy: props.selectedDepartments,
+        facultiesToFilterBy: props.selectedFaculties,
+      },
     });
     props.setResearcherSearchResults(
       researcherSearchResult.data.searchResearcher
@@ -55,6 +60,7 @@ export default function Search_Bar(props) {
 
   let navigate = useNavigate();
   const routeChange = () => {
+    console.log(searchBarValue);
     navigate(props.path + searchBarValue);
   };
 
@@ -62,6 +68,26 @@ export default function Search_Bar(props) {
     search();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
+
+  // useEffect(() => {
+  //   console.log(props.path);
+  //   search();
+  //   if (props.path) {
+  //     let currentUrl = window.location.toString();
+  //     console.log(currentUrl);
+  //     if (prevRoute && prevRoute !== "/") {
+  //       let newUrl = currentUrl.replace(prevRoute, props.path);
+  //       console.log(newUrl);
+  //       // window.location.replace(newUrl);
+  //       //navigate(newUrl);
+  //     } else {
+  //       navigate(props.path);
+  //     }
+  //     setPrevRoute(props.path);
+
+  //     // navigate(newUrl);
+  //   }
+  // }, [props.path]);
 
   return (
     <Paper

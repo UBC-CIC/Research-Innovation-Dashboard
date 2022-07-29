@@ -12,34 +12,20 @@ import { getAllDepartments, getAllFaculty } from "../graphql/queries";
 import DepartmentFiltersDialog from "./DepartmentFiltersDialog";
 import FacultyFiltersDialog from "./FacultyFiltersDialog";
 
-const ResearcherFilters = () => {
-  const [departmentOptions, setDepartmentOptions] = useState([
-    "Accounting",
-    "Philosophy",
-    "Engineering",
-    "Sociology",
-    "Psychology",
-    "Test",
-    "Department",
-    "Political Science",
-    "English",
-    "Marketing",
-    "International Relations",
-    "Neuroscience",
-    "Computer Science",
-  ]);
-  const [facultyOptions, setFacultyOptions] = useState([
-    "Arts",
-    "Science",
-    "Business",
-    "Medicine",
-    "Forestry",
-    "Engineering",
-    "Applied Science",
-    "Law",
-  ]);
-  const [selectedDepartments, setSelectedDeparments] = useState([]);
-  const [selectedFaculties, setSelectedFaculties] = useState([]);
+const ResearcherFilters = ({
+  departmentOptions,
+  setDepartmentOptions,
+  facultyOptions,
+  setFacultyOptions,
+  selectedDepartments,
+  setSelectedDeparments,
+  selectedFaculties,
+  setSelectedFaculties,
+}) => {
+  // const [departmentOptions, setDepartmentOptions] = useState();
+  // const [facultyOptions, setFacultyOptions] = useState();
+  // const [selectedDepartments, setSelectedDeparments] = useState([]);
+  // const [selectedFaculties, setSelectedFaculties] = useState([]);
   const [openDepartmentFiltersDialog, setOpenDepartmentFiltersDialog] =
     useState(false);
   const [openFacultyFiltersDialog, setOpenFacultyFiltersDialog] =
@@ -49,20 +35,23 @@ const ResearcherFilters = () => {
     setOpenDepartmentFiltersDialog(false);
     setOpenFacultyFiltersDialog(false);
   };
-  //   useEffect(() => {
-  //     const getFilterOptions = async () => {
-  //       const [departmentRes, facultyRes] = await Promise.all([
-  //         API.graphql({
-  //           query: getAllDepartments,
-  //         }),
-  //         API.graphql({
-  //           query: getAllFaculty,
-  //         }),
-  //       ]);
-  //       console.log(departmentRes, facultyRes);
-  //     };
-  //     getFilterOptions();
-  //   }, []);
+  useEffect(() => {
+    const getFilterOptions = async () => {
+      const [departmentRes, facultyRes] = await Promise.all([
+        API.graphql({
+          query: getAllDepartments,
+        }),
+        API.graphql({
+          query: getAllFaculty,
+        }),
+      ]);
+      const allDepartments = departmentRes.data.getAllDepartments;
+      const allFaculties = facultyRes.data.getAllFaculty;
+      setDepartmentOptions(allDepartments);
+      setFacultyOptions(allFaculties);
+    };
+    getFilterOptions();
+  }, []);
 
   const handleCheckDepartment = (e, department) => {
     if (e.target.checked) {

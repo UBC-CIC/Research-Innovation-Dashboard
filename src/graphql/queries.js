@@ -292,8 +292,16 @@ export const searchPublications = /* GraphQL */ `
   }
 `;
 export const searchResearcher = /* GraphQL */ `
-  query SearchResearcher($search_value: String!) {
-    searchResearcher(search_value: $search_value) {
+  query SearchResearcher(
+    $search_value: String!
+    $departmentsToFilterBy: [String]!
+    $facultiesToFilterBy: [String]!
+  ) {
+    searchResearcher(
+      search_value: $search_value
+      departmentsToFilterBy: $departmentsToFilterBy
+      facultiesToFilterBy: $facultiesToFilterBy
+    ) {
       campus
       email
       first_name
