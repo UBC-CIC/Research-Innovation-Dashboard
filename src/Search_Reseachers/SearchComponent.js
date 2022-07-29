@@ -7,72 +7,38 @@ import SearchBar from "../components/SearchBar";
 import { useState, useEffect } from "react";
 import ResearcherSearchResultsComponent from "./ResearcherSearchResultsComponent";
 import PublicationSearchResultsComponent from "./PublicationSearchResultsComponent";
-// import Button from "@mui/material/Button";
-// import ButtonGroup from "@mui/material/ButtonGroup";
-// import useMediaQuery from "@mui/material/useMediaQuery";
-
-import { API } from "aws-amplify";
-import { getAllDepartments } from "../graphql/queries";
 import ResearcherFilters from "./ResearcherFilters";
+import { useNavigate } from "react-router-dom";
 
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
   const [publicationSearchResults, setPublicationSearchResults] = useState([]);
-  const [allDepartments, setAllDepartments] = useState([]);
 
-  const getAllDepartmentsFunction = async () => {
-    const result = await API.graphql({
-      query: getAllDepartments,
-    });
-    result.data.getAllDepartments.unshift("All Departments");
-    setAllDepartments(result.data.getAllDepartments);
-  };
+  //for researcher filters
+  const [departmentOptions, setDepartmentOptions] = useState();
+  const [facultyOptions, setFacultyOptions] = useState();
+  const [selectedDepartments, setSelectedDeparments] = useState([]);
+  const [selectedFaculties, setSelectedFaculties] = useState([]);
+
+  const [path, setPath] = useState("/");
+  const navigate = useNavigate();
+  //for publication filters
 
   useEffect(() => {
-    getAllDepartmentsFunction();
-  }, []);
+    const selectedDepartmentString = selectedDepartments.join("&&");
+    const selectedDepartmentStringNoSpaces =
+      selectedDepartmentString.replaceAll(" ", "%20");
+    // const link = window.location.href.concat(selectedDepartmentStringNoSpaces);
+    setPath(selectedDepartmentStringNoSpaces);
+  }, [selectedDepartments]);
 
-  let path = "/";
-
-  if (props.whatToSearch === "Publications") {
-    path = "/Search/Publications/";
-  } else if (props.whatToSearch === "Researchers") {
-    path = "/Search/Researchers/";
-  }
-
-  //   function TheButtonGroup() {
-  //     const smallScreen = useMediaQuery((theme) => theme.breakpoints.down("sm"));
-  //     const mediumScreen = useMediaQuery((theme) => theme.breakpoints.down("md"));
-  //     let buttonFontSize = "1.0rem";
-  //     if (smallScreen) {
-  //       buttonFontSize = "0.625rem";
-  //     } else if (mediumScreen) {
-  //       buttonFontSize = "0.75rem";
-  //     }
-
-  //     return (
-  //       <ButtonGroup size="large" variant="text" aria-label="text button group">
-  //         <Button
-  //           sx={{ fontSize: buttonFontSize, paddingLeft: "0%" }}
-  //           onClick={props.onClickFunctions.byDepartmentButton}
-  //         >
-  //           Rank By Department
-  //         </Button>
-  //         <Button
-  //           sx={{ fontSize: buttonFontSize }}
-  //           onClick={props.onClickFunctions.byFacultyButton}
-  //         >
-  //           Rank By Faculty
-  //         </Button>
-  //         <Button
-  //           sx={{ fontSize: buttonFontSize }}
-  //           onClick={props.onClickFunctions.overallRankingsButton}
-  //         >
-  //           Overall Rankings
-  //         </Button>
-  //       </ButtonGroup>
-  //     );
-  //   }
+  useEffect(() => {
+    if (props.whatToSearch === "Publications") {
+      setPath("/Search/Publications/");
+    } else if (props.whatToSearch === "Researchers") {
+      setPath("/Search/Researchers/");
+    }
+  }, [props.whatToSearch]);
 
   return (
     <div>
@@ -90,6 +56,8 @@ export default function SearchComponent(props) {
                   setResearcherSearchResults={setResearcherSearchResults}
                   setPublicationSearchResults={setPublicationSearchResults}
                   whatToSearch={props.whatToSearch}
+                  selectedDepartments={selectedDepartments}
+                  selectedFaculties={selectedFaculties}
                   path={path}
                 />
                 <Paper
@@ -120,38 +88,20 @@ export default function SearchComponent(props) {
         </Grid>
       </Grid>
       <Grid container>
-        {/* <Grid item xs={2}>
-          <Box sx={{ marginLeft: "10%", marginTop: "10%" }}>
-            <Typography variant="h6">Researcher Filters</Typography>
-            <FormGroup>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    onChange={() => {
-                      console.log("changed");
-                    }}
-                  />
-                }
-                label="Researcher with work in the last 5 years"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    onChange={() => {
-                      console.log("changed");
-                    }}
-                  />
-                }
-                label="Researcher with work in the last 10 years"
-              />
-            </FormGroup>
-          </Box>
-        </Grid> */}
         {(props.whatToSearch === "Everything" ||
           props.whatToSearch === "Researchers") && (
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
             <Grid item xs={3}>
-              <ResearcherFilters />
+              <ResearcherFilters
+                departmentOptions={departmentOptions}
+                setDepartmentOptions={setDepartmentOptions}
+                facultyOptions={facultyOptions}
+                setFacultyOptions={setFacultyOptions}
+                selectedDepartments={selectedDepartments}
+                setSelectedDeparments={setSelectedDeparments}
+                selectedFaculties={selectedFaculties}
+                setSelectedFaculties={setSelectedFaculties}
+              />
             </Grid>
             <Grid item xs={9}>
               <ResearcherSearchResultsComponent

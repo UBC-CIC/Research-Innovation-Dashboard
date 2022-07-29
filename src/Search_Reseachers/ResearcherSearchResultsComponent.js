@@ -40,58 +40,58 @@ export default function ResearcherSearchResultsComponent(props) {
     );
   }
 
-  const ResearchResultsElement = props.researchSearchResults
-    .filter((data, index) => index < 6)
-    .map((researcher) => {
-      return (
-        <Paper
-          key={researcher.scopus_id}
-          square={true}
-          elevation={0}
-          sx={{ borderTop: "0px", width: "50%", marginRight: "0%" }}
-          component={Stack}
-          direction="row"
-        >
-          <img
-            alt="professor"
-            style={{ width: "20%", height: "fit-content", margin: "4%" }}
-            src={placeholderResearchPhoto}
-          />
-          <Paper elevation={0} sx={{ width: "72%", marginTop: "4%" }}>
-            <Link
-              style={{ fontSize: "24px" }}
-              to={"/Researchers/" + researcher.scopus_id + "/"}
-            >
-              {researcher.preferred_name} <br />
-            </Link>
-            <Typography> {researcher.prime_faculty}</Typography>
-            <Typography>
-              {"Department: " + researcher.prime_department}
-            </Typography>
-            <Typography>{"Email: " + researcher.email}</Typography>
+  const ResearchResultsElement =
+    researchSearchResults &&
+    researchSearchResults
+      .filter((data, index) => index < 6)
+      .map((researcher) => {
+        return (
+          <Paper
+            key={researcher.scopus_id}
+            square={true}
+            elevation={0}
+            sx={{ borderTop: "0px", width: "50%", marginRight: "0%" }}
+            component={Stack}
+            direction="row"
+          >
+            <img
+              alt="professor"
+              style={{ width: "20%", height: "fit-content", margin: "4%" }}
+              src={placeholderResearchPhoto}
+            />
+            <Paper elevation={0} sx={{ width: "72%", marginTop: "4%" }}>
+              <Link
+                style={{ fontSize: "24px" }}
+                to={"/Researchers/" + researcher.scopus_id + "/"}
+              >
+                {researcher.preferred_name} <br />
+              </Link>
+              <Typography> {researcher.prime_faculty}</Typography>
+              <Typography>
+                {"Department: " + researcher.prime_department}
+              </Typography>
+              <Typography>{"Email: " + researcher.email}</Typography>
+            </Paper>
           </Paper>
-        </Paper>
-      );
-    });
+        );
+      });
 
-  return (
-    researchSearchResults && (
-      <Grid container>
-        {props.researchSearchResults.length === 0 && (
-          <Paper elevation={0} square={true} sx={{ width: "100%" }}>
-            <Typography variant="h4">No Researcher Search Results</Typography>
-          </Paper>
-        )}
-        {props.researchSearchResults.length !== 0 && (
-          <Paper elevation={0} square={true} sx={{ width: "100%" }}>
-            <Typography variant="h4">Research Search Results</Typography>
-          </Paper>
-        )}
-        {ResearchResultsElement}
-        {props.researchSearchResults.length !== 0 && (
-          <ShowAllResearcherResultsButton />
-        )}
-      </Grid>
-    )
+  return researchSearchResults ? (
+    <Grid container>
+      {researchSearchResults.length === 0 && (
+        <Paper elevation={0} square={true} sx={{ width: "100%" }}>
+          <Typography variant="h4">No Researcher Search Results</Typography>
+        </Paper>
+      )}
+      {researchSearchResults.length !== 0 && (
+        <Paper elevation={0} square={true} sx={{ width: "100%" }}>
+          <Typography variant="h4">Research Search Results</Typography>
+        </Paper>
+      )}
+      {ResearchResultsElement}
+      {researchSearchResults.length !== 0 && <ShowAllResearcherResultsButton />}
+    </Grid>
+  ) : (
+    <Typography>No Researcher Results Available</Typography>
   );
 }
