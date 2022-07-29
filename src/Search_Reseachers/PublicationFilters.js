@@ -20,15 +20,6 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals }) => {
 
   const handleCheckJournal = (e, journal) => {
     console.log(journal);
-    // if (e.target.checked) {
-    //   setSelectedJournals((prev) => [...prev, journal]);
-    // } else {
-    //   setSelectedJournals(
-    //     selectedJournals.filter(
-    //       (selectedJournal) => selectedJournal !== journal
-    //     )
-    //   );
-    // }
   };
 
   const renderJournalOptions = () => {
