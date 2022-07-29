@@ -8,21 +8,22 @@ import { useState, useEffect } from "react";
 import ResearcherSearchResultsComponent from "./ResearcherSearchResultsComponent";
 import PublicationSearchResultsComponent from "./PublicationSearchResultsComponent";
 import ResearcherFilters from "./ResearcherFilters";
+import PublicationFilters from "./PublicationFilters";
 
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
   const [publicationSearchResults, setPublicationSearchResults] = useState([]);
 
   //for researcher filters
-  const [departmentOptions, setDepartmentOptions] = useState();
-  const [facultyOptions, setFacultyOptions] = useState();
   const [selectedDepartments, setSelectedDeparments] = useState([]);
   const [selectedFaculties, setSelectedFaculties] = useState([]);
   const [departmentPath, setDepartmentPath] = useState("%20");
   const [facultyPath, setFacultyPath] = useState("%20");
   //for publication filters
+  const [selectedJournals, setSelectedJournals] = useState([]);
 
   useEffect(() => {
+    //if there are selected departments, join items in array to create 1 string (different departments separated by &&), replace all spaces with %20
     if (selectedDepartments.length > 0) {
       const selectedDepartmentString = selectedDepartments.join("&&");
       const selectedDepartmentStringNoSpaces =
@@ -34,6 +35,7 @@ export default function SearchComponent(props) {
   }, [selectedDepartments]);
 
   useEffect(() => {
+    //if there are selected faculties, join items in array to create 1 string (different faculties separated by &&), replace all spaces with %20
     if (selectedFaculties.length > 0) {
       const selectedFacultyString = selectedFaculties.join("&&");
       const selectedFacultyStringNoSpaces = selectedFacultyString.replaceAll(
@@ -100,10 +102,6 @@ export default function SearchComponent(props) {
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
             <Grid item xs={3}>
               <ResearcherFilters
-                departmentOptions={departmentOptions}
-                setDepartmentOptions={setDepartmentOptions}
-                facultyOptions={facultyOptions}
-                setFacultyOptions={setFacultyOptions}
                 selectedDepartments={selectedDepartments}
                 setSelectedDeparments={setSelectedDeparments}
                 selectedFaculties={selectedFaculties}
@@ -119,11 +117,37 @@ export default function SearchComponent(props) {
         )}
         {(props.whatToSearch === "Everything" ||
           props.whatToSearch === "Publications") && (
-          <Grid item xs={12}>
-            <PublicationSearchResultsComponent
-              publicationSearchResults={publicationSearchResults}
-            />
+          <Grid container item xs={12} sx={{ p: "1.5em" }}>
+            <Grid item xs={3}>
+              <PublicationFilters
+                selectedJournals={selectedJournals}
+                setSelectedJournals={setSelectedJournals}
+              />
+            </Grid>
+            <Grid item xs={9}>
+              <PublicationSearchResultsComponent
+                publicationSearchResults={publicationSearchResults}
+              />
+            </Grid>
           </Grid>
+          // <Grid
+          //   container
+          //   item
+          //   xs={12}
+          //   sx={{ p: "1.5em", borderTop: "#D3D3D3 1px solid" }}
+          // >
+          //   <Grid item xs={12}>
+          //     <PublicationFilters
+          //       selectedJournals={selectedJournals}
+          //       setSelectedJournals={setSelectedJournals}
+          //     />
+          //   </Grid>
+          //   <Grid item xs={12} sx={{ mt: "3em" }}>
+          //     <PublicationSearchResultsComponent
+          //       publicationSearchResults={publicationSearchResults}
+          //     />
+          //   </Grid>
+          // </Grid>
         )}
       </Grid>
     </div>

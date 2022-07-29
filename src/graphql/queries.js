@@ -277,8 +277,14 @@ export const getResearcherRankingsByFaculty = /* GraphQL */ `
   }
 `;
 export const searchPublications = /* GraphQL */ `
-  query SearchPublications($search_value: String!) {
-    searchPublications(search_value: $search_value) {
+  query SearchPublications(
+    $search_value: String!
+    $journalsToFilterBy: [String]!
+  ) {
+    searchPublications(
+      search_value: $search_value
+      journalsToFilterBy: $journalsToFilterBy
+    ) {
       author_ids
       author_names
       cited_by

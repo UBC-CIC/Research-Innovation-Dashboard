@@ -39,6 +39,7 @@ export default function Search_Bar(props) {
     }
   }, [whatToSearch]);
 
+  //if on the Researchers or Publications tab, update path to the end of /Search/Researchers or /Search/Publications
   useEffect(() => {
     let newPath;
     if (whatToSearch === "Researchers") {
@@ -48,6 +49,7 @@ export default function Search_Bar(props) {
     }
     //add in conditional for if whatToSearch === Publications
     setPath(newPath);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [departmentPath, facultyPath]);
 
   useEffect(() => {
@@ -88,7 +90,7 @@ export default function Search_Bar(props) {
   const searchPublicationsQuery = async () => {
     const searchPublicationsResult = await API.graphql({
       query: searchPublications,
-      variables: { search_value: searchValue },
+      variables: { search_value: searchValue, journalsToFilterBy: [] },
     });
 
     props.setPublicationSearchResults(
