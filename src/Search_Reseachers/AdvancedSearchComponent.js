@@ -30,6 +30,8 @@ export default function Advanced_Search(props){
     const [allJournals, setAllJournals] = useState([]);
     const [allDepartments, setAllDepartments] = useState([]);
     const [allFaculty, setAllFaculty] = useState([]);
+    const [researcherSearchResultPage, setResearcherSearchResultPage] = useState(1);
+    const [publicationsSearchResultPage, setPublicationsSearchResultPage] = useState(1);
 
     let scroll = Scroll.animateScroll;
 
@@ -130,7 +132,7 @@ export default function Advanced_Search(props){
             path = path+anyWordsSearchBarValue+'/';
         }
         if(noneOfTheseWordsSearchBarValue.length === 0){
-            path = path+'/';
+            path = path+' /';
         }
         else {
             path = path+noneOfTheseWordsSearchBarValue+'/';
@@ -327,8 +329,8 @@ export default function Advanced_Search(props){
             </Paper>
             </Grid>
             <div ref={titleRef}></div>
-            {(SearchForWhat === "Everything" || SearchForWhat  === "Researchers") && <ResearcherSearchResultsComponent researchSearchResults={researchSearchResults}/>}
-            {(SearchForWhat === "Everything" || SearchForWhat === "Publications") && <PublicationSearchResultsComponent publicationSearchResults={publicationSearchResults}/>}
+            {(SearchForWhat === "Everything" || SearchForWhat  === "Researchers") && <ResearcherSearchResultsComponent researchSearchResults={researchSearchResults} researcherSearchResultPage={researcherSearchResultPage} setResearcherSearchResultPage={setResearcherSearchResultPage}/>}
+            {(SearchForWhat === "Everything" || SearchForWhat === "Publications") && <PublicationSearchResultsComponent publicationSearchResults={publicationSearchResults} publicationsSearchResultPage={publicationsSearchResultPage} setPublicationsSearchResultPage={setPublicationsSearchResultPage}/>}
         </div>
     );
 }

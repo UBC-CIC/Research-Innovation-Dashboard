@@ -73,10 +73,10 @@ function PageContainer(props) {
             path="/AdvancedSearch/:SearchForWhat/:AllWords/:ExactPhrase/:AnyWords/:NoneOfTheseWords/:Department/:Faculty/:yearFrom/:yearTo/:Journal"
             element={<AdvancedSearchComponent />}
           />
-          <Route
+          {/* <Route
             path="/AdvancedSearch/:SearchForWhat/"
             element={<AdvancedSearchComponent />}
-          />
+          /> */}
           <Route
             path="/Search/Researchers/:anyDepartmentFilter/:anyFacultyFilter/:searchValue/"
             element={<SearchComponent whatToSearch={"Researchers"} />}
