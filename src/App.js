@@ -62,7 +62,7 @@ function App(props) {
               animateTitle={false}
               title={"VPRI Innovation Dashboard"}
               darkMode={true}
-              disableSignUp={false}
+              disableSignUp={true}
             />
           )}
           {currentLoginState === "signedIn" && (

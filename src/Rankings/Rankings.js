@@ -122,11 +122,6 @@ export default function Rankings(props) {
     setShowByFaculty(true);
     setShowOverallRankings(false);
   }
-  function overallRankingsButton() {
-    setShowByDepartment(false);
-    setShowByFaculty(false);
-    setShowOverallRankings(true);
-  }
 
   return (
     <div>
@@ -136,8 +131,7 @@ export default function Rankings(props) {
           <RankingsNavigation
             onClickFunctions={{
               byDepartmentButton,
-              byFacultyButton,
-              overallRankingsButton,
+              byFacultyButton
             }}
           />
           {showByDepartment && (
@@ -153,11 +147,6 @@ export default function Rankings(props) {
               allFaculty={allFaculty}
               researcherRankingsByFaculty={researcherRankingsByFaculty}
               changeFacultyToRank={changeFacultyToRank}
-            />
-          )}
-          {showOverallRankings && (
-            <AllResearcherRankings
-              allResearcherRankings={allResearcherRankings}
             />
           )}
         </div>

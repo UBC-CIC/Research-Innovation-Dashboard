@@ -37,7 +37,7 @@ export default function UbcMetrics() {
       <Grid item xs={12} sx={{ py: "4em" }}>
         <WordCloud />
       </Grid>
-      <Grid item xs={5}>
+      {/* <Grid item xs={5}>
         <DoughnutChart
           labels={facultyList}
           data={facultyPublicationsOverall}
@@ -48,7 +48,7 @@ export default function UbcMetrics() {
         <Box sx={{ width: "100%", height: "369px" }}>
           <PublicationGraph />
         </Box>
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 }

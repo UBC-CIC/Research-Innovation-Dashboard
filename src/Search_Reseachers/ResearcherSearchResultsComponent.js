@@ -6,44 +6,25 @@ import Stack from "@mui/material/Stack";
 import React from "react";
 import placeholderResearchPhoto from "../placeholder.png";
 import Button from "@mui/material/Button";
+import { useState, useEffect } from "react";
+import Pagination from '@mui/material/Pagination';
+import Box from '@mui/material/Box';
 
 export default function ResearcherSearchResultsComponent(props) {
   const { researchSearchResults } = props;
 
-  function ShowAllResearcherResultsButton() {
-    return (
-      <Paper
-        square={true}
-        elevation={0}
-        sx={{
-          width: "100%",
-          justifyContent: "center",
-          marginTop: "1%",
-          marginBottom: "1%",
-        }}
-        component={Stack}
-        direction="row"
-      >
-        <Button
-          sx={{
-            m: 1,
-            border: "2px solid Black",
-            color: "black",
-            backgroundColor: "white",
-          }}
-        >
-          {"Show All " +
-            props.researchSearchResults.length +
-            " Researcher Results"}
-        </Button>
-      </Paper>
-    );
+  let numberOfResearcherPerPage = 6;
+
+  function researcherPaginationCallback(data, index) {
+    if((props.researcherSearchResultPage-1)*numberOfResearcherPerPage <= index && index < props.researcherSearchResultPage*numberOfResearcherPerPage) {
+      return data;
+    }
   }
 
   const ResearchResultsElement =
     researchSearchResults &&
     researchSearchResults
-      .filter((data, index) => index < 6)
+      .filter((data, index) => researcherPaginationCallback(data, index))
       .map((researcher) => {
         return (
           <Paper
@@ -89,7 +70,17 @@ export default function ResearcherSearchResultsComponent(props) {
         </Paper>
       )}
       {ResearchResultsElement}
-      {researchSearchResults.length !== 0 && <ShowAllResearcherResultsButton />}
+      <Grid container>
+        <Grid item xs={12} sx={{m: "5%"}}>
+          <Box 
+            display="flex" 
+            alignItems="center"
+            justifyContent="center"
+          >
+            {researchSearchResults.length !== 0 && <Pagination size="large" defaultPage={1} page={props.researcherSearchResultPage} count={Math.ceil(researchSearchResults.length/numberOfResearcherPerPage)} onChange={(event, value)=>{props.setResearcherSearchResultPage(value)}} />}
+          </Box>
+        </Grid>
+      </Grid>
     </Grid>
   ) : (
     <Typography>No Researcher Results Available</Typography>
