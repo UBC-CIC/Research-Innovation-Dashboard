@@ -20,10 +20,8 @@ const ResearcherFilters = ({
 }) => {
   const [departmentOptions, setDepartmentOptions] = useState();
   const [facultyOptions, setFacultyOptions] = useState();
-  const [openDepartmentFiltersDialog, setOpenDepartmentFiltersDialog] =
-    useState(false);
-  const [openFacultyFiltersDialog, setOpenFacultyFiltersDialog] =
-    useState(false);
+  const [openDepartmentFiltersDialog, setOpenDepartmentFiltersDialog] = useState(false);
+  const [openFacultyFiltersDialog, setOpenFacultyFiltersDialog] = useState(false);
 
   const handleClose = () => {
     setOpenDepartmentFiltersDialog(false);
@@ -114,6 +112,7 @@ const ResearcherFilters = ({
                 <FormControlLabel
                   key={index}
                   control={<Checkbox />}
+                  checked={selectedFaculties.includes(faculty)}
                   label={<Typography variant="body2">{faculty}</Typography>}
                   onChange={(e) => handleCheckFaculty(e, faculty)}
                 />

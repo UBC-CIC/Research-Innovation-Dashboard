@@ -17,48 +17,30 @@ export default function Search_Bar(props) {
     whatToSearch,
     selectedDepartments,
     selectedFaculties,
+    selectedJournals,
     setPublicationSearchResults,
     setResearcherSearchResults,
     departmentPath,
     facultyPath,
+    journalPath,
   } = props;
 
   let { searchValue } = useParams();
-  if (!searchValue) {
-    searchValue = "";
+  if (!searchValue || searchValue === " ") {
+    searchValue = ""; // space
   }
-  const [path, setPath] = useState("/");
   const [searchBarValue, setSearchBarValue] = useState(searchValue);
   let navigate = useNavigate();
 
   useEffect(() => {
-    if (whatToSearch === "Publications") {
-      setPath("/Search/Publications/");
-    } else if (whatToSearch === "Researchers") {
-      setPath("/Search/Researchers/");
-    }
-  }, [whatToSearch]);
-
-  //if on the Researchers or Publications tab, update path to the end of /Search/Researchers or /Search/Publications
-  useEffect(() => {
-    let newPath;
-    if (whatToSearch === "Researchers") {
-      newPath = "/Search/Researchers/".concat(departmentPath, "/", facultyPath);
-    } else {
-      newPath = "/".concat(departmentPath, "/", facultyPath);
-    }
-    //add in conditional for if whatToSearch === Publications
-    setPath(newPath);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [departmentPath, facultyPath]);
-
-  useEffect(() => {
     search();
-    if (path && path !== "/") {
-      navigate(path);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [path]);
+  }, []);
+
+  useEffect(() => {
+    console.log("here");
+    routeChange();
+  }, [departmentPath, facultyPath, journalPath]);
+  
 
   function search() {
     if (whatToSearch === "Everything") {
@@ -88,9 +70,11 @@ export default function Search_Bar(props) {
   };
 
   const searchPublicationsQuery = async () => {
+    console.log(searchValue);
+    console.log(selectedJournals);
     const searchPublicationsResult = await API.graphql({
       query: searchPublications,
-      variables: { search_value: searchValue, journalsToFilterBy: [] },
+      variables: { search_value: searchValue, journalsToFilterBy: selectedJournals },
     });
 
     props.setPublicationSearchResults(
@@ -99,11 +83,25 @@ export default function Search_Bar(props) {
   };
 
   const routeChange = () => {
-    if (path && path !== "/") {
-      navigate(path.concat("/", searchBarValue));
-    } else {
-      navigate(path + searchBarValue);
+    let path = "";
+    let searchPath = " ";
+    if(searchBarValue !== ""){
+      searchPath = searchBarValue;
     }
+
+    console.log("What TO Search: "+whatToSearch);
+    if (whatToSearch === "Researchers") {
+      path = "/Search/Researchers/" + departmentPath + "/" + facultyPath + "/" + searchPath + "/";
+    }
+    else if(whatToSearch === "Publications"){
+      path = "/Search/Publications/".concat(journalPath, "/", searchPath, "/");
+    }
+    else {
+      path = "/" + departmentPath + "/" + facultyPath + "/" + journalPath + "/" + searchPath + "/";
+    }
+
+    navigate(path);
+    search();
   };
 
   return (

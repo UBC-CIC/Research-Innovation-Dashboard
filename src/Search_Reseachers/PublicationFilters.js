@@ -20,6 +20,7 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals }) => {
 
   const handleCheckJournal = (e, journal) => {
     console.log(journal);
+    setSelectedJournals(journal);
   };
 
   const renderJournalOptions = () => {
@@ -40,7 +41,7 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals }) => {
               placeholder="Selected"
             />
           )}
-          sx={{ width: "90%", alignSelf: "center" }}
+          sx={{ width: "100%", alignSelf: "center" }}
         />
       )
     );
