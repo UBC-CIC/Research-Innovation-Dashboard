@@ -101,6 +101,8 @@ export default function Search_Bar(props) {
     }
 
     navigate(path);
+    props.setResearcherSearchResultPage(1);
+    props.setPublicationsSearchResultPage(1);
     search();
   };
 

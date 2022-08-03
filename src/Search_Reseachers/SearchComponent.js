@@ -14,6 +14,8 @@ import {useParams} from "react-router-dom";
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
   const [publicationSearchResults, setPublicationSearchResults] = useState([]);
+  const [researcherSearchResultPage, setResearcherSearchResultPage] = useState(1);
+  const [publicationsSearchResultPage, setPublicationsSearchResultPage] = useState(1);
 
   let {anyDepartmentFilter, anyFacultyFilter, JournalFilter} = useParams();
 
@@ -111,6 +113,8 @@ export default function SearchComponent(props) {
                   departmentPath={departmentPath}
                   facultyPath={facultyPath}
                   journalPath={journalPath}
+                  setResearcherSearchResultPage={setResearcherSearchResultPage}
+                  setPublicationsSearchResultPage={setPublicationsSearchResultPage}
                 />
                 <Paper
                   square={true}
@@ -154,6 +158,8 @@ export default function SearchComponent(props) {
             <Grid item xs={9}>
               <ResearcherSearchResultsComponent
                 researchSearchResults={researchSearchResults}
+                researcherSearchResultPage={researcherSearchResultPage}
+                setResearcherSearchResultPage={setResearcherSearchResultPage}
               />
             </Grid>
           </Grid>
@@ -170,27 +176,11 @@ export default function SearchComponent(props) {
             <Grid item xs={9}>
               <PublicationSearchResultsComponent
                 publicationSearchResults={publicationSearchResults}
+                publicationsSearchResultPage={publicationsSearchResultPage}
+                setPublicationsSearchResultPage={setPublicationsSearchResultPage}
               />
             </Grid>
           </Grid>
-          // <Grid
-          //   container
-          //   item
-          //   xs={12}
-          //   sx={{ p: "1.5em", borderTop: "#D3D3D3 1px solid" }}
-          // >
-          //   <Grid item xs={12}>
-          //     <PublicationFilters
-          //       selectedJournals={selectedJournals}
-          //       setSelectedJournals={setSelectedJournals}
-          //     />
-          //   </Grid>
-          //   <Grid item xs={12} sx={{ mt: "3em" }}>
-          //     <PublicationSearchResultsComponent
-          //       publicationSearchResults={publicationSearchResults}
-          //     />
-          //   </Grid>
-          // </Grid>
         )}
       </Grid>
     </div>

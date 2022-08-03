@@ -5,9 +5,13 @@ import Stack from "@mui/material/Stack";
 import React from "react";
 import Button from "@mui/material/Button";
 import Publication from "../Researcher_profile/publication";
+import Pagination from '@mui/material/Pagination';
+import Box from '@mui/material/Box';
 
 export default function PublicationSearchResultsComponent(props) {
   const { publicationSearchResults } = props;
+
+  let numberOfResearcherPerPage = 10;
 
   function ShowAllPublicationsResultsButton() {
     return (
@@ -89,10 +93,16 @@ export default function PublicationSearchResultsComponent(props) {
     );
   }
 
+  function PaginationCallback(data, index) {
+    if((props.publicationsSearchResultPage-1)*numberOfResearcherPerPage <= index && index < props.publicationsSearchResultPage*numberOfResearcherPerPage) {
+      return data;
+    }
+  }
+
   const publications =
     publicationSearchResults &&
     publicationSearchResults
-      .filter((data, index) => index < 6)
+      .filter((data, index) => PaginationCallback(data, index))
       .map((publication) => {
         return (
           <Publication key={publication.id} publication_data={publication} />
@@ -118,9 +128,17 @@ export default function PublicationSearchResultsComponent(props) {
         )}
         {publicationSearchResults.length !== 0 && <PublicationsHeader />}
         {publications}
-        {publicationSearchResults.length !== 0 && (
-          <ShowAllPublicationsResultsButton />
-        )}
+        <Grid container>
+        <Grid item xs={12} sx={{m: "5%"}}>
+          <Box 
+            display="flex" 
+            alignItems="center"
+            justifyContent="center"
+          >
+            {publicationSearchResults.length !== 0 && (<Pagination size="large" defaultPage={1} page={props.publicationsSearchResultPage} count={Math.ceil(publicationSearchResults.length/numberOfResearcherPerPage)} onChange={(event, value)=>{props.setPublicationsSearchResultPage(value)}} />)}
+        </Box>
+        </Grid>
+      </Grid>
       </Grid>
     )
   );
