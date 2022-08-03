@@ -9,44 +9,85 @@ import ResearcherSearchResultsComponent from "./ResearcherSearchResultsComponent
 import PublicationSearchResultsComponent from "./PublicationSearchResultsComponent";
 import ResearcherFilters from "./ResearcherFilters";
 import PublicationFilters from "./PublicationFilters";
+import {useParams} from "react-router-dom";
 
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
   const [publicationSearchResults, setPublicationSearchResults] = useState([]);
 
+  let {anyDepartmentFilter, anyFacultyFilter, JournalFilter} = useParams();
+
+  let selectedDepartmentsArray = [];
+  let selectedFacultyArray = [];
+  let selectedJournalFilter = [];
+
+  
+  if(!anyDepartmentFilter || anyDepartmentFilter === " "){
+    console.log("BELLO BELLO")
+    selectedDepartmentsArray = [];
+    anyDepartmentFilter = " "
+  }
+  else {
+    selectedDepartmentsArray = anyDepartmentFilter.split("&&");
+  }
+  if(!anyFacultyFilter || anyFacultyFilter === " "){
+    selectedFacultyArray = [];
+    anyFacultyFilter = " "
+  }
+  else {
+    selectedFacultyArray = anyFacultyFilter.split("&&");
+  }
+  if(!JournalFilter || JournalFilter === " "){
+    selectedJournalFilter = [];
+    JournalFilter = " "
+  }
+  else {
+    selectedJournalFilter = JournalFilter.split("&&");
+  }
+
   //for researcher filters
-  const [selectedDepartments, setSelectedDeparments] = useState([]);
-  const [selectedFaculties, setSelectedFaculties] = useState([]);
-  const [departmentPath, setDepartmentPath] = useState("%20");
-  const [facultyPath, setFacultyPath] = useState("%20");
+  const [selectedDepartments, setSelectedDeparments] = useState(selectedDepartmentsArray);
+  const [selectedFaculties, setSelectedFaculties] = useState(selectedFacultyArray);
+  const [departmentPath, setDepartmentPath] = useState(anyDepartmentFilter);
+  const [facultyPath, setFacultyPath] = useState(anyFacultyFilter);
   //for publication filters
-  const [selectedJournals, setSelectedJournals] = useState([]);
+  const [selectedJournals, setSelectedJournals] = useState(selectedJournalFilter);
+  const [journalPath, setJournalPath] = useState(JournalFilter);
+
+  console.log(selectedDepartments);
 
   useEffect(() => {
     //if there are selected departments, join items in array to create 1 string (different departments separated by &&), replace all spaces with %20
     if (selectedDepartments.length > 0) {
-      const selectedDepartmentString = selectedDepartments.join("&&");
-      const selectedDepartmentStringNoSpaces =
-        selectedDepartmentString.replaceAll(" ", "%20");
-      setDepartmentPath(selectedDepartmentStringNoSpaces);
+      let selectedDepartmentString = selectedDepartments.join("&&");
+      setDepartmentPath(selectedDepartmentString);
     } else {
-      setDepartmentPath("%20");
+      setDepartmentPath(" ");
     }
   }, [selectedDepartments]);
 
   useEffect(() => {
     //if there are selected faculties, join items in array to create 1 string (different faculties separated by &&), replace all spaces with %20
     if (selectedFaculties.length > 0) {
-      const selectedFacultyString = selectedFaculties.join("&&");
-      const selectedFacultyStringNoSpaces = selectedFacultyString.replaceAll(
-        " ",
-        "%20"
-      );
-      setFacultyPath(selectedFacultyStringNoSpaces);
+      let selectedFacultyString = selectedFaculties.join("&&");
+      setFacultyPath(selectedFacultyString);
     } else {
-      setFacultyPath("%20");
+      setFacultyPath(" ");
     }
   }, [selectedFaculties]);
+
+  useEffect(() => {
+    //Selected Journal
+    if (selectedJournals.length > 0) {
+      let JournalPath = selectedJournals[0];
+      for(let i = 1; i<selectedJournals.length; i++){
+        JournalPath = JournalPath + "&&" + selectedJournals[i];
+      }
+      setJournalPath(JournalPath);
+    } else {
+      setJournalPath(" ");
+    }
+  }, [selectedJournals]);
 
   return (
     <div>
@@ -66,8 +107,10 @@ export default function SearchComponent(props) {
                   whatToSearch={props.whatToSearch}
                   selectedDepartments={selectedDepartments}
                   selectedFaculties={selectedFaculties}
+                  selectedJournals={selectedJournals}
                   departmentPath={departmentPath}
                   facultyPath={facultyPath}
+                  journalPath={journalPath}
                 />
                 <Paper
                   square={true}

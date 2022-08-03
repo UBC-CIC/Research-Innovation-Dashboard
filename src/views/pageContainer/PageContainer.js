@@ -78,44 +78,15 @@ function PageContainer(props) {
             element={<AdvancedSearchComponent />}
           />
           <Route
-            path="/Search/Researchers/:anyDepartmentFilter/:anyFacultyFilter/:searchValue"
+            path="/Search/Researchers/:anyDepartmentFilter/:anyFacultyFilter/:searchValue/"
             element={<SearchComponent whatToSearch={"Researchers"} />}
           />
           <Route
-            path="/Search/Researchers/:anyDepartmentFilter/:anyFacultyFilter/"
-            element={<SearchComponent whatToSearch={"Researchers"} />}
-          />
-          <Route
-            path="/Search/Researchers/:searchValue"
-            element={<SearchComponent whatToSearch={"Researchers"} />}
-          />
-          <Route
-            path="/Search/Researchers/"
-            element={<SearchComponent whatToSearch={"Researchers"} />}
-          />
-          <Route
-            path="/Search/Publications/:searchValue"
+            path="/Search/Publications/:JournalFilter/:searchValue"
             element={<SearchComponent whatToSearch={"Publications"} />}
           />
           <Route
-            path="/Search/Publications/"
-            element={<SearchComponent whatToSearch={"Publications"} />}
-          />
-          <Route
-            path="/:anyDepartmentFilter/:anyFacultyFilter/:searchValue/"
-            element={<SearchComponent whatToSearch={"Everything"} />}
-          />
-          <Route
-            path="/:anyDepartmentFilter/:searchValue/"
-            element={<SearchComponent whatToSearch={"Everything"} />}
-          />
-          <Route
-            path="/:searchValue/"
-            element={<SearchComponent whatToSearch={"Everything"} />}
-          />
-
-          <Route
-            path="/"
+            path="/:anyDepartmentFilter/:anyFacultyFilter/:JournalFilter/:searchValue/"
             element={<SearchComponent whatToSearch={"Everything"} />}
           />
         </Routes>

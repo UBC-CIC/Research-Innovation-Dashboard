@@ -152,13 +152,13 @@ function Navbar(props) {
             variant="text"
             aria-label="navbar button group"
           >
-            <NavButton sx={{ paddingLeft: "0%" }} onClick={() => navigate("/")}>
+            <NavButton sx={{ paddingLeft: "0%" }} onClick={() => window.location.href="/ / / / /"}>
               Home
             </NavButton>
-            <NavButton onClick={() => navigate("/Search/Researchers")}>
+            <NavButton onClick={() => window.location.href="/Search/Researchers/ / / /"}>
               Researchers
             </NavButton>
-            <NavButton onClick={() => navigate("/Search/Publications")}>
+            <NavButton onClick={() => window.location.href="/Search/Publications/ / /"}>
               Publications
             </NavButton>
             <NavButton onClick={() => navigate("/Rankings/")}>

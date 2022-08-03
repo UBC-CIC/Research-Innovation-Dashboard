@@ -130,7 +130,7 @@ export default function Advanced_Search(props){
             path = path+anyWordsSearchBarValue+'/';
         }
         if(noneOfTheseWordsSearchBarValue.length === 0){
-            path = path+' /';
+            path = path+'/';
         }
         else {
             path = path+noneOfTheseWordsSearchBarValue+'/';
