@@ -6,10 +6,10 @@ import { Grid } from "@mui/material";
 import NavigationBar from "../../components/NavigationBar";
 import ResearcherProfileOverview from "../../components/ResearcherProfile/ResearcherProfile";
 import { Routes, Route } from "react-router-dom";
-import SearchComponent from "../../components/SearchReseachers/Search/SearchComponent";
-import AdvancedSearchComponent from "../../components/SearchReseachers/AdvancedSearch/AdvancedSearchComponent";
+import SearchComponent from "../../components/SearchResearchers/Search/SearchComponent";
+import AdvancedSearchComponent from "../../components/SearchResearchers/AdvancedSearch/AdvancedSearchComponent";
 import Rankings from "../../components/Rankings/Rankings";
-import UbcMetrics from "../../components/UBC_Metrics/UbcMetrics";
+import UbcMetrics from "../../components/UBCMetrics/UbcMetrics";
 
 const useStyles = makeStyles((theme) => ({
   root: {
