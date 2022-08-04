@@ -5,12 +5,12 @@ import Paper from '@mui/material/Paper';
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Grid from '@mui/material/Grid';
-import PUBLICATION from './publication'
+import PUBLICATION from './Publication'
 import Amplify from '@aws-amplify/core'
 import TableSortLabel from '@mui/material/TableSortLabel';
 
 import { Auth } from '@aws-amplify/auth'
-import awsmobile from '../aws-exports'
+import awsmobile from '../../aws-exports'
 
 Amplify.configure(awsmobile)
 Auth.configure(awsmobile)

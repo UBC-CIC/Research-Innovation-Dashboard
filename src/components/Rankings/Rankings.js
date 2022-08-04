@@ -1,5 +1,5 @@
 import * as React from "react";
-import RankingsNavigation from "./Rankings_Navigation";
+import RankingsNavigation from "./RankingsNavigation";
 import "./Rankings.css";
 import { useState, useEffect } from "react";
 
@@ -10,11 +10,11 @@ import {
   getAllResearchersRankings,
   getAllFaculty,
   getResearcherRankingsByFaculty,
-} from "../graphql/queries";
+} from "../../graphql/queries";
 
 import RankingsByDepartment from "./RankResearcherByDepartment";
 import AllResearcherRankings from "./allResearcherRankings";
-import RankByFaculty from "./RankByFaculty";
+import RankByFaculty from "./RankResearchersByFaculty";
 import LoadingWheel from "../LoadingWheel";
 
 export default function Rankings(props) {
@@ -122,6 +122,11 @@ export default function Rankings(props) {
     setShowByFaculty(true);
     setShowOverallRankings(false);
   }
+  function overallRankingsButton() {
+    setShowByDepartment(false);
+    setShowByFaculty(false);
+    setShowOverallRankings(true);
+  }
 
   return (
     <div>
@@ -131,8 +136,10 @@ export default function Rankings(props) {
           <RankingsNavigation
             onClickFunctions={{
               byDepartmentButton,
-              byFacultyButton
+              byFacultyButton,
+              overallRankingsButton,
             }}
+            enableOverallRankings={false}
           />
           {showByDepartment && (
             <RankingsByDepartment
@@ -147,6 +154,11 @@ export default function Rankings(props) {
               allFaculty={allFaculty}
               researcherRankingsByFaculty={researcherRankingsByFaculty}
               changeFacultyToRank={changeFacultyToRank}
+            />
+          )}
+          {showOverallRankings && (
+            <AllResearcherRankings
+              allResearcherRankings={allResearcherRankings}
             />
           )}
         </div>

@@ -1,9 +1,9 @@
 import * as React from 'react';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import './Researcher_profile.css'
+import './ResearcherProfile.css'
 import Typography from "@mui/material/Typography";
-import placeholderResearchPhoto from '../placeholder.png'
+import placeholderResearchPhoto from '../pages/researcherPlaceholderImage.png'
 import Stack from '@mui/material/Stack';
 
 export default function Researcher_Info(props) {

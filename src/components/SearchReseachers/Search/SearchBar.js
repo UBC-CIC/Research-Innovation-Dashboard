@@ -10,7 +10,7 @@ import { useParams } from "react-router-dom";
 
 import { API } from "aws-amplify";
 
-import { searchResearcher, searchPublications } from "../graphql/queries";
+import { searchResearcher, searchPublications } from "../../../graphql/queries";
 
 export default function Search_Bar(props) {
   const {
@@ -27,7 +27,7 @@ export default function Search_Bar(props) {
 
   let { searchValue } = useParams();
   if (!searchValue || searchValue === " ") {
-    searchValue = ""; // space
+    searchValue = "";
   }
   const [searchBarValue, setSearchBarValue] = useState(searchValue);
   let navigate = useNavigate();

@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from "@mui/material/Typography";
 import Stack from '@mui/material/Stack';
-import './Researcher_profile.css'
+import './ResearcherProfile.css'
 
 export default function INTELLECTUAL_PROPERTY(props){
     return(
