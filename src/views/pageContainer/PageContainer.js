@@ -4,15 +4,12 @@ import { connect } from "react-redux";
 import { updateMenuState } from "../../actions/menuActions";
 import { Grid } from "@mui/material";
 import NavigationBar from "../../components/NavigationBar";
-import ResearcherProfileOverview from "../../Researcher_profile/Researcher_profile_overview";
-import ResearcherProfileAreasOfInterest from "../../Researcher_profile/Researcher_profile_areas_of_interest";
-import ResearcherProfilePublications from "../../Researcher_profile/Researcher_profile_publications";
+import ResearcherProfileOverview from "../../components/ResearcherProfile/ResearcherProfile";
 import { Routes, Route } from "react-router-dom";
-import SearchComponent from "../../Search_Reseachers/SearchComponent";
-import SimilarResearchers from "../../Researcher_profile/Similar_Researchers";
-import AdvancedSearchComponent from "../../Search_Reseachers/AdvancedSearchComponent";
-import Rankings from "../../Rankings/Rankings";
-import UbcMetrics from "../../UBC_Metrics/UbcMetrics";
+import SearchComponent from "../../components/SearchReseachers/Search/SearchComponent";
+import AdvancedSearchComponent from "../../components/SearchReseachers/AdvancedSearch/AdvancedSearchComponent";
+import Rankings from "../../components/Rankings/Rankings";
+import UbcMetrics from "../../components/UBC_Metrics/UbcMetrics";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,18 +49,6 @@ function PageContainer(props) {
       <main className={classes.content}>
         <Routes>
           <Route
-            path="/Researchers/:scopusId/Publications"
-            element={<ResearcherProfilePublications />}
-          />
-          <Route
-            path="/Researchers/:scopusId/Areas_Of_Interest"
-            element={<ResearcherProfileAreasOfInterest />}
-          />
-          <Route
-            path="/Researchers/:scopusId/Similar_Researchers"
-            element={<SimilarResearchers />}
-          />
-          <Route
             path="/Researchers/:scopusId"
             element={<ResearcherProfileOverview />}
           />
@@ -73,10 +58,6 @@ function PageContainer(props) {
             path="/AdvancedSearch/:SearchForWhat/:AllWords/:ExactPhrase/:AnyWords/:NoneOfTheseWords/:Department/:Faculty/:yearFrom/:yearTo/:Journal"
             element={<AdvancedSearchComponent />}
           />
-          {/* <Route
-            path="/AdvancedSearch/:SearchForWhat/"
-            element={<AdvancedSearchComponent />}
-          /> */}
           <Route
             path="/Search/Researchers/:anyDepartmentFilter/:anyFacultyFilter/:searchValue/"
             element={<SearchComponent whatToSearch={"Researchers"} />}

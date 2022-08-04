@@ -8,8 +8,8 @@ import AdvancedSearchRow from './AdvancedSearchRow';
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import {useParams} from "react-router-dom";
-import ResearcherSearchResultsComponent from './ResearcherSearchResultsComponent'
-import PublicationSearchResultsComponent from './PublicationSearchResultsComponent'
+import ResearcherSearchResultsComponent from '../ResearcherSearchResultsComponent'
+import PublicationSearchResultsComponent from '../PublicationSearchResultsComponent'
 import AutoCompleteDropDown from './AutoCompleteDrowDown';
 import InputBase from '@mui/material/InputBase';
 import Scroll from 'react-scroll';
@@ -22,7 +22,7 @@ import {
     getAllDistinctJournals,
     getAllDepartments,
     getAllFaculty,
-  } from '../graphql/queries';
+  } from '../../../graphql/queries';
 
 export default function Advanced_Search(props){
     const [researchSearchResults, setResearcherSearchResults] = useState([]);

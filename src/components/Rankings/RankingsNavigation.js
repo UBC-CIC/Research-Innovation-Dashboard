@@ -40,6 +40,12 @@ export default function Rankings_Navigation(props) {
         >
           Rank By Faculty
         </Button>
+        {props.enableOverallRankings && <Button
+          sx={{ fontSize: buttonFontSize }}
+          onClick={props.onClickFunctions.overallRankingsButton}
+        >
+          Overall Rankings
+        </Button>}
       </ButtonGroup>
     );
   }

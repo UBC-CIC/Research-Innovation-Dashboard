@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import DoughnutChart from "./DoughnutChart";
 import { Grid, Box } from "@mui/material";
 import { API } from "aws-amplify";
-import { allPublicationsPerFacultyQuery } from "../graphql/queries";
+import { allPublicationsPerFacultyQuery } from "../../graphql/queries";
 import PublicationGraph from "./PublicationGraph";
 import WordCloud from "./WordCloud";
 

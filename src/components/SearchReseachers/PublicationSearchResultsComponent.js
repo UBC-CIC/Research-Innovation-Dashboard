@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import React from "react";
 import Button from "@mui/material/Button";
-import Publication from "../Researcher_profile/publication";
+import Publication from "../ResearcherProfile/Publication";
 import Pagination from '@mui/material/Pagination';
 import Box from '@mui/material/Box';
 

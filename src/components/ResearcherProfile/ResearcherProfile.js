@@ -2,24 +2,23 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import './Researcher_profile.css'
+import './ResearcherProfile.css'
 import Button from "@mui/material/Button";
-import AreasOfInterest from './areas_of_interest';
-import Publications from './publications'
-import IntellectualProperty from './Intellectual_Property_Activity';
-import ResearcherInfo from './Researcher_Info'
-import ResearcherHighlights from './Research_highlights';
-import ResearchProfileNavigation from './Researcher_profile_navigation'
+import AreasOfInterest from './AreasOfInterest';
+import Publications from './Publications';
+import IntellectualProperty from './IntellectualPropertyActivity';
+import ResearcherInfo from './ResearcherInfo';
+import ResearcherHighlights from './ResearchHighlights';
+import ResearchProfileNavigation from './ResearcherProfileNavigation';
 import { useState, useEffect } from 'react';
 import {useParams} from "react-router-dom";
-import SmallerAreasOfInterest from './smaller_areas_of_interest';
-import SimilarResearchers from "./Similar_Researchers"
-import LoadingWheel from '../LoadingWheel'
-import PublicationBarGraph from './PUBLICATION_BAR_GRAPH';
+import SimilarResearchers from "./SimilarResearchers";
+import LoadingWheel from '../LoadingWheel';
+import PublicationBarGraph from './PublicationBarGraph';
 
-import Amplify from '@aws-amplify/core'
-import { Auth } from '@aws-amplify/auth'
-import awsmobile from '../aws-exports'
+import Amplify from '@aws-amplify/core';
+import { Auth } from '@aws-amplify/auth';
+import awsmobile from '../../aws-exports';
 
 import { API } from 'aws-amplify';
 import {
@@ -30,7 +29,7 @@ import {
     getNumberOfResearcherPubsLastFiveYears,
     getNumberOfResearcherPubsAllYears,
     similarResearchers,
-  } from '../graphql/queries';
+  } from '../../graphql/queries';
 
 Amplify.configure(awsmobile)
 Auth.configure(awsmobile)
@@ -282,34 +281,36 @@ export default function Researcher_profile_overview() {
                     <PublicationBarGraph width={"100%"} preferred_name={preferred_name} barGraphData={{barGraphLastFiveYears: barGraphLastAllYears, publicationsPerYear: publicationsAllYears}}></PublicationBarGraph>
                 </Paper>}
                 <ResearchProfileNavigation researcher_information={{first_name, last_name}} onClickFunctions={{showOverviewFunc,showAreasOfInterestFunc,showPublicationsFunc}} />
-                {showOverview && <Grid container>
-                <Grid item xs={12}>
-                    <Paper square={true} elevation={0} sx={{borderTop: "0px"}} variant="outlined">
-                        <AreasOfInterest numberOfSimilarResearchers={similarResearchersArray.length} areasOfInterest={sortedAreasOfInterest} onClickFunctions={{showAreasOfInterestFunc, showSimilarResearchersFunc}} />
-                    </Paper>
+                {showOverview && 
+                <Grid container>
+                    <Grid item xs={12}>
+                        <Paper square={true} elevation={0} sx={{borderTop: "0px"}} variant="outlined">
+                            <AreasOfInterest AreasOfInterestTabOpened={showAreasOfInterest} numberOfSimilarResearchers={similarResearchersArray.length} areasOfInterest={sortedAreasOfInterest} onClickFunctions={{showAreasOfInterestFunc, showSimilarResearchersFunc}} />
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Paper square={true} elevation={0} variant="outlined">
+                            <Publications inPublicationPage={false} 
+                            stateVariables={{numberOfPublicationsToShow,numberOfPublications, increasePublicationListBy,
+                                descendingPublicationListByCitation, ascendingPublicationListByCitation,
+                                descendingPublicationListByYear, ascendingPublicationListByYear,
+                                descendingPublicationListByTitle, ascendingPublicationListByTitle}}
+                            stateFunctions={{setNumberOfPublicationsToShow, setincreasePublicationListBy}}/>
+                            <Box textAlign='center'>
+                                <Button onClick={showPublicationsFunc} sx={{m: 1, border: "2px solid Black", color: "black", backgroundColor: 'white'}}>
+                                    View All Publications
+                                </Button>
+                            </Box>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Paper square={true} elevation={0} variant="outlined">
+                            <IntellectualProperty  researcher_information={{num_patents_filed, num_licensed_patents}}/>
+                        </Paper>
+                    </Grid>
                 </Grid>
-                <Grid item xs={12}>
-                    <Paper square={true} elevation={0} variant="outlined">
-                        <Publications inPublicationPage={false} 
-                        stateVariables={{numberOfPublicationsToShow,numberOfPublications, increasePublicationListBy,
-                            descendingPublicationListByCitation, ascendingPublicationListByCitation,
-                            descendingPublicationListByYear, ascendingPublicationListByYear,
-                            descendingPublicationListByTitle, ascendingPublicationListByTitle}}
-                        stateFunctions={{setNumberOfPublicationsToShow, setincreasePublicationListBy}}/>
-                        <Box textAlign='center'>
-                            <Button onClick={showPublicationsFunc} sx={{m: 1, border: "2px solid Black", color: "black", backgroundColor: 'white'}}>
-                                View All Publications
-                            </Button>
-                        </Box>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12}>
-                    <Paper square={true} elevation={0} variant="outlined">
-                        <IntellectualProperty  researcher_information={{num_patents_filed, num_licensed_patents}}/>
-                    </Paper>
-                </Grid>
-                </Grid>}
-                {showAreasOfInterest && <SmallerAreasOfInterest areasOfInterest={sortedAreasOfInterest} />}
+                }
+                {showAreasOfInterest && <AreasOfInterest AreasOfInterestTabOpened={showAreasOfInterest} numberOfSimilarResearchers={similarResearchersArray.length} areasOfInterest={sortedAreasOfInterest} onClickFunctions={{showAreasOfInterestFunc, showSimilarResearchersFunc}} />}
                 {showPublications && 
                 <Grid item xs={12}>
                     <Paper square={true} elevation={0} variant="outlined">
