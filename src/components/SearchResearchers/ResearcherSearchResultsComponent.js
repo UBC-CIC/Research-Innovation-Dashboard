@@ -4,7 +4,7 @@ import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import React from "react";
-import placeholderResearchPhoto from "../pages/researcherPlaceholderImage.png";
+import placeholderResearchPhoto from "../../assets/images/researcherPlaceholderImage.png";
 import Button from "@mui/material/Button";
 import { useState, useEffect } from "react";
 import Pagination from '@mui/material/Pagination';

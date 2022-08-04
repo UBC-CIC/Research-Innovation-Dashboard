@@ -3,7 +3,7 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import './ResearcherProfile.css'
 import Typography from "@mui/material/Typography";
-import placeholderResearchPhoto from '../pages/researcherPlaceholderImage.png'
+import placeholderResearchPhoto from '../../assets/images/researcherPlaceholderImage.png'
 import Stack from '@mui/material/Stack';
 
 export default function Researcher_Info(props) {
