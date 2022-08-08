@@ -133,11 +133,6 @@ export class AppsyncStack extends Stack {
       apiId: APIID,
 
       definition: `
-      schema {
-        query: Query
-        mutation: Mutation
-      }
-      
       type Department {
         prime_department: String
       }
@@ -147,7 +142,13 @@ export class AppsyncStack extends Stack {
       }
       
       type Mutation {
-        putPub(authors: [String!], id: ID!, journal: String, keywords: [String], title: String!): Publication
+        putPub(
+          authors: [String!],
+          id: ID!,
+          journal: String,
+          keywords: [String],
+          title: String!
+        ): Publication
       }
       
       type Publication {
@@ -163,8 +164,25 @@ export class AppsyncStack extends Stack {
       }
       
       type Query {
-        advancedSearchPublications(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, journal: String!, noneOfTheseWords: String!, table: String!, year_gte: Int!, year_lte: Int!): [Publication]
-        advancedSearchResearchers(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, prime_department: String!, prime_faculty: String!, table: String!): [ResearcherOpenSearch]
+        advancedSearchPublications(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          journal: String!,
+          noneOfTheseWords: String!,
+          table: String!,
+          year_gte: Int!,
+          year_lte: Int!
+        ): [Publication]
+        advancedSearchResearchers(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          noneOfTheseWords: String!,
+          prime_department: String!,
+          prime_faculty: String!,
+          table: String!
+        ): [ResearcherOpenSearch]
         allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
         facultyMetrics(faculty: String!): [facultyMetric]
         getAllDepartments: [String]
@@ -184,7 +202,7 @@ export class AppsyncStack extends Stack {
         getResearcherRankingsByDepartment(prime_department: String!): [Ranking]
         getResearcherRankingsByFaculty(prime_faculty: String!): [Ranking]
         searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
-        searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]!]): [ResearcherOpenSearch]
+        searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]
         similarResearchers(keywordsString: String!, scopus_id: String!): [ResearcherOpenSearch]
         totalPublicationPerYear: [pubsPerYear]
         wordCloud(gte: Int!, lte: Int!): [wordCloud]
@@ -285,6 +303,11 @@ export class AppsyncStack extends Stack {
       type pubsPerYear {
         count: String
         year_published: String
+      }
+      
+      schema {
+        query: Query
+        mutation: Mutation
       }
       
       type totalPubsPerFaculty {
