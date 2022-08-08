@@ -9,6 +9,8 @@ import * as cdk from 'aws-cdk-lib'
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { DatabaseStack } from './database-stack';
+//import { aws_waf as waf } from 'aws-cdk-lib';
+import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
 
 export class AppsyncStack extends Stack {
   constructor(scope: Construct, id: string, opensearchStack: OpensearchStack, vpcStack: VpcStack, databaseStack: DatabaseStack, props?: StackProps) {
@@ -379,5 +381,58 @@ export class AppsyncStack extends Stack {
       });
       resolver.addDependsOn(postgresqlDataSource);
     }
+
+    // Lets add a firewall
+    const waf = new wafv2.CfnWebACL(this, 'waf', {
+      description: 'waf for VPRI',
+      scope: 'REGIONAL',
+      defaultAction: { allow: {} },
+      visibilityConfig: { 
+        sampledRequestsEnabled: true, 
+        cloudWatchMetricsEnabled: true,
+        metricName: 'vpri-firewall'
+      },
+      rules: [
+        {
+          name: 'AWS-AWSManagedRulesCommonRuleSet',
+          priority: 1,
+          statement: {
+            managedRuleGroupStatement: {
+              vendorName: 'AWS',
+              name: 'AWSManagedRulesCommonRuleSet',
+            }
+          },
+          overrideAction: { none: {}},
+          visibilityConfig: {
+            sampledRequestsEnabled: true,
+            cloudWatchMetricsEnabled: true,
+            metricName: 'AWS-AWSManagedRulesCommonRuleSet'
+          }
+        },
+        {
+          name: 'LimitRequests1000',
+          priority: 2,
+          action: {
+            block: {}
+          },
+          statement: {
+            rateBasedStatement: {
+              limit: 1000,
+              aggregateKeyType: "IP"
+            }
+          },
+          visibilityConfig: {
+            sampledRequestsEnabled: true,
+            cloudWatchMetricsEnabled: true,
+            metricName: 'LimitRequests1000'
+          }
+        },
+    ]
+    })
+
+    const wafAssociation = new wafv2.CfnWebACLAssociation(this, 'waf-association', {
+      resourceArn: `arn:aws:appsync:ca-central-1:${this.account}:apis/${APIID}`,
+      webAclArn: waf.attrArn
+    });
   }
 }

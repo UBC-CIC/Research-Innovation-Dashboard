@@ -181,7 +181,7 @@ export default function Researcher_profile_overview() {
 
         const result = await API.graphql({
             query: similarResearchers,
-            variables: {keywordsString: researcher_data.keywords, 
+            variables: { 
                         scopus_id: scopusId}
         });
 
