@@ -24,7 +24,12 @@ function getCallback(callback) {
 const WordCloud = () => {
   const [words, setWords] = useState();
   const currentYear = new Date().getFullYear();
-  const [dateRange, setDateRange] = useState([1908, currentYear]);
+  const [displayedDateRange, setDisplayedDateRange] = useState([
+    1908,
+    currentYear,
+  ]);
+  const [selectedDateRange, setSelectedDateRange] =
+    useState(displayedDateRange);
   const [loading, setLoading] = useState(false);
   const options = {
     colors: ["#23D2DC", "#2376DC", "#23DC89"],
@@ -35,10 +40,11 @@ const WordCloud = () => {
     fontStyle: "normal",
     fontWeight: "normal",
     padding: 1,
-    rotations: 3,
+    rotations: 2,
     rotationAngles: [0, 0],
     scale: "sqrt",
     spiral: "archimedean",
+    transitionDuration: 2,
   };
 
   const callbacks = {
@@ -52,7 +58,7 @@ const WordCloud = () => {
   const wordCloudQuery = async () => {
     const wordCloudResult = await API.graphql({
       query: wordCloud,
-      variables: { gte: dateRange[0], lte: dateRange[1] },
+      variables: { gte: selectedDateRange[0], lte: selectedDateRange[1] },
     });
     setWords(wordCloudResult.data.wordCloud);
   };
@@ -63,17 +69,12 @@ const WordCloud = () => {
 
   useEffect(() => {
     setLoading(true);
-    dateRange && setTimeout(wordCloudQuery, 700);
+    selectedDateRange && wordCloudQuery();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateRange]);
+  }, [selectedDateRange]);
 
   const handleChange = (event, newValue) => {
-    setDateRange(newValue);
-    console.log(newValue);
-  };
-
-  const valueText = (value) => {
-    return `${value}°C`;
+    setSelectedDateRange(newValue);
   };
 
   return (
@@ -86,7 +87,7 @@ const WordCloud = () => {
       {!words ? (
         <CircularProgress sx={{ py: "5em" }} />
       ) : (
-        dateRange && (
+        displayedDateRange && (
           <Box
             sx={{
               display: "flex",
@@ -111,15 +112,15 @@ const WordCloud = () => {
               >
                 <Typography>Date Range:&nbsp;</Typography>
                 <Typography sx={{ color: "#0055B7", fontWeight: 700 }}>
-                  {dateRange[0]} - {dateRange[1]}
+                  {displayedDateRange[0]} - {displayedDateRange[1]}
                 </Typography>
               </Box>
               <Slider
                 getAriaLabel={() => "Date range"}
-                value={dateRange}
-                onChange={handleChange}
+                value={displayedDateRange}
+                onChange={(e, val) => setDisplayedDateRange(val)}
+                onChangeCommitted={handleChange}
                 valueLabelDisplay="auto"
-                getAriaValueText={valueText}
                 min={1908}
                 max={currentYear}
               />
