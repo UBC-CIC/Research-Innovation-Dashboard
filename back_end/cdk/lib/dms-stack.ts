@@ -28,7 +28,7 @@ export class DmsStack extends Stack {
     const opensearchAccessPolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
-          resources: ['*'],
+          resources: [`arn:aws:es:ca-central-1:${this.account}:domain/${opensearchStack.domainName}/*`],
           actions: [
           "es:ESHttpDelete",
           "es:ESHttpGet",
@@ -52,14 +52,14 @@ export class DmsStack extends Stack {
 
     //Get the ID's of all the public subnets in the vpc
     let subnets = [];
-    for(let i = 0; i<vpcStack.vpc.publicSubnets.length; i++){
-        subnets.push(vpcStack.vpc.publicSubnets[i].subnetId);
+    for(let i = 0; i<vpcStack.vpc.isolatedSubnets.length; i++){
+        subnets.push(vpcStack.vpc.isolatedSubnets[i].subnetId);
     }
 
     // Create a subnet group in the VPC that has access to both the postgresql db and opensearch
     const subnet = new dms.CfnReplicationSubnetGroup(this, 'SubnetGroup', {
         replicationSubnetGroupIdentifier: 'cdk-subnetgroup',
-        replicationSubnetGroupDescription: 'subnets that have access to my data source and target.',
+        replicationSubnetGroupDescription: 'subnets that have access to my rds source and target opensearch cluster.',
         subnetIds: subnets,
     });
 
@@ -89,7 +89,8 @@ export class DmsStack extends Stack {
         port: 5432,
         databaseName: mySecretFromName.secretValueFromJson("dbname").unsafeUnwrap(),
         username: mySecretFromName.secretValueFromJson("username").unsafeUnwrap(),
-        password: mySecretFromName.secretValueFromJson("password").unsafeUnwrap()
+        password: mySecretFromName.secretValueFromJson("password").unsafeUnwrap(),
+        extraConnectionAttributes: "heartbeatEnable=true"
     });
 
     // Create the opensearch target endpoint
