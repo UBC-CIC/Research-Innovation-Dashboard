@@ -19,14 +19,13 @@ export default function SearchComponent(props) {
   const [publicationsSearchResultPage, setPublicationsSearchResultPage] =
     useState(1);
 
-  let { anyDepartmentFilter, anyFacultyFilter, JournalFilter } = useParams();
+  let { anyDepartmentFilter, anyFacultyFilter, journalFilter } = useParams();
 
   let selectedDepartmentsArray = [];
   let selectedFacultyArray = [];
   let selectedJournalFilter = [];
 
   if (!anyDepartmentFilter || anyDepartmentFilter === " ") {
-    console.log("BELLO BELLO");
     selectedDepartmentsArray = [];
     anyDepartmentFilter = " ";
   } else {
@@ -38,11 +37,11 @@ export default function SearchComponent(props) {
   } else {
     selectedFacultyArray = anyFacultyFilter.split("&&");
   }
-  if (!JournalFilter || JournalFilter === " ") {
+  if (!journalFilter || journalFilter === " ") {
     selectedJournalFilter = [];
-    JournalFilter = " ";
+    journalFilter = " ";
   } else {
-    selectedJournalFilter = JournalFilter.split("&&");
+    selectedJournalFilter = journalFilter.split("&&");
   }
 
   //for researcher filters
@@ -57,7 +56,7 @@ export default function SearchComponent(props) {
   const [selectedJournals, setSelectedJournals] = useState(
     selectedJournalFilter
   );
-  const [journalPath, setJournalPath] = useState(JournalFilter);
+  const [journalPath, setJournalPath] = useState(journalFilter);
 
   useEffect(() => {
     //if there are selected departments, join items in array to create 1 string (different departments separated by &&), replace all spaces with %20

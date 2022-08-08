@@ -142,6 +142,7 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals }) => {
           multiple
           options={journalOptions}
           getOptionLabel={(journal) => journal}
+          defaultValue={selectedJournals && selectedJournals}
           disableListWrap
           PopperComponent={StyledPopper}
           ListboxComponent={ListboxComponent}
