@@ -5,10 +5,8 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import React from "react";
 import placeholderResearchPhoto from "../../assets/images/researcherPlaceholderImage.png";
-import Button from "@mui/material/Button";
-import { useState, useEffect } from "react";
-import Pagination from '@mui/material/Pagination';
-import Box from '@mui/material/Box';
+import Pagination from "@mui/material/Pagination";
+import Box from "@mui/material/Box";
 
 export default function ResearcherSearchResultsComponent(props) {
   const { researchSearchResults } = props;
@@ -16,7 +14,11 @@ export default function ResearcherSearchResultsComponent(props) {
   let numberOfResearcherPerPage = 6;
 
   function researcherPaginationCallback(data, index) {
-    if((props.researcherSearchResultPage-1)*numberOfResearcherPerPage <= index && index < props.researcherSearchResultPage*numberOfResearcherPerPage) {
+    if (
+      (props.researcherSearchResultPage - 1) * numberOfResearcherPerPage <=
+        index &&
+      index < props.researcherSearchResultPage * numberOfResearcherPerPage
+    ) {
       return data;
     }
   }
@@ -71,13 +73,21 @@ export default function ResearcherSearchResultsComponent(props) {
       )}
       {ResearchResultsElement}
       <Grid container>
-        <Grid item xs={12} sx={{m: "5%"}}>
-          <Box 
-            display="flex" 
-            alignItems="center"
-            justifyContent="center"
-          >
-            {researchSearchResults.length !== 0 && <Pagination size="large" defaultPage={1} page={props.researcherSearchResultPage} count={Math.ceil(researchSearchResults.length/numberOfResearcherPerPage)} onChange={(event, value)=>{props.setResearcherSearchResultPage(value)}} />}
+        <Grid item xs={12} sx={{ m: "5%" }}>
+          <Box display="flex" alignItems="center" justifyContent="center">
+            {researchSearchResults.length !== 0 && (
+              <Pagination
+                size="large"
+                defaultPage={1}
+                page={props.researcherSearchResultPage}
+                count={Math.ceil(
+                  researchSearchResults.length / numberOfResearcherPerPage
+                )}
+                onChange={(event, value) => {
+                  props.setResearcherSearchResultPage(value);
+                }}
+              />
+            )}
           </Box>
         </Grid>
       </Grid>

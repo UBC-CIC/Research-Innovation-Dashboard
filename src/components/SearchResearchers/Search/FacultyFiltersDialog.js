@@ -18,8 +18,6 @@ const FacultyFiltersDialog = ({
   selectedFaculties,
   handleCheckFaculty,
 }) => {
-  //query will go here to apply filter
-
   const renderAllFaculties = () => {
     return (
       allFaculties && (
