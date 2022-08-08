@@ -325,8 +325,8 @@ export const searchResearcher = /* GraphQL */ `
   }
 `;
 export const similarResearchers = /* GraphQL */ `
-  query SimilarResearchers($keywordsString: String!, $scopus_id: String!) {
-    similarResearchers(keywordsString: $keywordsString, scopus_id: $scopus_id) {
+  query SimilarResearchers($scopus_id: String!) {
+    similarResearchers(scopus_id: $scopus_id) {
       campus
       email
       first_name

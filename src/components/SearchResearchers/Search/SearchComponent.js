@@ -9,54 +9,54 @@ import ResearcherSearchResultsComponent from "../ResearcherSearchResultsComponen
 import PublicationSearchResultsComponent from "../PublicationSearchResultsComponent";
 import ResearcherFilters from "./ResearcherFilters";
 import PublicationFilters from "./PublicationFilters";
-import {useParams} from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
   const [publicationSearchResults, setPublicationSearchResults] = useState([]);
-  const [researcherSearchResultPage, setResearcherSearchResultPage] = useState(1);
-  const [publicationsSearchResultPage, setPublicationsSearchResultPage] = useState(1);
+  const [researcherSearchResultPage, setResearcherSearchResultPage] =
+    useState(1);
+  const [publicationsSearchResultPage, setPublicationsSearchResultPage] =
+    useState(1);
 
-  let {anyDepartmentFilter, anyFacultyFilter, JournalFilter} = useParams();
+  let { anyDepartmentFilter, anyFacultyFilter, journalFilter } = useParams();
 
   let selectedDepartmentsArray = [];
   let selectedFacultyArray = [];
   let selectedJournalFilter = [];
 
-  
-  if(!anyDepartmentFilter || anyDepartmentFilter === " "){
-    console.log("BELLO BELLO")
+  if (!anyDepartmentFilter || anyDepartmentFilter === " ") {
     selectedDepartmentsArray = [];
-    anyDepartmentFilter = " "
-  }
-  else {
+    anyDepartmentFilter = " ";
+  } else {
     selectedDepartmentsArray = anyDepartmentFilter.split("&&");
   }
-  if(!anyFacultyFilter || anyFacultyFilter === " "){
+  if (!anyFacultyFilter || anyFacultyFilter === " ") {
     selectedFacultyArray = [];
-    anyFacultyFilter = " "
-  }
-  else {
+    anyFacultyFilter = " ";
+  } else {
     selectedFacultyArray = anyFacultyFilter.split("&&");
   }
-  if(!JournalFilter || JournalFilter === " "){
+  if (!journalFilter || journalFilter === " ") {
     selectedJournalFilter = [];
-    JournalFilter = " "
-  }
-  else {
-    selectedJournalFilter = JournalFilter.split("&&");
+    journalFilter = " ";
+  } else {
+    selectedJournalFilter = journalFilter.split("&&");
   }
 
   //for researcher filters
-  const [selectedDepartments, setSelectedDeparments] = useState(selectedDepartmentsArray);
-  const [selectedFaculties, setSelectedFaculties] = useState(selectedFacultyArray);
+  const [selectedDepartments, setSelectedDeparments] = useState(
+    selectedDepartmentsArray
+  );
+  const [selectedFaculties, setSelectedFaculties] =
+    useState(selectedFacultyArray);
   const [departmentPath, setDepartmentPath] = useState(anyDepartmentFilter);
   const [facultyPath, setFacultyPath] = useState(anyFacultyFilter);
   //for publication filters
-  const [selectedJournals, setSelectedJournals] = useState(selectedJournalFilter);
-  const [journalPath, setJournalPath] = useState(JournalFilter);
-
-  console.log(selectedDepartments);
+  const [selectedJournals, setSelectedJournals] = useState(
+    selectedJournalFilter
+  );
+  const [journalPath, setJournalPath] = useState(journalFilter);
 
   useEffect(() => {
     //if there are selected departments, join items in array to create 1 string (different departments separated by &&), replace all spaces with %20
@@ -82,7 +82,7 @@ export default function SearchComponent(props) {
     //Selected Journal
     if (selectedJournals.length > 0) {
       let JournalPath = selectedJournals[0];
-      for(let i = 1; i<selectedJournals.length; i++){
+      for (let i = 1; i < selectedJournals.length; i++) {
         JournalPath = JournalPath + "&&" + selectedJournals[i];
       }
       setJournalPath(JournalPath);
@@ -114,7 +114,9 @@ export default function SearchComponent(props) {
                   facultyPath={facultyPath}
                   journalPath={journalPath}
                   setResearcherSearchResultPage={setResearcherSearchResultPage}
-                  setPublicationsSearchResultPage={setPublicationsSearchResultPage}
+                  setPublicationsSearchResultPage={
+                    setPublicationsSearchResultPage
+                  }
                 />
                 <Paper
                   square={true}
@@ -177,7 +179,9 @@ export default function SearchComponent(props) {
               <PublicationSearchResultsComponent
                 publicationSearchResults={publicationSearchResults}
                 publicationsSearchResultPage={publicationsSearchResultPage}
-                setPublicationsSearchResultPage={setPublicationsSearchResultPage}
+                setPublicationsSearchResultPage={
+                  setPublicationsSearchResultPage
+                }
               />
             </Grid>
           </Grid>
