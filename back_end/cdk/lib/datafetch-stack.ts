@@ -29,9 +29,18 @@ export class DataFetchStack extends cdk.Stack {
       description: 'Contains the psycopg2 library',
     });
 
+    // The layer containing the pyjarowinler library
+    const pyjarowinkler = new lambda.LayerVersion(this, 'pyjarowinkler', {
+      code: lambda.Code.fromAsset('layers/pyjarowinkler.zip'),
+      compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
+      description: 'Contains the pyjarowinkler library',
+    });
+
     /*
       Define Lambdas and add correct permissions
     */
+
+   /*
     const researcherFetch = new lambda.Function(this, 'researcherFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'researcherFetch.lambda_handler',
@@ -55,6 +64,7 @@ export class DataFetchStack extends cdk.Stack {
         'SecretsManagerReadWrite',
       ),
     );
+    */
 
     const elsevierFetch = new lambda.Function(this, 'elsevierFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
