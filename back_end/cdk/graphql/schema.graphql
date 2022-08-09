@@ -50,7 +50,7 @@ type Query {
   getResearcherRankingsByFaculty(prime_faculty: String!): [Ranking]
   searchPublications(search_value: String!): [Publication]
   searchResearcher(search_value: String!): [ResearcherOpenSearch]
-  similarResearchers(keywordsString: String!, scopus_id: String!): [ResearcherOpenSearch]
+  similarResearchers(scopus_id: String!): [ResearcherOpenSearch]
   totalPublicationPerYear: [pubsPerYear]
   wordCloud: [wordCloud]
 }

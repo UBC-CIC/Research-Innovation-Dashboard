@@ -17,6 +17,7 @@ import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePri
 export class OpensearchStack extends Stack {
     public readonly devDomain: opensearch.Domain;
     public readonly opensearchFunction: lambda.Function;
+    public readonly domainName: string;
 
     constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
     super(scope, id, {
@@ -24,6 +25,8 @@ export class OpensearchStack extends Stack {
           region: 'ca-central-1'
       },
     });
+
+    this.domainName = 'vpri-cdk-opensearch-domain'
 
     //Create a role for lambda to access opensearch
     const lambdaRole = new Role(this, 'OpenSearchLambdaRole', {
@@ -36,7 +39,8 @@ export class OpensearchStack extends Stack {
                         effect: Effect.ALLOW,
                         actions: [
                             // Opensearch
-                            "es:*",
+                            "es:ESHttpGet",
+                            "es:ESHttpPost",
                             // VPC
                             'ec2:CreateNetworkInterface',
                             'ec2:Describe*',
@@ -49,12 +53,13 @@ export class OpensearchStack extends Stack {
         },
     });
     
-    //Create a policy statemnet to allow the lambda to access opensearch 
+    //The opensearch policy only allows ESHttp from lambda with the correct role.
+    //The policy only allows access to the specfic Opensearch domain
     const openSearchPolicyStatement = new PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: [ 'es:*' ],
+        actions: [ 'es:ESHttp*' ],
         principals: [ new ArnPrincipal(lambdaRole.roleArn) ],
-        resources: [ '*' ],
+        resources: [ `arn:aws:es:ca-central-1:${this.account}:domain/${this.domainName}` ],
     });
 
     // create opensearch service linked role. Without this role you cannot attach a vpc to opensearch
@@ -76,7 +81,7 @@ export class OpensearchStack extends Stack {
         domainName: 'vpri-cdk-opensearch-domain',
         accessPolicies: [openSearchPolicyStatement],
         vpc: vpcStack.vpc,
-        vpcSubnets: [vpcStack.vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC})],
+        vpcSubnets: [vpcStack.vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_ISOLATED})],
         securityGroups: [defaultSecurityGroup],
         zoneAwareness: {availabilityZoneCount : 2}
     });
