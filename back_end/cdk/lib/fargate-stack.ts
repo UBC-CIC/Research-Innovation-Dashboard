@@ -10,6 +10,7 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { VpcStack } from './vpc-stack';
 import { DatabaseStack } from './database-stack';
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 export class FargateStack extends Stack {
   constructor(scope: Construct, id: string, vpcStack: VpcStack, databaseStack: DatabaseStack, props?: StackProps) {
@@ -26,11 +27,15 @@ export class FargateStack extends Stack {
       enableFargateCapacityProviders: true,
     });
 
+    //Get secret ARN for policy statement below
+    const databaseSecret = secretsmanager.Secret.fromSecretNameV2(this, 'SecretFromName', databaseStack.secretPath);
+
     //Create a policy to access secret manager
     const accessSecretsManagerPolicy = new iam.PolicyDocument({
+      
       statements: [
         new iam.PolicyStatement({ 
-          resources: ['arn:aws:secretsmanager:ca-central-1:649335657496:secret:/service/publicationDB/dbcredentials-ZYaqNY'],
+          resources: [databaseSecret.secretArn],
           actions: ['secretsmanager:GetSecretValue'],
           effect: iam.Effect.ALLOW,
         }),
