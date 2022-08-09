@@ -256,7 +256,20 @@ switch(event.info.fieldName) {
     break;
     
   case "similarResearchers":
-    let keyWords = event.arguments.keywordsString.split(", ");
+    
+    
+    let scopusIDQuery = {
+      query: {
+        match_phrase: {
+          "scopus_id": event.arguments.scopus_id
+        }
+      }
+    }
+    
+    searchResult = await search(scopusIDQuery, "researcher_data", 10);
+    
+    let keyWords = searchResult[0]._source.keywords.split(", ");
+
     let keywordHashmap = new Map();
     
     for(let i = 0; i<keyWords.length; i++){

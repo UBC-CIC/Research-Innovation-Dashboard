@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-vpriapp-dev-130538-authRole",
+      "UnauthRoleArn": "arn:aws:iam::649335657496:role/amplify-vpriapp-dev-130538-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::649335657496:role/amplify-vpriapp-dev-130538-authRole",
+      "Region": "ca-central-1",
+      "DeploymentBucketName": "amplify-vpriapp-dev-130538-deployment",
+      "UnauthRoleName": "amplify-vpriapp-dev-130538-unauthRole",
+      "StackName": "amplify-vpriapp-dev-130538",
+      "StackId": "arn:aws:cloudformation:ca-central-1:649335657496:stack/amplify-vpriapp-dev-130538/09252720-e5d4-11ec-a7fc-02aee884baba",
+      "AmplifyAppId": "d2tqwxzio7j81v"
+    },
+    "categories": {
+      "auth": {
+        "vpriinnovationdashbo197a129c": {}
+      }
+    }
+  }
+}
