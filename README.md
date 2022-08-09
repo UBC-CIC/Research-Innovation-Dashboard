@@ -14,6 +14,8 @@
 
 # Deployment Guide
 
+To deploy this solution, please follow the steps laid out in the [Deployment Guide](docs/DeploymentGuide.md)
+
 # User Guide
 
 # Files And Directories
