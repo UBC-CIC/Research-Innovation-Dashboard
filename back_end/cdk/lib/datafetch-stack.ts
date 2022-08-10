@@ -36,15 +36,35 @@ export class DataFetchStack extends cdk.Stack {
       description: 'Contains the pyjarowinkler library',
     });
 
+    // The layer containing the pytz library
+    const pytz = new lambda.LayerVersion(this, 'pytz', {
+      code: lambda.Code.fromAsset('layers/pytz.zip'),
+      compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
+      description: 'Contains the pytz library, used to get the correct timezone when fetching the date',
+    });
+
     /*
       Define Lambdas and add correct permissions
     */
 
-   /*
+    const createTables = new lambda.Function(this, 'createTables', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'createTables.lambda_handler',
+      layers: [psycopg2],
+      code: lambda.Code.fromAsset('lambda/createTables'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    createTables.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'SecretsManagerReadWrite',
+      ),
+    );
+   
     const researcherFetch = new lambda.Function(this, 'researcherFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'researcherFetch.lambda_handler',
-      layers: [psycopg2],
+      layers: [psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/researcherFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
@@ -64,12 +84,11 @@ export class DataFetchStack extends cdk.Stack {
         'SecretsManagerReadWrite',
       ),
     );
-    */
 
     const elsevierFetch = new lambda.Function(this, 'elsevierFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'elsevierFetch.lambda_handler',
-      layers: [requests, psycopg2],
+      layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/elsevierFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
@@ -94,7 +113,7 @@ export class DataFetchStack extends cdk.Stack {
     const orcidFetch = new lambda.Function(this, 'orcidFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'orcidFetch.lambda_handler',
-      layers: [requests, psycopg2],
+      layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/orcidFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
@@ -116,7 +135,7 @@ export class DataFetchStack extends cdk.Stack {
     const publicationFetch = new lambda.Function(this, 'publicationFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'publicationFetch.lambda_handler',
-      layers: [requests, psycopg2],
+      layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/publicationFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
@@ -139,6 +158,10 @@ export class DataFetchStack extends cdk.Stack {
     /*
         Set up step function
     */
+    const createTablesInvoke = new tasks.LambdaInvoke(this, 'Create DB Tables', {
+      lambdaFunction: createTables,
+      outputPath: '$.Payload',
+    });
     const researcherFetchInvoke = new tasks.LambdaInvoke(this, 'Fetch Researchers', {
       lambdaFunction: researcherFetch,
       outputPath: '$.Payload',
@@ -169,7 +192,8 @@ export class DataFetchStack extends cdk.Stack {
     })
     publicationMap.iterator(publicationFetchInvoke);
 
-    const definition = researcherMap
+    const definition = createTablesInvoke
+      .next(researcherMap)
       .next(elsevierFetchInvoke)
       .next(orcidFetchInvoke)
       .next(publicationMap);
