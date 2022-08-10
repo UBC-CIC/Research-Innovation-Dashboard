@@ -143,7 +143,7 @@ def storeLastUpdated(updatedTable, credentials):
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     queryline1 = "INSERT INTO public.update_data(table_name, last_updated) "
-    queryline2 = "VALUES ('" + updatedTable + "', " + dt_string + "')"
+    queryline2 = "VALUES ('" + updatedTable + "', '" + dt_string + "')"
     queryline3 = "ON CONFLICT (table_name) DO UPDATE "
     queryline4 = "SET last_updated='" + dt_string + "'"
     cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
