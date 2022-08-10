@@ -853,7 +853,6 @@ function Login(props) {
                 <Grid container item xs={12}>
                   <span>
                     Please replace your temporary password with a new password
-                    for <strong>{formState.email}</strong>.
                   </span>
                 </Grid>
                 <BannerMessage type={"error"} typeCheck={timeLimitError !== ""}>
