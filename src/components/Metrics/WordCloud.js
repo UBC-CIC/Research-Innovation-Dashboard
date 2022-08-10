@@ -82,7 +82,7 @@ const WordCloud = () => {
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
       <Typography variant="h4" align="center">
-        Top 100 Keywords In UBC Research
+        Top 100 Keywords for all Research
       </Typography>
       {!words ? (
         <CircularProgress sx={{ py: "5em" }} />

@@ -26,6 +26,7 @@ export class AppsyncStack extends Stack {
       parameterName: 'VPRIGraphQLAPIIdOutput',
     }).stringValue;
 
+    /*THIS POLICY NEEDS TO BE CHANGED!*/
     //Create a role for lambda to access the postgresql database
     const lambdaRole = new Role(this, 'PostgresLambdaRole', {
         roleName: 'PostgresLambdaRole',

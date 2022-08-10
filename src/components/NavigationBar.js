@@ -164,8 +164,11 @@ function Navbar(props) {
             <NavButton onClick={() => navigate("/Rankings/")}>
               Rankings
             </NavButton>
-            <NavButton onClick={() => navigate("/UBC/Metrics/")}>
-              UBC Metrics
+            <NavButton onClick={() => navigate("/Metrics/")}>
+              Metrics
+            </NavButton>
+            <NavButton onClick={() => navigate("/AdminDashboard/")}>
+              Admin Dashboard
             </NavButton>
           </ButtonGroup>{" "}
           {/* logout button */}
