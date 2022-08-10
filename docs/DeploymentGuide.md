@@ -6,7 +6,6 @@ Before you deploy, you must have the following installed on your device:
 - [GitHub Account](https://github.com/)
 - [AWS CLI](https://aws.amazon.com/cli/)
 - [AWS SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-- [MySQL Shell](https://dev.mysql.com/downloads/shell/) (or `sudo apt install mysql-client-core-8.0` on Linux/WSL)
 
 If you are on a Windows device, it is recommended to install the [Windows Subsystem For Linux](https://docs.microsoft.com/en-us/windows/wsl/install), which lets you run a Linux terminal on your Windows computer natively. Some of the steps will require its use. [Windows Terminal](https://apps.microsoft.com/store/detail/windows-terminal/9N0DX20HK701) is also recommended for using WSL.
 
@@ -51,12 +50,30 @@ The **Deploy to Amplify Console** button will take you to your AWS console to de
 </a>
 
 1. On the AWS console. select your region on the top right, then connect to GitHub.
-   ![Amplify console main screen](images/amplify-console-01.png)
-2. Select the **amplifyconsole-vpri-backend-role** we made previously for the deployment role, and then press `Save and Deploy`![alt text](images/amplify-console-02.png)
-3. The deployment will take a few minutes. Wait until the status shows **Verify** in green![alt text](images/amplify-console-03.png)
-4. Click on left taskbar to open menu, click on Rewrites and redirects, and click on edit![alt text](images/amplify-console-04.png)
+   ![Amplify console main screen](images/amplifyConsole/amplify-console-01.png)
+2. Select the **amplifyconsole-vpri-backend-role** we made previously for the deployment role, and then press `Save and Deploy`![alt text](images/amplifyConsole/amplify-console-02.png)
+3. The deployment will take a few minutes. Wait until the status shows **Verify** in green![alt text](images/amplifyConsole/amplify-console-03.png)
+4. Click on left taskbar to open menu, click on Rewrites and redirects, and click on edit![alt text](images/amplifyConsole/amplify-console-04.png)
 5. Click and replace the first rule's source address (or add a rule if there is none) to `</^((?!\.(css|gif|ico|jpg|js|png|txt|svg|woff|ttf)$).)*$/>`, click and replace target address to `/index.html`, and select and replace **type** with `200 (Rewrite)`, then save. Add a second rule, with the source address as `</^((?!\.(css|gif|ico|jpg|js|png|txt|svg|woff|ttf)$).)*$/>`, the target address as `/index.html`, and the **type** with `404 (Rewrite)`.
    Refer to [AWS's Page on Single Page Apps](https://docs.aws.amazon.com/amplify/latest/userguide/redirects.html#redirects-for-single-page-web-apps-spa) for further information on why we did that
-   ![alt text](images/amplify-console-05.png)
+   ![alt text](images/amplifyConsole/amplify-console-05.png)
 
    # Step 3: Backend Deployment
+
+# Step 4: Creating a User
+
+To set up user accounts on the app, you will need to do the following steps
+
+1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Cognito` in the search bar.
+   ![alt text](images/webApp/webapp01.png)
+2. Click `User Pools` from the left hand sidebar and select the user pool that was created.
+   ![alt text](images/webApp/webapp02.png)
+3. Click the `Users` tab, then click `Create User`.
+   ![alt text](images/webApp/webapp03.png)
+4. For Invitation message, select `Send an email invitation`. Then fill in the user's email address in the Email address text field below. For Temporary password, select `Generate a password`. THen click `Create User`.
+   ![alt text](images/webApp/webapp04.png)
+5. The user will receive an email to the email address that was previously entered containing their temporary password.
+   ![alt text](images/webApp/webapp05.png)
+6. When the user enters their email and temporary password on the sign in page of the app, they will then be prompted to replace their temporary password by setting a new password.
+   ![alt text](images/webApp/webapp06.png)
+7. The new user account has been created!
