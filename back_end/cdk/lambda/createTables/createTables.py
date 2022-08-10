@@ -89,10 +89,11 @@ def lambda_handler(event, context):
     cursor.execute(query)
     
     # Create Last Updated Table
-    comlumns = []
+    columns = []
     columns.append(createColumn('table_name', 'character varying', 'NOT NULL PRIMARY KEY', False))
     columns.append(createColumn('last_updated', 'character varying', '', True))
     query = createQuery('update_data', columns)
+    cursor.execute(query)
     
     cursor.close()
     connection.commit()
