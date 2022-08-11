@@ -58,7 +58,54 @@ The **Deploy to Amplify Console** button will take you to your AWS console to de
    Refer to [AWS's Page on Single Page Apps](https://docs.aws.amazon.com/amplify/latest/userguide/redirects.html#redirects-for-single-page-web-apps-spa) for further information on why we did that
    ![alt text](images/amplifyConsole/amplify-console-05.png)
 
-   # Step 3: Backend Deployment
+# Step 3: Backend Deployment
+It's time to set up everything that goes on behind the scenes! For more information on how the backend works, feel free to refer to the Architecture Deep Dive, but an understanding of the backend is not necessary for deployment.
+
+## Step 1: Install Dependencies
+
+The first step is to get into the backend folder. This can be done with the following commands:
+
+```bash
+cd back_end
+cd cdk
+```
+
+Now that you are in the backend directory, install the core dependencies with the following command:
+
+```bash
+npm install
+```
+
+## Step 2: CDK Deployment
+Initialize the CDK stacks (required only if you have not deployed this stack before). Note the CDK deployment assumes you are deploying in ca-central-1
+
+```bash
+cdk synth --profile your-profile-name
+cdk bootstrap aws://YOUR_AWS_ACCOUNT_ID/ca-centrla-1 --profile your-profile-name
+```
+
+Deploy the CDK stacks (this will take 30-45 minutes):
+
+If you run into any issues while deploying, refer to [Troubleshooting](#troubleshooting) for solutions.
+
+```
+cdk deploy --all --profile your-profile-name
+```
+
+You may also deploy the stacks individually (it is important to deploy the stack listed in the order below):
+```
+cdk deploy VpcStack  --profile your-profile-name
+cdk deploy databaseStack  --profile your-profile-name
+cdk deploy openSearchStack --profile your-profile-name
+cdk deploy dmsStack --profile your-profile-name
+cdk deploy appsyncStack --profile your-profile-name
+cdk deploy fargateStack --profile your-profile-name
+cdk deploy dataFetchStack --profile your-profile-name
+```
+
+
+### TroubleShooting
+
 
 # Step 4: Creating a User
 
