@@ -32,10 +32,9 @@ export class FargateStack extends Stack {
 
     //Create a policy to access secret manager
     const accessSecretsManagerPolicy = new iam.PolicyDocument({
-      
       statements: [
         new iam.PolicyStatement({ 
-          resources: [databaseSecret.secretArn],
+          resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:vpri/credentials/*`],
           actions: ['secretsmanager:GetSecretValue'],
           effect: iam.Effect.ALLOW,
         }),
@@ -76,8 +75,8 @@ export class FargateStack extends Stack {
       cluster,
       scheduledFargateTaskDefinitionOptions: {taskDefinition: taskDefinition},
       schedule: events.Schedule.cron({
-        minute: '0',
-        hour: '8',
+        minute: '40',
+        hour: '0',
         day: '1',
         month: '*',
       }),

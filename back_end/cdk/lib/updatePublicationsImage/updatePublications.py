@@ -3,6 +3,7 @@ import json
 import boto3
 import psycopg2
 import os
+import math
 
 print("Starting Update Publications")
 
@@ -34,7 +35,7 @@ def getResearcherNumDocuments(authorArray, instoken, apikey):
     """
     url = 'https://api.elsevier.com/content/author'
     headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
-    params = {'field': 'document-count', 'author_id': authorArray}
+    params = {'field': 'document-count,h-index', 'author_id': authorArray}
     response = requests.get(url, headers=headers, params=params)
     authorDataArray = response.json()['author-retrieval-response-list']['author-retrieval-response']
     return authorDataArray
@@ -70,7 +71,13 @@ def createListOfResearchersToUpdate():
         authorDataArray = getResearcherNumDocuments(authorArray, instoken, apikey)
         for k in range(len(authorDataArray)):
             num_documents = authorDataArray[k]['coredata']['document-count']
+            h_index = 0
+            if(authorDataArray[k]['h-index']):
+                h_index = authorDataArray[k]['h-index']
+            #If their number of documents changed update their h_index and add them to the scopus_id list     
             if(int(num_documents) > author_scopus_ids[i+k][1]):
+                #Update Researcher h_index
+                query = "UPDATE public.elsevier_data SET h_index="+str(h_index)+" WHERE id='"+author_scopus_ids[i+k][0]+"'"
                 researchersToUpdateArray.append(author_scopus_ids[i+k][0])
     
     cursor.close()
@@ -106,6 +113,7 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor):
     rjson = response.json()
     
     totalResults = int(rjson['search-results']['opensearch:totalResults'])
+    totalNumberOfPages = math.ceil(totalResults/25)
     
     
     #Check if the researchers new publication has already been inserted into the database.
@@ -116,63 +124,70 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor):
         print("No Publications To Get")
         return []
     
-    publications = rjson['search-results']['entry']
-    
     #For each of the researchers 25 new publications check if it is already in the database.
     #If the publication is not in the database add the publication to the missing publications list.
     missingPublications = []
-    for publication in publications:
-        keys = publication.keys()
-        id = ''
-        doi = ''
-        title = ''
-        keywords = []
-        journal = ''
-        cited_by = None
-        year_published = ''
-        link = ''
-        if(list(keys).count('dc:identifier')):
-            for c in publication['dc:identifier']:
-                if c.isdigit():
-                    id = id + c
-                    
-        #Check if the publication is already in the database
-        query = "SELECT COUNT(*) FROM publication_data WHERE id='"+id+"'"
-        cursor.execute(query)
-        results = cursor.fetchone()
-        #If publication not in the database we need to put into the db
-        if(results[0] == 0):
-            author_ids = []
-            author_names = []
-            if(list(keys).count('dc:title')):
-                title = publication['dc:title']
-            if(list(keys).count('prism:doi')):
-                doi = publication['prism:doi']
-            if(list(keys).count('authkeywords')):
-                keywords_string = publication['authkeywords']
-                keywords = keywords_string.split('|')
-                keywords = [keyword.strip() for keyword in keywords]
-            if (list(keys).count('prism:publicationName')):
-                journal = publication['prism:publicationName']
-            if (list(keys).count('citedby-count')):
-                cited_by = int(publication['citedby-count'])
-            if (list(keys).count('prism:coverDate')):
-                year_published = publication['prism:coverDate'][0:4]
-            if (list(keys).count('link')):
-                link = publication['link'][2]['@href']
-            if (list(keys).count('author')):
-                scopus_authors = publication['author']
-                for author in scopus_authors:
-                    author_ids.append(author['authid'])
-                    author_names.append(author['authname'])
-            missingPublications.append({'doi': doi, 'id': id, 'title': title, 
-                    'keywords': keywords, 'journal': journal, 'cited_by': cited_by, 
-                    'year_published': year_published, 'author_ids': author_ids, 
-                    'author_names': author_names, 'link': link})
-            StoredResults += 1
-        #Once we have all the new publications break out of the function
+    currentPage = 0
+    while(currentPage<totalNumberOfPages):
+        publications = rjson['search-results']['entry']
+        for publication in publications:
+            keys = publication.keys()
+            id = ''
+            doi = ''
+            title = ''
+            keywords = []
+            journal = ''
+            cited_by = None
+            year_published = ''
+            link = ''
+            if(list(keys).count('dc:identifier')):
+                for c in publication['dc:identifier']:
+                    if c.isdigit():
+                        id = id + c
+                        
+            #Check if the publication is already in the database
+            query = "SELECT COUNT(*) FROM publication_data WHERE id='"+id+"'"
+            cursor.execute(query)
+            results = cursor.fetchone()
+            #If publication not in the database we need to put into the db
+            if(results[0] == 0):
+                author_ids = []
+                author_names = []
+                if(list(keys).count('dc:title')):
+                    title = publication['dc:title']
+                if(list(keys).count('prism:doi')):
+                    doi = publication['prism:doi']
+                if(list(keys).count('authkeywords')):
+                    keywords_string = publication['authkeywords']
+                    keywords = keywords_string.split('|')
+                    keywords = [keyword.strip() for keyword in keywords]
+                if (list(keys).count('prism:publicationName')):
+                    journal = publication['prism:publicationName']
+                if (list(keys).count('citedby-count')):
+                    cited_by = int(publication['citedby-count'])
+                if (list(keys).count('prism:coverDate')):
+                    year_published = publication['prism:coverDate'][0:4]
+                if (list(keys).count('link')):
+                    link = publication['link'][2]['@href']
+                if (list(keys).count('author')):
+                    scopus_authors = publication['author']
+                    for author in scopus_authors:
+                        author_ids.append(author['authid'])
+                        author_names.append(author['authname'])
+                missingPublications.append({'doi': doi, 'id': id, 'title': title, 
+                        'keywords': keywords, 'journal': journal, 'cited_by': cited_by, 
+                        'year_published': year_published, 'author_ids': author_ids, 
+                        'author_names': author_names, 'link': link})
+                StoredResults += 1
+        #Check if we got all the new publications
         if(StoredResults == totalResults):
             break
+        #Increment current page counter and get the next page of publications if we do not have them all yet
+        currentPage += 1
+        next_url = rjson['search-results']['link'][2]['@href']
+        response = requests.get(next_url, headers=headers)
+        rjson = response.json()
+    print(currentPage)
     return missingPublications
 
 def getResearcherCurrentNumDocuments(author_id, cursor):
@@ -294,6 +309,9 @@ def updateResearchers(researchersToUpdateArray):
     
     cursor.close()
     connection.commit()
+
+#Need to remove publications no logner needed!
+#Need to change updated researchers num_citations
 
 #Create a list of researchers that need to be updated
 researcherArray = createListOfResearchersToUpdate()
