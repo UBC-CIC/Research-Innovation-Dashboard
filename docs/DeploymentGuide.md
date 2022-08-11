@@ -81,7 +81,7 @@ Initialize the CDK stacks (required only if you have not deployed this stack bef
 
 ```bash
 cdk synth --profile your-profile-name
-cdk bootstrap aws://YOUR_AWS_ACCOUNT_ID/ca-centrla-1 --profile your-profile-name
+cdk bootstrap aws://YOUR_AWS_ACCOUNT_ID/ca-central-1 --profile your-profile-name
 ```
 
 Deploy the CDK stacks (this will take 30-45 minutes):
@@ -103,6 +103,9 @@ cdk deploy fargateStack --profile your-profile-name
 cdk deploy dataFetchStack --profile your-profile-name
 ```
 
+After your CDK stacks have deployed you will need to login to the AWS consol and click a few buttons one time.
+
+Explain DMS button to click
 
 ### TroubleShooting
 
