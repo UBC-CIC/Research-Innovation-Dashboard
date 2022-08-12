@@ -1,7 +1,5 @@
-import json
 import csv
 import codecs
-import requests
 import boto3
 
 s3_client = boto3.client("s3")
@@ -43,3 +41,5 @@ def lambda_handler(event, context):
     bucket = s3.Bucket(bucket_name)
     key = 'researcher_data/scopus_clean.csv'
     bucket.upload_file('/tmp/scopus_clean.csv', key)
+
+    return event

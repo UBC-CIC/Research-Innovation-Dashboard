@@ -1,12 +1,14 @@
-import json
 import csv
 import codecs
 import requests
 import boto3
+from pyjarowinkler.distance import get_jaro_distance
 
 s3_client = boto3.client("s3")
+ssm_client = boto3.client('ssm')
 instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
-api_key = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
+apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
+elsevier_headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
 
 def split_array(lst, n):
     ret_arr = []
@@ -16,7 +18,9 @@ def split_array(lst, n):
 
 def lambda_handler(event, context):
     bucket_name = 'vpriprofiledata'
-    key = 'researcher_data/no_matches.csv'
+    #key = 'researcher_data/no_matches.csv'
+    key = event['file_key']
+    iteration_number = event['iteration_number']
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
     rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
     matches = []
@@ -34,9 +38,9 @@ def lambda_handler(event, context):
         for author in author_subset:
             author_ids.append(author['CLOSEST_MATCH_ID'])
         url = 'https://api.elsevier.com/content/author'
-        elsevier_headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : '851402ba76fb18eeaf74ca676a446723', 'X-ELS-Insttoken' : 'ac76fb44a91403afb1c4fbda502181f1'}
         query = {'author_id' : author_ids}
         response = requests.get(url, headers=elsevier_headers, params=query)
+        print(response.headers)
         if (len(author_ids) == 1):
             results = response.json()['author-retrieval-response']
         else:
@@ -94,7 +98,7 @@ def lambda_handler(event, context):
                         break
     
     # Store the newly found matches
-    with open('/tmp/matches2.csv', mode='w', newline='', encoding='utf-8-sig') as no_matches_file:
+    with open('/tmp/found_matches.csv', mode='w', newline='', encoding='utf-8-sig') as no_matches_file:
         writer = csv.writer(no_matches_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'UBC_EMPLOYEE_ID', 
                     'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
@@ -112,8 +116,8 @@ def lambda_handler(event, context):
     #upload the data into s3
     s3 = boto3.resource('s3')
     bucket = s3.Bucket(bucket_name)
-    key = 'researcher_data/no_matches.csv'
-    bucket.upload_file('/tmp/no_matches.csv', key)
+    key = 'researcher_data/found_matches/found_matches' + str(iteration_number) + '.csv'
+    bucket.upload_file('/tmp/found_matches.csv', key)
     
     # Store the missing matches
     with open('/tmp/no_matches_cleaned.csv', mode='w', newline='', encoding='utf-8-sig') as matches:
@@ -133,5 +137,7 @@ def lambda_handler(event, context):
                              match['CLOSEST_MATCH_NAME'], match['CLOSEST_MATCH_ID'], match['CLOSEST_MATCH_NAME_CLEANED']])
     
     #upload the data into s3
-    key = 'researcher_data/matches.csv'
-    bucket.upload_file('/tmp/matches.csv', key)
+    key = 'researcher_data/no_matches_cleaned/no_matches_cleaned' + str(iteration_number) + '.csv'
+    bucket.upload_file('/tmp/no_matches_cleaned.csv', key)
+
+    return

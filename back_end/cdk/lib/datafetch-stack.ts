@@ -43,9 +43,70 @@ export class DataFetchStack extends cdk.Stack {
       description: 'Contains the pytz library, used to get the correct timezone when fetching the date',
     });
 
+    // The layer containing the numpy library (AWS Managed)
+    const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', 'arn:aws:lambda:ca-central-1:336392948345:layer:AWSDataWrangler-Python39:5')
+
     /*
       Define Lambdas and add correct permissions
     */
+    const scopusClean = new lambda.Function(this, 'scopusClean', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'scopusClean.lambda_handler',
+      code: lambda.Code.fromAsset('lambda/scopusClean'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    scopusClean.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonS3FullAccess',
+      ),
+    );
+
+    const ubcClean = new lambda.Function(this, 'ubcClean', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'ubcClean.lambda_handler',
+      code: lambda.Code.fromAsset('lambda/ubcClean'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    ubcClean.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonS3FullAccess',
+      ),
+    );
+
+    const compareNames = new lambda.Function(this, 'compareNames', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'compareNames.lambda_handler',
+      layers: [pyjarowinkler, numpy],
+      code: lambda.Code.fromAsset('lambda/compareNames'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    compareNames.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonS3FullAccess',
+      ),
+    );
+
+    const cleanNoMatches = new lambda.Function(this, 'cleanNoMatches', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'cleanNoMatches.lambda_handler',
+      layers: [pyjarowinkler, requests],
+      code: lambda.Code.fromAsset('lambda/cleanNoMatches'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    cleanNoMatches.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonS3FullAccess',
+      ),
+    );
+    cleanNoMatches.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonSSMReadOnlyAccess',
+      ),
+    );
 
     const createTables = new lambda.Function(this, 'createTables', {
       runtime: lambda.Runtime.PYTHON_3_9,
@@ -156,7 +217,46 @@ export class DataFetchStack extends cdk.Stack {
     );
 
     /*
-        Set up step function
+        Set up name matching step function
+    */
+    const scopusCleanInvoke = new tasks.LambdaInvoke(this, 'Clean Scopus Data', {
+      lambdaFunction: scopusClean,
+      outputPath: '$.Payload',
+    });
+    const ubcCleanInvoke = new tasks.LambdaInvoke(this, 'Clean UBC Data', {
+      lambdaFunction: ubcClean,
+      outputPath: '$.Payload',
+    });
+    const compareNamesInvoke = new tasks.LambdaInvoke(this, 'Perform Name Comparison', {
+      lambdaFunction: compareNames,
+      outputPath: '$.Payload',
+    });
+    const compareNamesMap = new sfn.Map(this, 'Name Comparison Map', {
+      maxConcurrency: 40,
+      itemsPath: '$'
+    });
+    compareNamesMap.iterator(compareNamesInvoke);
+    const cleanNoMatchesInvoke = new tasks.LambdaInvoke(this, 'Perform Additional Comparisons On Missed Matches', {
+      lambdaFunction: cleanNoMatches,
+      outputPath: '$.Payload',
+    });
+    const cleanNoMatchesMap = new sfn.Map(this, 'Missing Matches Map', {
+      maxConcurrency: 1,
+      itemsPath: '$'
+    });
+    cleanNoMatchesMap.iterator(cleanNoMatchesInvoke);
+
+    const nameMatchDefinition = scopusCleanInvoke
+    .next(ubcCleanInvoke)
+    .next(compareNamesMap)
+    .next(cleanNoMatchesMap);
+  
+  const nameMatch = new sfn.StateMachine(this, 'Name Match State Machine', {
+    definition: nameMatchDefinition,
+  });
+
+    /*
+        Set up data fetch step function
     */
     const createTablesInvoke = new tasks.LambdaInvoke(this, 'Create DB Tables', {
       lambdaFunction: createTables,
@@ -192,14 +292,14 @@ export class DataFetchStack extends cdk.Stack {
     })
     publicationMap.iterator(publicationFetchInvoke);
 
-    const definition = createTablesInvoke
+    const dataFetchDefinition = createTablesInvoke
       .next(researcherMap)
       .next(elsevierFetchInvoke)
       .next(orcidFetchInvoke)
       .next(publicationMap);
     
-    const dataFetch = new sfn.StateMachine(this, 'StateMachine', {
-      definition,
+    const dataFetch = new sfn.StateMachine(this, 'Data Fetch State Machine', {
+      definition: dataFetchDefinition,
     });
 
 
