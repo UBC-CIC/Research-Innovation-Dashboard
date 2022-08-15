@@ -18,6 +18,8 @@ To deploy this solution, please follow the steps laid out in the [Deployment Gui
 
 # User Guide
 
+For instructions on how to navigate the web app interface, refer to the [Web App User Guide](docs/UserGuide.md).
+
 # Files And Directories
 
 ```text
