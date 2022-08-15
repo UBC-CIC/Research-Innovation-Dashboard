@@ -11,6 +11,7 @@
 | [License](#License)                                 | License details                                         |
 
 # High Level Architecture
+![Alt text](./docs/images/VPRI_Architechture.png?raw=true "Architecture")
 
 # Deployment Guide
 
