@@ -36,7 +36,7 @@ To deploy this solution, please follow the steps laid out in the [Deployment Gui
 │   │   ├── SearchResearchers/
 │   │   │   ├── AdvancedSearch/
 │   │   │   └── Search/
-│   │   ├── UBCMetrics/
+│   │   ├── Metrics/
 │   │   ├── LoadingWheel.js
 │   │   └── NavigationBar.js
 │   ├── graphql/

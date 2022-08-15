@@ -9,7 +9,7 @@ import { Routes, Route } from "react-router-dom";
 import SearchComponent from "../../components/SearchResearchers/Search/SearchComponent";
 import AdvancedSearchComponent from "../../components/SearchResearchers/AdvancedSearch/AdvancedSearchComponent";
 import Rankings from "../../components/Rankings/Rankings";
-import UbcMetrics from "../../components/UBCMetrics/UbcMetrics";
+import Metrics from "../../components/Metrics/Metrics";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,7 +52,7 @@ function PageContainer(props) {
             path="/Researchers/:scopusId"
             element={<ResearcherProfileOverview />}
           />
-          <Route path="/UBC/Metrics/" element={<UbcMetrics />} />
+          <Route path="/UBC/Metrics/" element={<Metrics />} />
           <Route path="/Rankings/" element={<Rankings />} />
           <Route
             path="/AdvancedSearch/:SearchForWhat/:AllWords/:ExactPhrase/:AnyWords/:NoneOfTheseWords/:Department/:Faculty/:yearFrom/:yearTo/:Journal"
