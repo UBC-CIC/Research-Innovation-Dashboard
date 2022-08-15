@@ -95,12 +95,12 @@ cdk deploy --all --profile your-profile-name
 You may also deploy the stacks individually (it is important to deploy the stack listed in the order below):
 ```
 cdk deploy VpcStack  --profile your-profile-name
-cdk deploy databaseStack  --profile your-profile-name
-cdk deploy openSearchStack --profile your-profile-name
-cdk deploy dmsStack --profile your-profile-name
-cdk deploy appsyncStack --profile your-profile-name
-cdk deploy fargateStack --profile your-profile-name
-cdk deploy dataFetchStack --profile your-profile-name
+cdk deploy DatabaseStack  --profile your-profile-name
+cdk deploy OpensearchStack --profile your-profile-name
+cdk deploy DmsStack --profile your-profile-name
+cdk deploy AppsyncStack --profile your-profile-name
+cdk deploy FargateStack --profile your-profile-name
+cdk deploy DataFetchStack --profile your-profile-name
 ```
 
 After your CDK stacks have deployed you will need to login to the AWS consol and click a few buttons one time.
