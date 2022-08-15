@@ -1,4 +1,3 @@
-import json
 import csv
 import codecs
 import boto3
@@ -41,11 +40,13 @@ def SearchIdsFirstName(ubc_name, scopus_id_rows, email):
         else:
             jaro_distance = 0
         #Check email
+        '''
         email_names = email.split('@')[0].split('.')
         for name in email_names:
             email_distance = get_jaro_distance(name, ubc_name, winkler=True, scaling=0.1)
             if (email_distance > jaro_distance):
                 jaro_distance = email_distance
+        '''
         if (jaro_distance >= max_jaro_distance):
             max_jaro_distance = jaro_distance
             matched_name = row['SCOPUS_NAME']
@@ -74,7 +75,7 @@ def PruneMatches(matches):
     return pruned_matches
 
 def lambda_handler(event, context):
-    bucket_name = 'vpriprofiledata'
+    bucket_name = 'vpri-innovation-dashboard'
     key = 'researcher_data/ubc_clean.csv'
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
     ubc_rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
@@ -84,7 +85,7 @@ def lambda_handler(event, context):
     found_matches = []
     no_matches = []
     duplicates = []
-    for i in range(len(ubc_rows)):
+    for i in range(event['startIndex'], event['endIndex']):
         row = ubc_rows[i]
         first_name = row['CLEANED_FIRST_NAME']
         last_name = row['CLEANED_LAST_NAME']
@@ -101,6 +102,51 @@ def lambda_handler(event, context):
                 duplicates = numpy.concatenate((duplicates, matches))
             elif len(matches) == 1:
                 found_matches = numpy.concatenate((found_matches, matches))
+    
+    # TODO: change 100 to environment variable
+    file_number = int(event['startIndex'] / 100)
+    
+    # Write matches to csv file
+    with open('/tmp/matches.csv', mode='w', newline='', encoding='utf-8-sig') as matches_file:
+        writer = csv.writer(matches_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'UBC_EMPLOYEE_ID', 
+                    'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
+                    'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
+                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'JARO_DISTANCE', 'CLOSEST_MATCH_NAME']
+        writer.writerow(file_headers)
+        for match in found_matches:
+            writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], 
+                             match['UBC_EMPLOYEE_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
+                             match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
+                             match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
+                             match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['SCOPUS_ID'], 
+                             match['JARO_DISTANCE'], match['SCOPUS_NAME']])
+    
+    # Upload the data into s3
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(bucket_name)
+    key = 'researcher_data/matches/matches' + str(file_number) + '.csv'
+    bucket.upload_file('/tmp/matches.csv', key)
+    
+    # Write the duplicates to a csv file
+    with open('/tmp/duplicates.csv', mode='w', newline='', encoding='utf-8-sig') as duplicates_file:
+        writer = csv.writer(duplicates_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'UBC_EMPLOYEE_ID', 
+                    'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
+                    'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
+                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'JARO_DISTANCE', 'CLOSEST_MATCH_NAME']
+        writer.writerow(file_headers)
+        for match in duplicates:
+            writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], 
+                             match['UBC_EMPLOYEE_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
+                             match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
+                             match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
+                             match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['SCOPUS_ID'], 
+                             match['JARO_DISTANCE'], match['SCOPUS_NAME']])
+    
+    # Upload the data into s3
+    key = 'researcher_data/duplicates/duplicates' + str(file_number) + '.csv'
+    bucket.upload_file('/tmp/duplicates.csv', key)
     
     # Write missing matches to csv file
     with open('/tmp/no_matches.csv', mode='w', newline='', encoding='utf-8-sig') as no_matches_file:
@@ -119,28 +165,8 @@ def lambda_handler(event, context):
                              match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['JARO_DISTANCE'],
                              match['SCOPUS_NAME'], match['SCOPUS_ID'], match['SCOPUS_CLEANED_LAST_NAME']])
     
-    #upload the data into s3
-    s3 = boto3.resource('s3')
-    bucket = s3.Bucket(bucket_name)
-    key = 'researcher_data/no_matches.csv'
+    # Upload the data into s3
+    key = 'researcher_data/no_matches/no_matches' + str(file_number) + '.csv'
     bucket.upload_file('/tmp/no_matches.csv', key)
     
-    # Write matches to csv file
-    with open('/tmp/matches.csv', mode='w', newline='', encoding='utf-8-sig') as matches:
-        writer = csv.writer(matches, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'UBC_EMPLOYEE_ID', 
-                    'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
-                    'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
-                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'JARO_DISTANCE', 'CLOSEST_MATCH_NAME']
-        writer.writerow(file_headers)
-        for match in found_matches:
-            writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], 
-                             match['UBC_EMPLOYEE_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
-                             match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
-                             match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
-                             match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['SCOPUS_ID'], 
-                             match['JARO_DISTANCE'], match['SCOPUS_NAME']])
-    
-    #upload the data into s3
-    key = 'researcher_data/matches.csv'
-    bucket.upload_file('/tmp/matches.csv', key)
+    return {'file_key': key, 'iteration_number': file_number}

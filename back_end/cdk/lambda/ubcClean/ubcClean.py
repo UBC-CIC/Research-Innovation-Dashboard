@@ -1,7 +1,5 @@
-import json
 import csv
 import codecs
-import requests
 import boto3
 
 s3_client = boto3.client("s3")
@@ -24,10 +22,11 @@ def lambda_handler(event, context):
          'Professor, University Killam', 'Research Associate']
     for i in range (len(ranks)):
         ranks[i] = ranks[i].replace(' ', '')
-    bucket_name = 'vpriprofiledata'
+    bucket_name = 'vpri-innovation-dashboard'
     key = 'researcher_data/ubc_data.csv'
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
     ubc_rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
+    clean_rows_count = 0
     
     with open('/tmp/ubc_clean.csv', mode='w', newline='', encoding='utf-8-sig') as ubc_clean:
         writer = csv.writer(ubc_clean, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -52,9 +51,18 @@ def lambda_handler(event, context):
                 values.append(first_name_clean)
                 values.append(last_name_clean)
                 writer.writerow(values)
+                clean_rows_count += 1
     
     #upload the data into s3
     s3 = boto3.resource('s3')
     bucket = s3.Bucket(bucket_name)
     key = 'researcher_data/ubc_clean.csv'
     bucket.upload_file('/tmp/ubc_clean.csv', key)
+    
+    nextStateInput = []
+    for i in range(int(clean_rows_count/100)):
+        nextStateInput.append({'startIndex': i * 100, 'endIndex': i * 100 + 99})
+        
+    nextStateInput.append({'startIndex': clean_rows_count - clean_rows_count % 100, 'endIndex': clean_rows_count})
+    
+    return nextStateInput

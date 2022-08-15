@@ -1,14 +1,12 @@
-import json
 import csv
 import codecs
-import requests
 import boto3
 
 s3_client = boto3.client("s3")
 
 def lambda_handler(event, context):
     
-    bucket_name = 'vpriprofiledata'
+    bucket_name = 'vpri-innovation-dashboard'
     key = 'researcher_data/scopus_ids.csv'
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
     csv_file = codecs.getreader("utf-8-sig")(data["Body"])
@@ -43,3 +41,5 @@ def lambda_handler(event, context):
     bucket = s3.Bucket(bucket_name)
     key = 'researcher_data/scopus_clean.csv'
     bucket.upload_file('/tmp/scopus_clean.csv', key)
+
+    return event

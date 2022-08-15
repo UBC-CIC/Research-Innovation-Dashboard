@@ -19,42 +19,12 @@ def getCredentials():
     credentials['db'] = secrets['dbname']
     return credentials
 
-def standardizeDepartment(department):
-    return department.replace('&', 'and').replace('Department of ', '').replace(' ', '').replace('-', '')
-
-def standardizeFaculty(faculty):
-    return faculty.replace('&', 'and').replace('Faculty of ', '').replace('School of', '').replace(' ', '').replace('-', '').replace('SocialSciences', 'Sciences')
-
-def getResearcher(scopus_row):
-    bucket_name = 'vpriprofiledata'
-    key = 'researcher_data/ubc_data.csv'
+def getFile(bucket_name, key):
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
-    rows = []
-    ret_row = None
+    rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
+    return rows
 
-    for row in csv.DictReader(codecs.getreader("utf-8")(data["Body"])):
-        preferred_first_name = scopus_row['First Name'] + ' ' + scopus_row['Other Name']
-        if (row['PREFERRED_LAST_NAME'] == scopus_row['Last Name'] and (row['PREFERRED_FIRST_NAME'] == preferred_first_name.strip() or
-            row['PREFERRED_FIRST_NAME'] == scopus_row['First Name'])):
-            rows.append(row)
-    
-    if (len(rows) > 1):
-        for row in rows:
-            if ((standardizeDepartment(row['PRIMARY_DEPARTMENT_AFFILIATION']) in standardizeDepartment(scopus_row['Department'])) or 
-                (standardizeDepartment(scopus_row['Department']) in standardizeDepartment(row['PRIMARY_DEPARTMENT_AFFILIATION'])) or
-                (standardizeFaculty(row['PRIMARY_FACULTY_AFFILIATION']) in standardizeFaculty(scopus_row['Faculty'])) or 
-                (standardizeFaculty(scopus_row['Faculty']) in standardizeFaculty(row['PRIMARY_FACULTY_AFFILIATION']))):
-                ret_row = row
-            else:
-                print(scopus_row['First Name'] + ' ' + scopus_row['Last Name'] + ' ' + standardizeDepartment(row['PRIMARY_DEPARTMENT_AFFILIATION']) + ' ' + standardizeDepartment(scopus_row['Department']) + ' ' + standardizeFaculty(row['PRIMARY_FACULTY_AFFILIATION']) + ' ' + standardizeFaculty(scopus_row['Faculty']))
-    elif (len(rows) == 1):
-        ret_row = rows[0]
-    else:
-        print("ERROR NO ROWS for " + scopus_row['First Name'] + ' ' + scopus_row['Last Name'])
-    
-    return ret_row
-    
-def storeResearcher(researcher, scopus_id):
+def storeResearcher(researcher, scopus_id, credentials):
     credentials = getCredentials()
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
@@ -80,13 +50,25 @@ def storeResearcher(researcher, scopus_id):
     connection.commit()
 
 def lambda_handler(event, context):
-    bucket_name = 'vpriprofiledata'
-    key = 'researcher_data/ScopusIDs_2018.csv'
-    data = s3_client.get_object(Bucket=bucket_name, Key=key)
-    rows = list(csv.DictReader(codecs.getreader("utf-8")(data["Body"])))
+    credentials = getCredentials()
+    bucket_name = 'vpri-innovation-dashboard'
     
-    for i in range(event['start_index'], event['end_index']):
-        if (rows[i]['Scopus ID'] != '#N/A'):
-            researcher = getResearcher(rows[i])
-            if (researcher != None):
-                storeResearcher(researcher, rows[i]['Scopus ID'])
+    # Fetch data from the matches folder
+    folder = 'researcher_data/matches/'
+    paginator = s3_client.get_paginator('list_objects')
+    pages = paginator.paginate(Bucket=bucket_name, Prefix=folder)
+    
+    for page in pages:
+        for obj in page['Contents']:
+            rows = getFile(bucket_name, obj['Key'])
+            for researcher in rows:
+                storeResearcher(researcher, researcher['SCOPUS_ID'], credentials)
+    
+    # Fetch data from the found_matches folder
+    folder = 'researcher_data/matches/'
+    paginator = s3_client.get_paginator('list_objects')
+    pages = paginator.paginate(Bucket=bucket_name, Prefix=folder)
+    
+    for page in pages:
+        for obj in page['Contents']:
+            rows = getFile(bucket_name, obj['Key'])

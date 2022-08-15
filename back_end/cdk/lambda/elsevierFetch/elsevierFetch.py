@@ -2,14 +2,12 @@ import json
 import requests
 import boto3
 import psycopg2
-import csv
-import codecs
-import math
 import os
+from datetime import datetime
+import pytz
 
 ssm_client = boto3.client('ssm')
 sm_client = boto3.client('secretsmanager')
-s3_client = boto3.client("s3")
 instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
 apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
 elsevier_headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
@@ -32,11 +30,12 @@ def getCredentials():
 Given an array of authors, stores the authors attached information in the 
 elsevier_data table of the database
 '''
-def storeAuthors(authors):
-    credentials = getCredentials()
+def storeAuthors(authors, credentials):
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     for author in authors:
+        now = datetime.now(pytz.timezone("Canada/Pacific"))
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S") + " PST"
         if 'num_citations' not in author.keys():
             author['num_citations'] = 0
         if 'num_documents' not in author.keys():
@@ -45,19 +44,19 @@ def storeAuthors(authors):
             author['h_index'] = 0
         if 'orcid_id' not in author.keys():
             author['orcid_id'] = '0'
-        queryline1 = "INSERT INTO public.elsevier_data(id, num_citations, num_documents, h_index, orcid_id) "
-        queryline2 = "VALUES ('" + str(author['scopus_id']) + "', " + str(author['num_citations']) + ", " + str(author['num_documents']) + ", " + str(author['h_index']) + ", '" + author['orcid_id'] + "')"
+        queryline1 = "INSERT INTO public.elsevier_data(id, num_citations, num_documents, h_index, orcid_id, last_updated) "
+        queryline2 = "VALUES ('" + str(author['scopus_id']) + "', " + str(author['num_citations']) + ", " + str(author['num_documents']) + ", " + str(author['h_index']) + ", '" + author['orcid_id'] + ", '" + dt_string + "')"
         queryline3 = "ON CONFLICT (id) DO UPDATE "
-        queryline4 = "SET num_citations='" + str(author['num_citations']) + "', num_documents='" + str(author['num_documents']) + "', h_index='" + str(author['h_index']) + "', orcid_id='" + author['orcid_id'] + "'"
+        queryline4 = "SET num_citations='" + str(author['num_citations']) + "', num_documents='" + str(author['num_documents']) + "', h_index='" + str(author['h_index']) + "', orcid_id='" + author['orcid_id'] + "', last_updated" + dt_string + "'"
         cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
     cursor.close()
     connection.commit()
+    return
 
 '''
 Returns an array of Scopus id's in the researcher_data table of the database
 '''
-def getAuthorIds():
-    credentials = getCredentials()
+def getAuthorIds(credentials):
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     query = "SELECT scopus_id FROM public.researcher_data"
@@ -70,7 +69,7 @@ def getAuthorIds():
 '''
 Given an array, splits the array into chunks of size n
 '''
-def split_array(lst, n):
+def splitArray(lst, n):
     ret_arr = []
     for i in range(0, len(lst), n):
          ret_arr.append(lst[i:i + n])
@@ -84,7 +83,7 @@ authors on each API call
 def sciValFetch(authors):
     url = os.environ.get('SCIVAL_URL')
     max_authors = int(os.environ.get('SCIVAL_MAX_AUTHORS'))
-    authors_split = split_array(authors, max_authors)
+    authors_split = splitArray(authors, max_authors)
     for author_subset in authors_split:
         author_ids = []
         for author in author_subset:
@@ -108,10 +107,10 @@ total number of citations, and the authors Orcid id if available from the
 Scopus API for each author and appends it to the authors info. Fetches data for 
 25 authors on each API call
 '''        
-def scopus_fetch(authors):
+def scopusFetch(authors):
     url = os.environ.get('SCOPUS_URL')
     max_authors = int(os.environ.get('SCOPUS_MAX_AUTHORS'))
-    authors_split = split_array(authors, max_authors)
+    authors_split = splitArray(authors, max_authors)
     for author_subset in authors_split:
         author_ids = []
         for author in author_subset:
@@ -136,19 +135,38 @@ def scopus_fetch(authors):
                         author['num_citations'] = data['cited-by-count']
 
 '''
+Stores the current time in the update_data table
+'''
+def storeLastUpdated(updatedTable, credentials):
+    now = datetime.now(pytz.timezone("Canada/Pacific"))
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S") + " PST"
+    connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
+    cursor = connection.cursor()
+    queryline1 = "INSERT INTO public.update_data(table_name, last_updated) "
+    queryline2 = "VALUES ('" + updatedTable + "', '" + dt_string + "')"
+    queryline3 = "ON CONFLICT (table_name) DO UPDATE "
+    queryline4 = "SET last_updated='" + dt_string + "'"
+    cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
+    cursor.close()
+    connection.commit()
+    return
+
+'''
 Fetches researcher data from the Scopus and Scival API's and stores that data
 in the database. Requires no input.
 '''
 def lambda_handler(event, context):
+    credentials = getCredentials()
     authors = []
-    author_scopus_ids = getAuthorIds()
+    author_scopus_ids = getAuthorIds(credentials)
     for i in range(len(author_scopus_ids)):
         authors.append({'scopus_id': author_scopus_ids[i][0]})
-    scopus_fetch(authors)
+    scopusFetch(authors)
     sciValFetch(authors)
-    storeAuthors(authors)
+    storeAuthors(authors, credentials)
+    storeLastUpdated('elsevier_data', credentials)
     max_authors = int(os.environ.get('SCOPUS_MAX_AUTHORS'))
-    return split_array(author_scopus_ids, max_authors)
+    return splitArray(author_scopus_ids, max_authors)
     
     
 

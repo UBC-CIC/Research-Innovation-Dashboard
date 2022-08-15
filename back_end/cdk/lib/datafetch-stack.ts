@@ -1,10 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
-import { aws_ec2 as ec2 } from 'aws-cdk-lib';
-import { aws_rds as rds } from 'aws-cdk-lib';
 import { aws_lambda as lambda } from 'aws-cdk-lib';
 import { aws_iam as iam} from 'aws-cdk-lib';
 import  { aws_s3 as s3 } from 'aws-cdk-lib'
-import { aws_s3_deployment as deployment } from 'aws-cdk-lib';
+import { aws_s3_deployment as s3deploy } from 'aws-cdk-lib';
 import { aws_stepfunctions as sfn} from 'aws-cdk-lib';
 import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
 
@@ -36,15 +34,96 @@ export class DataFetchStack extends cdk.Stack {
       description: 'Contains the pyjarowinkler library',
     });
 
+    // The layer containing the pytz library
+    const pytz = new lambda.LayerVersion(this, 'pytz', {
+      code: lambda.Code.fromAsset('layers/pytz.zip'),
+      compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
+      description: 'Contains the pytz library, used to get the correct timezone when fetching the date',
+    });
+
+    // The layer containing the numpy library (AWS Managed)
+    const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', 'arn:aws:lambda:ca-central-1:336392948345:layer:AWSDataWrangler-Python39:5')
+
     /*
       Define Lambdas and add correct permissions
     */
+    const scopusClean = new lambda.Function(this, 'scopusClean', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'scopusClean.lambda_handler',
+      code: lambda.Code.fromAsset('lambda/scopusClean'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    scopusClean.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonS3FullAccess',
+      ),
+    );
 
-   /*
+    const ubcClean = new lambda.Function(this, 'ubcClean', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'ubcClean.lambda_handler',
+      code: lambda.Code.fromAsset('lambda/ubcClean'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    ubcClean.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonS3FullAccess',
+      ),
+    );
+
+    const compareNames = new lambda.Function(this, 'compareNames', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'compareNames.lambda_handler',
+      layers: [pyjarowinkler, numpy],
+      code: lambda.Code.fromAsset('lambda/compareNames'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    compareNames.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonS3FullAccess',
+      ),
+    );
+
+    const cleanNoMatches = new lambda.Function(this, 'cleanNoMatches', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'cleanNoMatches.lambda_handler',
+      layers: [pyjarowinkler, requests],
+      code: lambda.Code.fromAsset('lambda/cleanNoMatches'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    cleanNoMatches.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonS3FullAccess',
+      ),
+    );
+    cleanNoMatches.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonSSMReadOnlyAccess',
+      ),
+    );
+
+    const createTables = new lambda.Function(this, 'createTables', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'createTables.lambda_handler',
+      layers: [psycopg2],
+      code: lambda.Code.fromAsset('lambda/createTables'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    createTables.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'SecretsManagerReadWrite',
+      ),
+    );
+   
     const researcherFetch = new lambda.Function(this, 'researcherFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'researcherFetch.lambda_handler',
-      layers: [psycopg2],
+      layers: [psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/researcherFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
@@ -64,12 +143,11 @@ export class DataFetchStack extends cdk.Stack {
         'SecretsManagerReadWrite',
       ),
     );
-    */
 
     const elsevierFetch = new lambda.Function(this, 'elsevierFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'elsevierFetch.lambda_handler',
-      layers: [requests, psycopg2],
+      layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/elsevierFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
@@ -94,7 +172,7 @@ export class DataFetchStack extends cdk.Stack {
     const orcidFetch = new lambda.Function(this, 'orcidFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'orcidFetch.lambda_handler',
-      layers: [requests, psycopg2],
+      layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/orcidFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
@@ -116,7 +194,7 @@ export class DataFetchStack extends cdk.Stack {
     const publicationFetch = new lambda.Function(this, 'publicationFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'publicationFetch.lambda_handler',
-      layers: [requests, psycopg2],
+      layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/publicationFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
@@ -137,8 +215,51 @@ export class DataFetchStack extends cdk.Stack {
     );
 
     /*
-        Set up step function
+        Set up name matching step function
     */
+    const scopusCleanInvoke = new tasks.LambdaInvoke(this, 'Clean Scopus Data', {
+      lambdaFunction: scopusClean,
+      outputPath: '$.Payload',
+    });
+    const ubcCleanInvoke = new tasks.LambdaInvoke(this, 'Clean UBC Data', {
+      lambdaFunction: ubcClean,
+      outputPath: '$.Payload',
+    });
+    const compareNamesInvoke = new tasks.LambdaInvoke(this, 'Perform Name Comparison', {
+      lambdaFunction: compareNames,
+      outputPath: '$.Payload',
+    });
+    const compareNamesMap = new sfn.Map(this, 'Name Comparison Map', {
+      maxConcurrency: 40,
+      itemsPath: '$'
+    });
+    compareNamesMap.iterator(compareNamesInvoke);
+    const cleanNoMatchesInvoke = new tasks.LambdaInvoke(this, 'Perform Additional Comparisons On Missed Matches', {
+      lambdaFunction: cleanNoMatches,
+      outputPath: '$.Payload',
+    });
+    const cleanNoMatchesMap = new sfn.Map(this, 'Missing Matches Map', {
+      maxConcurrency: 1,
+      itemsPath: '$'
+    });
+    cleanNoMatchesMap.iterator(cleanNoMatchesInvoke);
+
+    const nameMatchDefinition = scopusCleanInvoke
+    .next(ubcCleanInvoke)
+    .next(compareNamesMap)
+    .next(cleanNoMatchesMap);
+  
+  const nameMatch = new sfn.StateMachine(this, 'Name Match State Machine', {
+    definition: nameMatchDefinition,
+  });
+
+    /*
+        Set up data fetch step function
+    */
+    const createTablesInvoke = new tasks.LambdaInvoke(this, 'Create DB Tables', {
+      lambdaFunction: createTables,
+      outputPath: '$.Payload',
+    });
     const researcherFetchInvoke = new tasks.LambdaInvoke(this, 'Fetch Researchers', {
       lambdaFunction: researcherFetch,
       outputPath: '$.Payload',
@@ -169,15 +290,36 @@ export class DataFetchStack extends cdk.Stack {
     })
     publicationMap.iterator(publicationFetchInvoke);
 
-    const definition = researcherMap
+    const dataFetchDefinition = createTablesInvoke
+      .next(researcherMap)
       .next(elsevierFetchInvoke)
       .next(orcidFetchInvoke)
       .next(publicationMap);
     
-    const dataFetch = new sfn.StateMachine(this, 'StateMachine', {
-      definition,
+    const dataFetch = new sfn.StateMachine(this, 'Data Fetch State Machine', {
+      definition: dataFetchDefinition,
     });
 
+    // Create the S3 Bucket
+    const s3Bucket = new s3.Bucket(this, 's3-bucket', {
+      bucketName: 'vpri-innovation-dashboard',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      versioned: false,
+      publicReadAccess: false,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+    });
+    s3Bucket.grantReadWrite(scopusClean);
+    s3Bucket.grantReadWrite(ubcClean);
+    s3Bucket.grantReadWrite(compareNames);
+    s3Bucket.grantReadWrite(cleanNoMatches);
+    s3Bucket.grantReadWrite(researcherFetch);
+    s3Bucket.grantReadWrite(new iam.AccountRootPrincipal());
 
+    // Upload the Scopus and UBC data to the bucket
+    new s3deploy.BucketDeployment(this, 'DeployFiles', {
+      sources: [s3deploy.Source.asset('./data')],
+      destinationBucket: s3Bucket,
+    });
   }
 }

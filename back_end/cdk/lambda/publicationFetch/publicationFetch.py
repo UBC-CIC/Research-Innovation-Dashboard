@@ -3,6 +3,8 @@ import json
 import boto3
 import psycopg2
 import os
+from datetime import datetime
+import pytz
 
 ssm_client = boto3.client('ssm')
 sm_client = boto3.client('secretsmanager')
@@ -100,8 +102,7 @@ def fetch_publications(author_id):
 Given an array of publication data, stores the publications in the 
 publication_data table of the database
 '''
-def store_publications(publications):
-    credentials = getCredentials()
+def store_publications(publications, credentials):
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     
@@ -128,7 +129,7 @@ def store_publications(publications):
 Given an author's Scopus id and the authors publications, stores all keywords 
 associated with a researcher as an unsorted list (contains duplicate keywords)
 '''
-def store_keywords(author_id, publications):
+def store_keywords(author_id, publications, credentials):
     unsorted_keywords = []
     for publication in publications:
         for keyword in publication['keywords']:
@@ -149,7 +150,6 @@ def store_keywords(author_id, publications):
     # Get rid of all single quotes around each keyword
     keywords_string = str(keywords)[1:-1].replace('"', '').replace("'", "")
     
-    credentials = getCredentials()
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     
@@ -159,16 +159,34 @@ def store_keywords(author_id, publications):
     cursor.close()
     connection.commit()
 
-    
+'''
+Stores the current time in the update_data table
+'''
+def storeLastUpdated(updatedTable, credentials):
+    now = datetime.now(pytz.timezone("Canada/Pacific"))
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S") + " PST"
+    connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
+    cursor = connection.cursor()
+    queryline1 = "INSERT INTO public.update_data(table_name, last_updated) "
+    queryline2 = "VALUES ('" + updatedTable + "', '" + dt_string + "')"
+    queryline3 = "ON CONFLICT (table_name) DO UPDATE "
+    queryline4 = "SET last_updated='" + dt_string + "'"
+    cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
+    cursor.close()
+    connection.commit()
+    return
+
 '''
 Fetches publication data from the Scopus API and stores that data
 in the database. Takes an array of author ids as input.
 '''
 def lambda_handler(event, context):
+    credentials = getCredentials()
     author_ids = event
     for author_id in author_ids:
         publications = fetch_publications(author_id[0])
-        store_keywords(author_id[0], publications)
-        store_publications(publications)
+        store_keywords(author_id[0], publications, credentials)
+        store_publications(publications, credentials)
+    storeLastUpdated('publication_data', credentials)
     
     
