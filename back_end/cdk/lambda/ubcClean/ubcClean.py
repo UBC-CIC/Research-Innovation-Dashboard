@@ -22,7 +22,7 @@ def lambda_handler(event, context):
          'Professor, University Killam', 'Research Associate']
     for i in range (len(ranks)):
         ranks[i] = ranks[i].replace(' ', '')
-    bucket_name = 'vpriprofiledata'
+    bucket_name = 'vpri-innovation-dashboard'
     key = 'researcher_data/ubc_data.csv'
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
     ubc_rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))

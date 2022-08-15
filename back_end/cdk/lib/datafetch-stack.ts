@@ -1,10 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
-import { aws_ec2 as ec2 } from 'aws-cdk-lib';
-import { aws_rds as rds } from 'aws-cdk-lib';
 import { aws_lambda as lambda } from 'aws-cdk-lib';
 import { aws_iam as iam} from 'aws-cdk-lib';
 import  { aws_s3 as s3 } from 'aws-cdk-lib'
-import { aws_s3_deployment as deployment } from 'aws-cdk-lib';
+import { aws_s3_deployment as s3deploy } from 'aws-cdk-lib';
 import { aws_stepfunctions as sfn} from 'aws-cdk-lib';
 import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
 
@@ -302,6 +300,26 @@ export class DataFetchStack extends cdk.Stack {
       definition: dataFetchDefinition,
     });
 
+    // Create the S3 Bucket
+    const s3Bucket = new s3.Bucket(this, 's3-bucket', {
+      bucketName: 'vpri-innovation-dashboard',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      versioned: false,
+      publicReadAccess: false,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+    });
+    s3Bucket.grantReadWrite(scopusClean);
+    s3Bucket.grantReadWrite(ubcClean);
+    s3Bucket.grantReadWrite(compareNames);
+    s3Bucket.grantReadWrite(cleanNoMatches);
+    s3Bucket.grantReadWrite(researcherFetch);
+    s3Bucket.grantReadWrite(new iam.AccountRootPrincipal());
 
+    // Upload the Scopus and UBC data to the bucket
+    new s3deploy.BucketDeployment(this, 'DeployFiles', {
+      sources: [s3deploy.Source.asset('./data')],
+      destinationBucket: s3Bucket,
+    });
   }
 }

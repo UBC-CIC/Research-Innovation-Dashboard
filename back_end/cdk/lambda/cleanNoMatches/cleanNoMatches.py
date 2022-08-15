@@ -17,8 +17,7 @@ def split_array(lst, n):
     return ret_arr
 
 def lambda_handler(event, context):
-    bucket_name = 'vpriprofiledata'
-    #key = 'researcher_data/no_matches.csv'
+    bucket_name = 'vpri-innovation-dashboard'
     key = event['file_key']
     iteration_number = event['iteration_number']
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
