@@ -11,12 +11,15 @@
 | [License](#License)                                 | License details                                         |
 
 # High Level Architecture
+![Alt text](./docs/images/VPRI_Architechture.png?raw=true "Architecture")
 
 # Deployment Guide
 
 To deploy this solution, please follow the steps laid out in the [Deployment Guide](docs/DeploymentGuide.md)
 
 # User Guide
+
+For instructions on how to navigate the web app interface, refer to the [Web App User Guide](docs/UserGuide.md).
 
 # Files And Directories
 
@@ -36,7 +39,7 @@ To deploy this solution, please follow the steps laid out in the [Deployment Gui
 │   │   ├── SearchResearchers/
 │   │   │   ├── AdvancedSearch/
 │   │   │   └── Search/
-│   │   ├── UBCMetrics/
+│   │   ├── Metrics/
 │   │   ├── LoadingWheel.js
 │   │   └── NavigationBar.js
 │   ├── graphql/
