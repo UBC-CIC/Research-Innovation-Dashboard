@@ -72,3 +72,5 @@ def lambda_handler(event, context):
     for page in pages:
         for obj in page['Contents']:
             rows = getFile(bucket_name, obj['Key'])
+
+    return {}

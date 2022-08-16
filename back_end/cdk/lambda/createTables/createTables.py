@@ -97,3 +97,5 @@ def lambda_handler(event, context):
     
     cursor.close()
     connection.commit()
+
+    return {}
