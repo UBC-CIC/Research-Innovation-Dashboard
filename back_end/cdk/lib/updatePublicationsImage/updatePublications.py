@@ -86,7 +86,7 @@ def createListOfResearchersToUpdate():
     #Return list of researchers that need to be updated.
     return researchersToUpdateArray
   
-def fetchMissingPublications(author_id, apikey, instoken, cursor):
+def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
     """
     author_id: The author ID to fetch missing publications for
     apikey: your scopus apikey
@@ -179,6 +179,43 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor):
                         'year_published': year_published, 'author_ids': author_ids, 
                         'author_names': author_names, 'link': link})
                 StoredResults += 1
+            elif(int(publication['author-count']['@total']) > 100):
+                print("ID of publication with over 100")
+                print(str(id))
+                #If the publication is above 100 check if the current researcher is in it
+                query = "SELECT COUNT(*) FROM publication_data WHERE id='"+id+"' AND ('"+author_id+"' = ANY(author_ids))"
+                cursor.execute(query)
+                authorInPublicationResult = cursor.fetchone()
+
+                #If author is not in publication add them to it
+                if(authorInPublicationResult[0] == 0):
+                    print("Missing Author Adding them to paper")
+                    query = "SELECT * FROM publication_data WHERE id='"+id+"'"
+                    cursor.execute(query)
+                    pubToAddAuthorToResult = cursor.fetchone()
+                    #Add researcher to author id array
+                    authorIdArray = pubToAddAuthorToResult[5]
+                    authorIdArray.append(author_id)
+                    authorIdArray = str(authorIdArray).replace('\'', '"').replace('[', '{').replace(']', '}')
+                    query = "UPDATE publication_data SET author_ids='"+authorIdArray+"'"
+                    cursor.execute(query)
+                    #Update Author Keywords
+                    publicationToUpdate = []
+                    #Get Keywords to Update
+                    if(list(keys).count('authkeywords')):
+                        keywords_string = publication['authkeywords']
+                        keywords = keywords_string.split('|')
+                        keywords = [keyword.strip() for keyword in keywords]
+                    publicationToUpdate.append({'keywords': keywords})
+                    #Store new keywords
+                    store_keywords(author_id, publicationToUpdate, cursor)
+                    #Commit Changes to database
+                    connection.commit()
+
+            #If the publication is in the database but the researcher is not attached we should add them
+            #Increase their document count and add to their keywords
+            #Don't add it to missing documents
+
         #Check if we got all the new publications
         if(StoredResults == totalResults):
             break
@@ -256,6 +293,7 @@ def store_keywords(author_id, publications, cursor):
     
     keywords = unsorted_keywords
     
+    #Get rid of all the commas, single quotes and double quotes from keywords
     for keyword in keywords:
         keyword = keyword.replace(',', '')
     # Get rid of all single quotes around each keyword
@@ -270,7 +308,7 @@ def store_keywords(author_id, publications, cursor):
     query = "UPDATE public.researcher_data SET keywords='" + keywords_string + "' WHERE scopus_id='" + author_id + "'"
     cursor.execute(query)
 
-def updateResearchers(researchersToUpdateArray):
+def updateResearchers(researchersToUpdateArray, instoken, apikey, connection, cursor):
     """
     researchersToUpdateArray: A list of researcher IDs to update.
 
@@ -278,18 +316,11 @@ def updateResearchers(researchersToUpdateArray):
     The function then updates the researchers num_documents and keywords field.
     The function then puts the publications into the database.
     """
-    
-    instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
-    apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
-        
-    credentials = getCredentials()
-    connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
-    cursor = connection.cursor()
 
     #Loop through all researchers to update.
     while (len(researchersToUpdateArray) > 0):
         #Get the front of lists missing publications
-        missingPublications = fetchMissingPublications(researchersToUpdateArray.pop(0), apikey, instoken, cursor)
+        missingPublications = fetchMissingPublications(researchersToUpdateArray.pop(0), apikey, instoken, cursor, connection)
         
         #For each author that contributed to these publications at UBC you need to update their num_documents!
         for publication in missingPublications:
@@ -306,18 +337,60 @@ def updateResearchers(researchersToUpdateArray):
     
         #Add the Publications
         store_publications(missingPublications, cursor)
+        #Commit changes to database after every researcher
+        connection.commit()
+
+        ###
+        # Need to keep num_documents up to date
+        # Need to keep keywords up to date
+        ###
     
     cursor.close()
+
+#Update all researchers number of publications
+#We might never need this because it should be correct at all times 
+#and removing a researcher does not decrease your publications
+def updateAllResearchersNumDocuments(cursor, connection):
+    #UPDATE H_INDEX AS WELL!
+    query = "SELECT * FROM researcher_data"
+    cursor.execute(query)
+    results = cursor.fetchall()
+    #For each researcher get their number of documents in the database and update it to be correct
+    for i in range(0, len(results)):
+        query = "SELECT COUNT(*) FROM publication_data WHERE '"+str(results[i][12])+"' = ANY(author_ids)"
+        cursor.execute(query)
+        countResult = cursor.fetchone()
+        query = "UPDATE elsevier_data SET num_documents = "+str(countResult[0])+" WHERE id = '"+str(results[i][12])+"'"
+        cursor.execute(query)
     connection.commit()
 
-#Need to remove publications no logner needed!
-#Need to change updated researchers num_citations
+def removePublicationsWithNoUbcResearcher(cursor, connection):
+    query = "SELECT * FROM publication_data WHERE NOT EXISTS (SELECT * FROM researcher_data WHERE researcher_data.scopus_id = ANY(publication_data.author_ids))"
+    cursor.execute(query)
+    results = cursor.fetchall()
+    #Delete all publications that do not have current UBC researcher
+    for i in range(0, len(results)):
+        query = "DELETE FROM publication_data WHERE id='"+str(results[i][0])+"'"
+        cursor.execute(query)
+    connection.commit()
 
+instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
+apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
+        
+credentials = getCredentials()
+connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
+cursor = connection.cursor()
+
+#Remove all publications with no ubc researcher
+#removePublicationsWithNoUbcResearcher(cursor, connection)
+#Set researchers number of documents to be what we have in the database
+updateAllResearchersNumDocuments(cursor, connection)
 #Create a list of researchers that need to be updated
-researcherArray = createListOfResearchersToUpdate()
-print(researcherArray)
-researchersToUpdateArray = researcherArray
+#researcherArray = createListOfResearchersToUpdate()
+#print(researcherArray)
+#researchersToUpdateArray = researcherArray
 #Using the List of Researchers Put their new publications into the database
-updateResearchers(researchersToUpdateArray)
+#updateResearchers(researchersToUpdateArray, instoken, apikey, connection, cursor)
+updateResearchers(["55553154800"], instoken, apikey, connection, cursor)
 
 print("Finished Updating Publication")
