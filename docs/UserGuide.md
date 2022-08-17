@@ -15,21 +15,21 @@
 
 ## Home
 
-The Home page contains a search bar that will return both researcher and publication results that match the user inputted search term. Researcher results are displayed on the top section of the home page, and publication results are displayed below. More details on the researcher and publication search components can be found in the sections [Researchers Search](#Researchers-Search) and [Publications Search](#Publications-Search).
+The Home page contains a search bar that will return both researcher and publication results that match the user-inputted search term. Researcher results are displayed on the top section of the home page, and publication results are displayed below. More details on the researcher and publication search components can be found in the sections [Researchers Search](#Researchers-Search) and [Publications Search](#Publications-Search).
 
 ## Researchers Search
 
-The search bar on this page returns researcher results that match the user inputted search term.Filters for researchers can be found on the left hand sidebar. There are 2 categories to filter by (Department, Faculty).
+The search bar on this page returns researcher results that match the user inputted search term. Filters for researchers can be found on the left hand sidebar. There are 2 categories to filter by (Department, Faculty).
 
 ![alt text](images/userGuide/researchers01.png)
 
-Clicking on the `Show All` button will open a modal displaying all the possible options for the filter category. To select the options you would like to filter by, click the checkbox beside the option name. Then click `Apply Filters`. Multiple filter options can be selected from both the Department and Faculty category.
+Clicking on the `Show All` button will open a window displaying all the possible options for the filter category. To select the options you would like to filter by, click the checkbox beside the option name. Then click `Apply Filters`. Multiple filter options can be selected from both the Department and Faculty category.
 
 ![alt text](images/userGuide/researchers02.png)
 
 ## Publications Search
 
-The filter for publications can be found on the left hand sidebar. There is 1 category to filter by (Journal). Clicking on the `All Journals` tab will open a dropdown displaying all the possible journal options.
+The filter for publications can be found on the left hand sidebar. There is one category to filter by (Journal). Clicking on the `All Journals` tab will open a dropdown displaying all the possible journal options.
 
 ![alt text](images/userGuide/publications01.png)
 
