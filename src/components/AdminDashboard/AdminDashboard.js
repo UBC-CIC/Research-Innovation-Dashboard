@@ -7,6 +7,7 @@ import AdminDashboardInputRow from "./AdminDashboardInputRow";
 import ChangeScopusIdPopup from "./ChangeScopusIdPopup";
 import UpdatePubsLogTable from "./UpdatePubsLogTable";
 import UpdateResearcherLogTable from "./UpdateResearcherLogTable";
+import FlaggedIds from "./FlaggedIds";
 
 export default function AdminDashboard() {
   const [oldScopusId, setOldScopusId] = useState("");
@@ -75,6 +76,9 @@ export default function AdminDashboard() {
             setOpen={setDialogOpen}
             oldScopusId={oldScopusId}
           />
+        </TabPanel>
+        <TabPanel value={tabs[2]}>
+          <FlaggedIds />
         </TabPanel>
       </TabContext>
       {/* <Grid item xs={12}>
