@@ -59,6 +59,7 @@ The **Deploy to Amplify Console** button will take you to your AWS console to de
    ![alt text](images/amplifyConsole/amplify-console-05.png)
 
 # Step 3: Backend Deployment
+
 It's time to set up everything that goes on behind the scenes! For more information on how the backend works, feel free to refer to the Architecture Deep Dive, but an understanding of the backend is not necessary for deployment.
 
 ## Step 1: Install Dependencies
@@ -77,6 +78,7 @@ npm install
 ```
 
 ## Step 2: CDK Deployment
+
 Initialize the CDK stacks (required only if you have not deployed this stack before). Note the CDK deployment assumes you are deploying in ca-central-1
 
 ```bash
@@ -93,6 +95,7 @@ cdk deploy --all --profile your-profile-name
 ```
 
 You may also deploy the stacks individually (it is important to deploy the stack listed in the order below):
+
 ```
 cdk deploy VpcStack  --profile your-profile-name
 cdk deploy DatabaseStack  --profile your-profile-name
@@ -109,7 +112,6 @@ Explain DMS button to click
 
 ### TroubleShooting
 
-
 # Step 4: Creating a User
 
 To set up user accounts on the app, you will need to do the following steps
@@ -125,5 +127,6 @@ To set up user accounts on the app, you will need to do the following steps
 5. The user will receive an email to the email address that was previously entered containing their temporary password.
    ![alt text](images/webApp/webapp05.png)
 6. When the user enters their email and temporary password on the sign in page of the app, they will then be prompted to replace their temporary password by setting a new password.
+   <br>
    ![alt text](images/webApp/webapp06.png)
 7. The new user account has been created!

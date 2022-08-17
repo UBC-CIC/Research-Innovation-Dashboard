@@ -26,7 +26,6 @@ const FlaggedIds = () => {
         employee_id: 123840,
         faculty: "Faculty of Medicine",
         department: "Anesthesiology",
-        reason_flagged: "Conflicting Employee Id",
       },
       {
         name: "Robert Carruthers",
@@ -34,7 +33,6 @@ const FlaggedIds = () => {
         employee_id: 203942,
         faculty: "Faculty of Medicine",
         department: "Family Medicine",
-        reason_flagged: "Conflicting Employee Id",
       },
       {
         name: "Robert Carruthers",
@@ -42,7 +40,6 @@ const FlaggedIds = () => {
         employee_id: 234233,
         faculty: "Faculty of Medicine",
         department: "Neuroscience",
-        reason_flagged: "Conflicting Employee Id",
       },
     ],
     [
@@ -52,7 +49,6 @@ const FlaggedIds = () => {
         employee_id: 990983,
         faculty: "Faculty of Arts",
         department: "Anthropology",
-        reason_flagged: "Conflicting Employee Id",
       },
       {
         name: "Test test",
@@ -60,7 +56,6 @@ const FlaggedIds = () => {
         employee_id: 273894,
         faculty: "Faculty of Arts",
         department: "Sociology",
-        reason_flagged: "Conflicting Employee Id",
       },
       {
         name: "Test test",
@@ -68,7 +63,6 @@ const FlaggedIds = () => {
         employee_id: 283747,
         faculty: "Faculty of Arts",
         department: "Philosophy",
-        reason_flagged: "Conflicting Employee Id",
       },
     ],
   ];
@@ -97,10 +91,8 @@ const FlaggedIds = () => {
                   <TableCell component="th" scope="row">
                     <Box
                       sx={{
-                        whiteSpace: "nowrap",
-                        textOverflow: "ellipsis",
                         width: "150px",
-                        overflow: "hidden",
+                        overflow: "wrap",
                       }}
                     >
                       {researcher.name}
@@ -109,10 +101,8 @@ const FlaggedIds = () => {
                   <TableCell>
                     <Box
                       sx={{
-                        whiteSpace: "nowrap",
-                        textOverflow: "ellipsis",
                         width: "50px",
-                        overflow: "hidden",
+                        overflow: "wrap",
                       }}
                     >
                       {researcher.scopus_id}
@@ -121,10 +111,8 @@ const FlaggedIds = () => {
                   <TableCell>
                     <Box
                       sx={{
-                        whiteSpace: "nowrap",
-                        textOverflow: "ellipsis",
                         width: "50px",
-                        overflow: "hidden",
+                        overflow: "wrap",
                       }}
                     >
                       {researcher.employee_id}
@@ -133,10 +121,8 @@ const FlaggedIds = () => {
                   <TableCell>
                     <Box
                       sx={{
-                        whiteSpace: "nowrap",
-                        textOverflow: "ellipsis",
                         width: "150px",
-                        overflow: "hidden",
+                        overflow: "wrap",
                       }}
                     >
                       {researcher.faculty}
@@ -145,10 +131,8 @@ const FlaggedIds = () => {
                   <TableCell>
                     <Box
                       sx={{
-                        whiteSpace: "nowrap",
-                        textOverflow: "ellipsis",
                         width: "150px",
-                        overflow: "hidden",
+                        overflow: "wrap",
                       }}
                     >
                       {researcher.department}
@@ -157,12 +141,11 @@ const FlaggedIds = () => {
                   <TableCell>
                     <Box
                       sx={{
-                        textOverflow: "ellipsis",
                         width: "200px",
                         overflow: "wrap",
                       }}
                     >
-                      {researcher.reason_flagged}
+                      Conflicting Scopus ID
                     </Box>
                   </TableCell>
                 </TableRow>
