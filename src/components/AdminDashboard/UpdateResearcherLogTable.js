@@ -9,6 +9,12 @@ import {
   Paper,
   Box,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
+
+const StyledTableCell = styled(TableCell)`
+  color: #002145;
+  font-weight: 500;
+`;
 
 const UpdateResearcherLogTable = () => {
   const mockData = [
@@ -26,12 +32,8 @@ const UpdateResearcherLogTable = () => {
       <Table aria-label="simple table">
         <TableHead>
           <TableRow>
-            <TableCell sx={{ color: "#002145", fontWeight: 500 }}>
-              Researcher Name
-            </TableCell>
-            <TableCell sx={{ color: "#002145", fontWeight: 500 }}>
-              Date Updated
-            </TableCell>
+            <StyledTableCell>Researcher Name</StyledTableCell>
+            <StyledTableCell>Date Updated</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>

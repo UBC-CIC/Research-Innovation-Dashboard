@@ -26,6 +26,7 @@ const FlaggedIds = () => {
         employee_id: 123840,
         faculty: "Faculty of Medicine",
         department: "Anesthesiology",
+        reason_flagged: "Conflicting Employee Id",
       },
       {
         name: "Robert Carruthers",
@@ -33,6 +34,7 @@ const FlaggedIds = () => {
         employee_id: 203942,
         faculty: "Faculty of Medicine",
         department: "Family Medicine",
+        reason_flagged: "Conflicting Employee Id",
       },
       {
         name: "Robert Carruthers",
@@ -40,6 +42,7 @@ const FlaggedIds = () => {
         employee_id: 234233,
         faculty: "Faculty of Medicine",
         department: "Neuroscience",
+        reason_flagged: "Conflicting Employee Id",
       },
     ],
     [
@@ -49,6 +52,7 @@ const FlaggedIds = () => {
         employee_id: 990983,
         faculty: "Faculty of Arts",
         department: "Anthropology",
+        reason_flagged: "Conflicting Employee Id",
       },
       {
         name: "Test test",
@@ -56,6 +60,7 @@ const FlaggedIds = () => {
         employee_id: 273894,
         faculty: "Faculty of Arts",
         department: "Sociology",
+        reason_flagged: "Conflicting Employee Id",
       },
       {
         name: "Test test",
@@ -63,6 +68,7 @@ const FlaggedIds = () => {
         employee_id: 283747,
         faculty: "Faculty of Arts",
         department: "Philosophy",
+        reason_flagged: "Conflicting Employee Id",
       },
     ],
   ];
@@ -71,7 +77,7 @@ const FlaggedIds = () => {
     return mockData.map((data, index) => {
       return (
         <TableContainer component={Paper} key={index}>
-          <Table aria-label="update publications log table">
+          <Table aria-label="Flagged Id table">
             <TableHead>
               <TableRow>
                 <StyledTableCell>Researcher Name</StyledTableCell>
@@ -79,6 +85,7 @@ const FlaggedIds = () => {
                 <StyledTableCell>Employee ID</StyledTableCell>
                 <StyledTableCell>Faculty</StyledTableCell>
                 <StyledTableCell>Department</StyledTableCell>
+                <StyledTableCell>Reason Flagged</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -145,6 +152,17 @@ const FlaggedIds = () => {
                       }}
                     >
                       {researcher.department}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box
+                      sx={{
+                        textOverflow: "ellipsis",
+                        width: "200px",
+                        overflow: "wrap",
+                      }}
+                    >
+                      {researcher.reason_flagged}
                     </Box>
                   </TableCell>
                 </TableRow>
