@@ -159,11 +159,19 @@ const FlaggedIds = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: "2em" }}>
-      <Alert severity="info">
-        There are <strong>{mockData.length}</strong> researchers with flagged
-        IDs
-      </Alert>
-      {renderIdTables()}
+      {mockData.length > 0 ? (
+        <>
+          <Alert severity="info">
+            There are <strong>{mockData.length}</strong> researchers with
+            flagged IDs
+          </Alert>
+          {renderIdTables()}
+        </>
+      ) : (
+        <Alert severity="info">
+          There are currently no researchers with flagged IDs
+        </Alert>
+      )}
     </Box>
   );
 };
