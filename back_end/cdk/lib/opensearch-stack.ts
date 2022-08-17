@@ -62,14 +62,10 @@ export class OpensearchStack extends Stack {
         resources: [ `arn:aws:es:ca-central-1:${this.account}:domain/${this.domainName}` ],
     });
 
-    // create opensearch service linked role. Without this role you cannot attach a vpc to opensearch
-    const openSearchVPCPermissions = new iam.CfnServiceLinkedRole(this, 'OpenSearchSLR', {
-        awsServiceName: 'opensearchservice.amazonaws.com'
-    });
-
     // get the default security group from the vpc
     const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, vpcStack.vpc.vpcDefaultSecurityGroup);
     
+
     // Create the opensearch domain
     this.devDomain = new opensearch.Domain(this, 'vpriCdkOpensearchDomain', {
         version: opensearch.EngineVersion.OPENSEARCH_1_1,
@@ -87,7 +83,7 @@ export class OpensearchStack extends Stack {
     });
 
     //Attach vpc service linked role to opensearch domain
-    this.devDomain.node.addDependency(openSearchVPCPermissions);
+    this.devDomain.node.addDependency(vpcStack.openSearchVPCPermissions);
 
     // Create three layers for the opensearch query function
     const aws4Layer = new lambda.LayerVersion(this, 'aws4', {

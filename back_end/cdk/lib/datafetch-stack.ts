@@ -168,6 +168,11 @@ export class DataFetchStack extends cdk.Stack {
         'SecretsManagerReadWrite',
       ),
     );
+    researcherFetch.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonS3FullAccess',
+      ),
+    );
 
     const orcidFetch = new lambda.Function(this, 'orcidFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
@@ -264,11 +269,13 @@ export class DataFetchStack extends cdk.Stack {
       lambdaFunction: researcherFetch,
       outputPath: '$.Payload',
     });
+    /*
     const researcherMap = new sfn.Map(this, 'Researcher Map', {
       maxConcurrency: 40,
-      itemsPath: '$.indices'
+      itemsPath: '$'
     });
     researcherMap.iterator(researcherFetchInvoke);
+    */
 
     const elsevierFetchInvoke = new tasks.LambdaInvoke(this, 'Fetch Elsevier Data', {
       lambdaFunction: elsevierFetch,
@@ -291,7 +298,7 @@ export class DataFetchStack extends cdk.Stack {
     publicationMap.iterator(publicationFetchInvoke);
 
     const dataFetchDefinition = createTablesInvoke
-      .next(researcherMap)
+      .next(researcherFetchInvoke)
       .next(elsevierFetchInvoke)
       .next(orcidFetchInvoke)
       .next(publicationMap);
@@ -314,6 +321,7 @@ export class DataFetchStack extends cdk.Stack {
     s3Bucket.grantReadWrite(compareNames);
     s3Bucket.grantReadWrite(cleanNoMatches);
     s3Bucket.grantReadWrite(researcherFetch);
+    s3Bucket.grantReadWrite(elsevierFetch); // DELETE ME
     s3Bucket.grantReadWrite(new iam.AccountRootPrincipal());
 
     // Upload the Scopus and UBC data to the bucket

@@ -75,9 +75,9 @@ export class FargateStack extends Stack {
       cluster,
       scheduledFargateTaskDefinitionOptions: {taskDefinition: taskDefinition},
       schedule: events.Schedule.cron({
-        minute: '40',
-        hour: '0',
-        day: '1',
+        minute: '18',
+        hour: '*',
+        day: '*',
         month: '*',
       }),
       subnetSelection: {subnetType: ec2.SubnetType.PUBLIC},

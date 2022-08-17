@@ -30,7 +30,42 @@ async function handler(event) {
   let date = new Date(); //Current Date
   let currentYear = date.getFullYear();
   console.log(event);
+    // eslint-disable-next-line default-case
     switch(event.info.fieldName) {
+      case "changeScopusId":
+        let oldScopusId = event.arguments.oldScopusId;
+        let newScopusId = event.arguments.newScopusId;
+        
+        //Update Elsevier Data
+        
+        await sql `UPDATE elsevier_data SET id=${newScopusId}, num_citations=0, num_documents=0, h_index=0 WHERE id = ${oldScopusId}`
+        
+        //Update Orchid Data
+        
+        //Update Researcher Data
+        //Assumption general information other than keywords/scopus ID stays same
+        
+        //Create new scopus_ids keywords from current documents
+        
+        let allPublications = await sql`SELECT * FROM publication_data WHERE ${newScopusId} = ANY(author_ids)`
+        
+        let keywordString = allPublications[0].keywords;
+        
+        for(let i = 1; i<allPublications.length; i++){
+          if(allPublications[i].length > 0) {
+            keywordString = keywordString + ", " + allPublications[i].keywords;
+          }
+        }
+        
+        console.log(keywordString)
+        
+        await sql `UPDATE researcher_data SET scopus_id=${newScopusId}, keywords = ${keywordString} WHERE ${oldScopusId} = scopus_id`
+        
+        // Change Scopus Id
+        // Update Keywords
+        // Set num_documents = 0
+        
+        break;
     case "getPub":
       console.log("Getting Pub");
       let [publication] = await sql`SELECT * FROM public.publication_data WHERE id = ${event.arguments.id}`;

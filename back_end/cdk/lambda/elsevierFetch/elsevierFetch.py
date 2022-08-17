@@ -5,9 +5,12 @@ import psycopg2
 import os
 from datetime import datetime
 import pytz
+import csv
+import codecs
 
 ssm_client = boto3.client('ssm')
 sm_client = boto3.client('secretsmanager')
+s3_client = boto3.client("s3")
 instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
 apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
 elsevier_headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
@@ -159,10 +162,19 @@ def lambda_handler(event, context):
     credentials = getCredentials()
     authors = []
     author_scopus_ids = getAuthorIds(credentials)
-    for i in range(len(author_scopus_ids)):
-        authors.append({'scopus_id': author_scopus_ids[i][0]})
-    scopusFetch(authors)
-    sciValFetch(authors)
+    #for i in range(len(author_scopus_ids)):
+        #authors.append({'scopus_id': author_scopus_ids[i][0]})
+    #scopusFetch(authors)
+    #sciValFetch(authors)
+
+    # DELETE THIS
+    bucket_name = 'vpri-innovation-dashboard'
+    key = 'elsevier_data.csv'
+    data = s3_client.get_object(Bucket=bucket_name, Key=key)
+    rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
+    for row in rows:
+        authors.append({'scopus_id': row['SCOPUS_ID'], 'orcid_id': row['ORCID_ID'], 'num_documents': row['NUM_DOCUMENTS'], 'NUM_CITATIONS': row['NUM_CITATIONS'], 'h-index': row['H-INDEX']})
+
     storeAuthors(authors, credentials)
     storeLastUpdated('elsevier_data', credentials)
     max_authors = int(os.environ.get('SCOPUS_MAX_AUTHORS'))
