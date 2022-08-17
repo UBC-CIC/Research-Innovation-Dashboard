@@ -2,9 +2,11 @@ import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import * as iam from 'aws-cdk-lib/aws-iam'
 
 export class VpcStack extends Stack {
     public readonly vpc: ec2.Vpc;
+    public readonly openSearchVPCPermissions: iam.CfnServiceLinkedRole
 
     constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, {
@@ -47,6 +49,11 @@ export class VpcStack extends Stack {
       service: ec2.InterfaceVpcEndpointAwsService.RDS,
       securityGroups: [defaultSecurityGroup],
       subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED},
+    });
+
+    // create opensearch service linked role. Without this role you cannot attach a vpc to opensearch
+    this.openSearchVPCPermissions = new iam.CfnServiceLinkedRole(this, 'OpenSearchSLR', {
+        awsServiceName: 'opensearchservice.amazonaws.com'
     });
   }
 }
