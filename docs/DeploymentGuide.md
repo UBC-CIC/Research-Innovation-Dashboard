@@ -6,6 +6,9 @@ Before you deploy, you must have the following installed on your device:
 - [GitHub Account](https://github.com/)
 - [AWS CLI](https://aws.amazon.com/cli/)
 - [AWS SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+Once you have downloaded docker desktop launch and setup the application. Once the application is setup leave it running.
 
 If you are on a Windows device, it is recommended to install the [Windows Subsystem For Linux](https://docs.microsoft.com/en-us/windows/wsl/install), which lets you run a Linux terminal on your Windows computer natively. Some of the steps will require its use. [Windows Terminal](https://apps.microsoft.com/store/detail/windows-terminal/9N0DX20HK701) is also recommended for using WSL.
 
@@ -105,6 +108,8 @@ cdk deploy AppsyncStack --profile your-profile-name
 cdk deploy FargateStack --profile your-profile-name
 cdk deploy DataFetchStack --profile your-profile-name
 ```
+
+## Step 3: One Time Button Presses
 
 After your CDK stacks have deployed you will need to login to the AWS consol and click a few buttons one time.
 
