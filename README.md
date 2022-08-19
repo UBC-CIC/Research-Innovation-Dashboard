@@ -11,6 +11,9 @@
 | [License](#License)                                 | License details                                         |
 
 # High Level Architecture
+
+The following architecture diagram illustrates the various AWS components utliized to deliver the solution. For an in-depth explanation of the frontend and backend stacks, refer to the [Architecture Deep Dive](docs/ArchitectureDeepDive.md).
+
 ![Alt text](./docs/images/architecture-diagram.png?raw=true "Architecture")
 
 # Deployment Guide
