@@ -5,8 +5,8 @@ import Stack from "@mui/material/Stack";
 import React from "react";
 import Button from "@mui/material/Button";
 import Publication from "../ResearcherProfile/Publication";
-import Pagination from '@mui/material/Pagination';
-import Box from '@mui/material/Box';
+import Pagination from "@mui/material/Pagination";
+import Box from "@mui/material/Box";
 
 export default function PublicationSearchResultsComponent(props) {
   const { publicationSearchResults } = props;
@@ -28,9 +28,6 @@ export default function PublicationSearchResultsComponent(props) {
         direction="row"
       >
         <Button
-          onClick={() => {
-            console.log("Clicked Button");
-          }}
           sx={{
             m: 1,
             border: "2px solid Black",
@@ -94,7 +91,11 @@ export default function PublicationSearchResultsComponent(props) {
   }
 
   function PaginationCallback(data, index) {
-    if((props.publicationsSearchResultPage-1)*numberOfResearcherPerPage <= index && index < props.publicationsSearchResultPage*numberOfResearcherPerPage) {
+    if (
+      (props.publicationsSearchResultPage - 1) * numberOfResearcherPerPage <=
+        index &&
+      index < props.publicationsSearchResultPage * numberOfResearcherPerPage
+    ) {
       return data;
     }
   }
@@ -129,16 +130,24 @@ export default function PublicationSearchResultsComponent(props) {
         {publicationSearchResults.length !== 0 && <PublicationsHeader />}
         {publications}
         <Grid container>
-        <Grid item xs={12} sx={{m: "5%"}}>
-          <Box 
-            display="flex" 
-            alignItems="center"
-            justifyContent="center"
-          >
-            {publicationSearchResults.length !== 0 && (<Pagination size="large" defaultPage={1} page={props.publicationsSearchResultPage} count={Math.ceil(publicationSearchResults.length/numberOfResearcherPerPage)} onChange={(event, value)=>{props.setPublicationsSearchResultPage(value)}} />)}
-        </Box>
+          <Grid item xs={12} sx={{ m: "5%" }}>
+            <Box display="flex" alignItems="center" justifyContent="center">
+              {publicationSearchResults.length !== 0 && (
+                <Pagination
+                  size="large"
+                  defaultPage={1}
+                  page={props.publicationsSearchResultPage}
+                  count={Math.ceil(
+                    publicationSearchResults.length / numberOfResearcherPerPage
+                  )}
+                  onChange={(event, value) => {
+                    props.setPublicationsSearchResultPage(value);
+                  }}
+                />
+              )}
+            </Box>
+          </Grid>
         </Grid>
-      </Grid>
       </Grid>
     )
   );

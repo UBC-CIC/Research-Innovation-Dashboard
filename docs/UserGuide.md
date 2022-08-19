@@ -92,12 +92,12 @@ The admin dashboard page contains three tabs.
 
 ### 1. Logs
 
-The Logs tab contains two tables. The first table is displays logs of the time at which publications are updated, as well as the number of publications that was updated. The second table displays logs of the time at which researchres are updated, as well as the name of the researcher that was updated.
+The Logs tab contains two tables. The first table displays logs of the time at which publications are updated, as well as the number of publications that are updated. The second table displays logs of the time at which researchres are updated, as well as the name of the researcher that are updated.
 
 ### 2. Change Scopus IDs
 
-The Change Scopus IDs tab allows admin users to change the Scopus ID of any researcher. To change a Scopus Id, first enter the current researcher Scopus ID that you would like to change. Then click `Look Up Scopus ID`. This will open a window displaying the information of the researcher associated with that Scopus ID. Enter the new Scopus ID in the text field beside `Input New Scopus ID:`. Then click the `Change Scopus ID` button on the lower right hand side of the window.
+The Change Scopus IDs tab allows admin users to change the Scopus ID of any researcher. To change a Scopus Id, begin by entering the current researcher Scopus ID that you would like to change. Then click `Look Up Scopus ID`. This will open a window displaying the information of the researcher associated with that Scopus ID. Enter the new Scopus ID in the text field beside `Input New Scopus ID:`. Then click the `Change Scopus ID` button on the lower right hand side of the window.
 
 ### 3. Flagged IDs
 
-The flagged IDs tab displays researcher entries that have had their Scopus ID flagged. At the top of the page, there will be a message showing how many researchers there currently are with flagged IDs. Below that, flagged researcher entries are grouped into tables with the columns Researcher Name, Scopus ID, Employee ID, Department, Faculty and Reason Flagged.
+The flagged IDs tab displays researchers that have had their Scopus ID flagged. At the top of the page, there will be a message showing how many researchers there currently are with flagged IDs. Below that, flagged researcher entries are grouped into tables with the columns containing Researcher Name, Scopus ID, Employee ID, Department, Faculty and Reason Flagged information.
