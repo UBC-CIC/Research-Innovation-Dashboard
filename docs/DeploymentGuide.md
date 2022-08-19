@@ -109,11 +109,20 @@ cdk deploy FargateStack --profile your-profile-name
 cdk deploy DataFetchStack --profile your-profile-name
 ```
 
-## Step 3: One Time Button Presses
+## Step 3: Start DMS Replication
 
-After your CDK stacks have deployed you will need to login to the AWS consol and click a few buttons one time.
+Now that the CDK has deployed all the resources you need to press a few buttons on the AWS console to start data replication.
 
-Explain DMS button to click
+1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `DMS` in the search bar. Click on the DMS icon.
+   ![alt text](images/webApp/webapp07.png)
+2. Click `Database migration taks` on the left hand sidebar.
+   ![alt text](images/webApp/webapp08.png)
+3. Select the DMS replication task that was created by the CDK and the click Actions.
+   ![alt text](images/webApp/webapp09.png)
+4. Click `Restart/Resume`.
+   ![alt text](images/webApp/webapp10.png)
+5. If a popup prompts you to restart or resume click `restart` and then click `start task`.
+   ![alt text](images/webApp/webapp11.png)
 
 ### TroubleShooting
 
