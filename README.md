@@ -11,7 +11,7 @@
 | [License](#License)                                 | License details                                         |
 
 # High Level Architecture
-![Alt text](./docs/images/VPRI_Architechture.png?raw=true "Architecture")
+![Alt text](./docs/images/architecture-diagram.png?raw=true "Architecture")
 
 # Deployment Guide
 
@@ -76,7 +76,10 @@ For instructions on how to navigate the web app interface, refer to the [Web App
    5. **`/themes.js`**: Global styling for fonts. Note that most components have their own module-scoped styling.
 
 # Changelog
+N/A
 
 # Credits
 
 # License
+
+This project is distributed under the [MIT License](LICENSE).
