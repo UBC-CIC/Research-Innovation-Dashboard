@@ -96,19 +96,6 @@ const OverallResearcherRankings = (props) => {
             sx={{ textAlign: "center" }}
           >
             <Typography align="center" variant="body1">
-              {prof_data.num_citations}
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={1}>
-          <Paper
-            style={heightMatch}
-            square={true}
-            elevation={0}
-            variant="outlined"
-            sx={{ textAlign: "center" }}
-          >
-            <Typography align="center" variant="body1">
               {prof_data.h_index}
             </Typography>
           </Paper>
@@ -223,22 +210,6 @@ const OverallResearcherRankings = (props) => {
                 >
                   <Typography align="center" variant="body1">
                     Faculty
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={1}>
-                <Paper
-                  style={heightMatch}
-                  square={true}
-                  elevation={0}
-                  variant="outlined"
-                  sx={{ textAlign: "center" }}
-                  component={Stack}
-                  direction="column"
-                  justifyContent="center"
-                >
-                  <Typography align="center" variant="body1">
-                    Citations
                   </Typography>
                 </Paper>
               </Grid>
