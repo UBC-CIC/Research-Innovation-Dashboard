@@ -82,7 +82,6 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals }) => {
       if (itemCount > 5) {
         return 5 * itemSize;
       }
-      console.log(itemData.map(getChildSize).reduce((a, b) => a + b, 0));
       return itemData.map(getChildSize).reduce((a, b) => a + b, 0);
     };
 
@@ -131,7 +130,6 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals }) => {
   }, []);
 
   const handleCheckJournal = (e, journal) => {
-    console.log(journal);
     setSelectedJournals(journal);
   };
 

@@ -75,10 +75,10 @@ def createListOfResearchersToUpdate():
             if(authorDataArray[k]['h-index']):
                 h_index = authorDataArray[k]['h-index']
             #If their number of documents changed update their h_index and add them to the scopus_id list     
-            if(int(num_documents) > author_scopus_ids[i+k][1]):
-                #Update Researcher h_index
-                query = "UPDATE public.elsevier_data SET h_index="+str(h_index)+" WHERE id='"+author_scopus_ids[i+k][0]+"'"
-                researchersToUpdateArray.append(author_scopus_ids[i+k][0])
+            #A researchers h-index can change even if they don't publish. 
+            #Update everyones h-index everytime updatePublications is ran
+            query = "UPDATE public.elsevier_data SET h_index="+str(h_index)+" WHERE id='"+author_scopus_ids[i+k][0]+"'"
+            researchersToUpdateArray.append(author_scopus_ids[i+k][0])
     
     cursor.close()
     connection.commit()
@@ -151,6 +151,7 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
             results = cursor.fetchone()
             #If publication not in the database we need to put into the db
             if(results[0] == 0):
+                print("Adding New Publication")
                 author_ids = []
                 author_names = []
                 if(list(keys).count('dc:title')):
@@ -179,7 +180,8 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
                         'year_published': year_published, 'author_ids': author_ids, 
                         'author_names': author_names, 'link': link})
                 StoredResults += 1
-            elif(int(publication['author-count']['@total']) > 100):
+                connection.commit()
+            if(int(publication['author-count']['@total']) > 100):
                 print("ID of publication with over 100")
                 print(str(id))
                 #If the publication is above 100 check if the current researcher is in it
@@ -197,7 +199,7 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
                     authorIdArray = pubToAddAuthorToResult[5]
                     authorIdArray.append(author_id)
                     authorIdArray = str(authorIdArray).replace('\'', '"').replace('[', '{').replace(']', '}')
-                    query = "UPDATE publication_data SET author_ids='"+authorIdArray+"'"
+                    query = "UPDATE publication_data SET author_ids='"+authorIdArray+"' WHERE id='"+id+"' "
                     cursor.execute(query)
                     #Update Author Keywords
                     publicationToUpdate = []
@@ -221,6 +223,8 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
             break
         #Increment current page counter and get the next page of publications if we do not have them all yet
         currentPage += 1
+        if(currentPage>=totalNumberOfPages):
+            break
         next_url = rjson['search-results']['link'][2]['@href']
         response = requests.get(next_url, headers=headers)
         rjson = response.json()
@@ -382,15 +386,14 @@ connection = psycopg2.connect(user=credentials['username'], password=credentials
 cursor = connection.cursor()
 
 #Remove all publications with no ubc researcher
-#removePublicationsWithNoUbcResearcher(cursor, connection)
+removePublicationsWithNoUbcResearcher(cursor, connection)
 #Set researchers number of documents to be what we have in the database
 updateAllResearchersNumDocuments(cursor, connection)
 #Create a list of researchers that need to be updated
-#researcherArray = createListOfResearchersToUpdate()
-#print(researcherArray)
-#researchersToUpdateArray = researcherArray
+researcherArray = createListOfResearchersToUpdate()
+print(researcherArray)
 #Using the List of Researchers Put their new publications into the database
-#updateResearchers(researchersToUpdateArray, instoken, apikey, connection, cursor)
-updateResearchers(["55553154800"], instoken, apikey, connection, cursor)
+updateResearchers(researcherArray, instoken, apikey, connection, cursor)
+#updateResearchers(["6507098498"], instoken, apikey, connection, cursor)
 
 print("Finished Updating Publication")

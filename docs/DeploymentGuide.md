@@ -109,11 +109,20 @@ cdk deploy FargateStack --profile your-profile-name
 cdk deploy DataFetchStack --profile your-profile-name
 ```
 
-## Step 3: One Time Button Presses
+## Step 3: Start DMS Replication
 
-After your CDK stacks have deployed you will need to login to the AWS consol and click a few buttons one time.
+Now that the CDK has deployed all the resources you need to press a few buttons on the AWS console to start data replication.
 
-Explain DMS button to click
+1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `DMS` in the search bar. Click on the DMS icon.
+   ![alt text](images/webApp/webapp07.png)
+2. Click `Database migration taks` on the left hand sidebar.
+   ![alt text](images/webApp/webapp08.png)
+3. Select the DMS replication task that was created by the CDK and the click Actions.
+   ![alt text](images/webApp/webapp09.png)
+4. Click `Restart/Resume`.
+   ![alt text](images/webApp/webapp10.png)
+5. If a popup prompts you to restart or resume click `restart` and then click `start task`.
+   ![alt text](images/webApp/webapp11.png)
 
 ### TroubleShooting
 
@@ -135,3 +144,22 @@ To set up user accounts on the app, you will need to do the following steps
    <br>
    ![alt text](images/webApp/webapp06.png)
 7. The new user account has been created!
+
+# Step 5: Upload the Elsevier API Key and Institution Token
+
+1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Systems Manager` in the search bar.
+2. Click `Parameter Store` frome the left hand sidebar (It is under the Application Management header).
+3. Click `Create parameter`.
+4. For the parameter name enter `/service/elsevier/api/user_name/key`, for tier select standard, for type select SecureString, for KMS key source select `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier API key. Once you have entered the parameter details click `Create Parameter`.
+5. Once the API key parameter is finished being created, click `Create parameter` again.
+6. For the parameter name enter `/service/elsevier/api/user_name/instoken`, for tier select standard, for type select SecureString, for KMS key source selec `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier institution token. Once you have entered the parameter details click `Create Parameter`.
+
+# Step 6: Upload Data to S3
+
+1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for UBC and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
+2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: `put link to example data here`. This file must be named `ubc_data.csv`
+3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
+4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
+5. Click on the `researcher_data` folder then click `Upload`.
+6. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file then click `Upload`.
+7. Once the upload is complete click `Close`

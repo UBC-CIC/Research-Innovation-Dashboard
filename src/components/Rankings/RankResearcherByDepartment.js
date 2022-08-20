@@ -69,8 +69,6 @@ export default function RankingsByDepartment(props) {
   const [numberOfRankingsToShow, setNumberOfRankingsToShow] = useState(50);
   const [increaseRankingsListBy, setIncreaseRankingsListBy] = useState(100);
 
-  console.log(props.allDepartments);
-
   const departmentDropDownItems = props.allDepartments.map((department) => (
     <option value={department} key={department}>
       {department}
@@ -94,7 +92,7 @@ export default function RankingsByDepartment(props) {
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={4}>
           <Paper
             style={heightMatch}
             square={true}
@@ -122,19 +120,6 @@ export default function RankingsByDepartment(props) {
           >
             <Typography variant="body1" align="center">
               {prof_data.prime_department}
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={2}>
-          <Paper
-            style={heightMatch}
-            square={true}
-            elevation={0}
-            variant="outlined"
-            sx={{ textAlign: "center" }}
-          >
-            <Typography variant="body1" align="center">
-              {prof_data.num_citations}
             </Typography>
           </Paper>
         </Grid>
@@ -243,7 +228,7 @@ export default function RankingsByDepartment(props) {
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item xs={4}>
                   <Paper
                     style={heightMatch}
                     square={true}
@@ -266,19 +251,6 @@ export default function RankingsByDepartment(props) {
                   >
                     <Typography variant="body1" align="center">
                       Department
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={2}>
-                  <Paper
-                    style={heightMatch}
-                    square={true}
-                    elevation={0}
-                    variant="outlined"
-                    sx={{ textAlign: "center" }}
-                  >
-                    <Typography variant="body1" align="center">
-                      Citations
                     </Typography>
                   </Paper>
                 </Grid>
