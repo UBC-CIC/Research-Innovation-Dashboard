@@ -156,8 +156,8 @@ To set up user accounts on the app, you will need to do the following steps
 4. For the parameter name enter `/service/elsevier/api/user_name/key`, for tier select standard, for type select SecureString, for KMS key source select `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier API key. Once you have entered the parameter details click `Create Parameter`.
 ![alt text](images/deploymentGuide/create_parameter1.jpg)
 5. Once the API key parameter is finished being created, click `Create parameter` again.
-![alt text](images/deploymentGuide/create_parameter2.jpg)
 6. For the parameter name enter `/service/elsevier/api/user_name/instoken`, for tier select standard, for type select SecureString, for KMS key source selec `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier institution token. Once you have entered the parameter details click `Create Parameter`.
+![alt text](images/deploymentGuide/create_parameter2.jpg)
 
 # Step 6: Upload Data to S3
 
