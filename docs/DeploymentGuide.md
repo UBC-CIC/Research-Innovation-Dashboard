@@ -148,18 +148,26 @@ To set up user accounts on the app, you will need to do the following steps
 # Step 5: Upload the Elsevier API Key and Institution Token
 
 1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Systems Manager` in the search bar.
+![alt text](images/deploymentGuide/systems_manager_search.jpg)
 2. Click `Parameter Store` frome the left hand sidebar (It is under the Application Management header).
+![alt text](images/deploymentGuide/parameter_store_location.jpg)
 3. Click `Create parameter`.
+![alt text](images/deploymentGuide/parameter_store_page.jpg)
 4. For the parameter name enter `/service/elsevier/api/user_name/key`, for tier select standard, for type select SecureString, for KMS key source select `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier API key. Once you have entered the parameter details click `Create Parameter`.
+![alt text](images/deploymentGuide/create_parameter1.jpg)
 5. Once the API key parameter is finished being created, click `Create parameter` again.
+![alt text](images/deploymentGuide/create_parameter2.jpg)
 6. For the parameter name enter `/service/elsevier/api/user_name/instoken`, for tier select standard, for type select SecureString, for KMS key source selec `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier institution token. Once you have entered the parameter details click `Create Parameter`.
 
 # Step 6: Upload Data to S3
 
 1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for UBC and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
+![alt text](images/deploymentGuide/scival_download.jpg)
 2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: `put link to example data here`. This file must be named `ubc_data.csv`
 3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
+![alt text](images/deploymentGuide/s3_search.jpg)
 4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
+![alt text](images/deploymentGuide/s3_bucket_search.jpg)
 5. Click on the `researcher_data` folder then click `Upload`.
 6. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file then click `Upload`.
 7. Once the upload is complete click `Close`
