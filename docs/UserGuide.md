@@ -100,7 +100,7 @@ To view the exact number of times a certain keyword has appeared, hover over the
 
 ## Admin Dashboard
 
-The admin dashboard page is only accessible by admin users. Once the user has logged in, this page is used for viewing logs of when data has been updated on the site, changing Scopus IDs of researchers on the site, and viewing any discrepencies in researcher entries.
+The admin dashboard page is only accessible by admin users. Once the user has logged in, this page is used for viewing logs of when data has been updated on the site, changing Scopus IDs of researchers on the site, and viewing any discrepancies in researcher entries.
 
 The admin dashboard page contains three tabs.
 
