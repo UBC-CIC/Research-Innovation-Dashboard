@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@mui/styles";
 import { connect } from "react-redux";
 import { updateMenuState } from "../../actions/menuActions";
@@ -11,6 +11,7 @@ import AdvancedSearchComponent from "../../components/SearchResearchers/Advanced
 import Rankings from "../../components/Rankings/Rankings";
 import UbcMetrics from "../../components/Metrics/Metrics";
 import AdminDashboard from "../../components/AdminDashboard/AdminDashboard";
+import { Auth } from "aws-amplify";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -42,10 +43,23 @@ const useStyles = makeStyles((theme) => ({
 
 function PageContainer(props) {
   const classes = useStyles();
+  const [adminUser, setAdminUser] = useState(false);
+
+  useEffect(() => {
+    //gets the groups that the currently authenticated cognito user belongs to and sets AdminUser state to true if the user is in the Admins group, false otherwise
+    const getCognitoUser = async () => {
+      const cognitoUserEntry = await Auth.currentAuthenticatedUser();
+      const cognitoUserGroups =
+        cognitoUserEntry.signInUserSession.idToken.payload["cognito:groups"];
+      setAdminUser(cognitoUserGroups.includes("Admins"));
+    };
+    getCognitoUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Grid container direction="column">
-      <NavigationBar />
+      <NavigationBar adminUser={adminUser} />
 
       <main className={classes.content}>
         <Routes>
@@ -54,7 +68,9 @@ function PageContainer(props) {
             element={<ResearcherProfileOverview />}
           />
           <Route path="/Metrics/" element={<UbcMetrics />} />
-          <Route path="/AdminDashboard/" element={<AdminDashboard />} />
+          {adminUser && (
+            <Route path="/AdminDashboard/" element={<AdminDashboard />} />
+          )}
           <Route path="/Rankings/" element={<Rankings />} />
           <Route
             path="/AdvancedSearch/:SearchForWhat/:AllWords/:ExactPhrase/:AnyWords/:NoneOfTheseWords/:Department/:Faculty/:yearFrom/:yearTo/:Journal"

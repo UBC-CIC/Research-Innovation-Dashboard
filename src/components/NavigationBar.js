@@ -47,7 +47,7 @@ const NavButton = styled(Button)`
 `;
 
 function Navbar(props) {
-  const { updateLoginState, loginState } = props;
+  const { updateLoginState, loginState, adminUser } = props;
   const navigate = useNavigate();
 
   const [navMenuOpen, setNavMenuOpen] = useState(false);
@@ -152,24 +152,35 @@ function Navbar(props) {
             variant="text"
             aria-label="navbar button group"
           >
-            <NavButton sx={{ paddingLeft: "0%" }} onClick={() => window.location.href="/ / / / /"}>
+            <NavButton
+              sx={{ paddingLeft: "0%" }}
+              onClick={() => (window.location.href = "/ / / / /")}
+            >
               Home
             </NavButton>
-            <NavButton onClick={() => window.location.href="/Search/Researchers/ / / /"}>
+            <NavButton
+              onClick={() =>
+                (window.location.href = "/Search/Researchers/ / / /")
+              }
+            >
               Researchers
             </NavButton>
-            <NavButton onClick={() => window.location.href="/Search/Publications/ / /"}>
+            <NavButton
+              onClick={() =>
+                (window.location.href = "/Search/Publications/ / /")
+              }
+            >
               Publications
             </NavButton>
             <NavButton onClick={() => navigate("/Rankings/")}>
               Rankings
             </NavButton>
-            <NavButton onClick={() => navigate("/Metrics/")}>
-              Metrics
-            </NavButton>
-            <NavButton onClick={() => navigate("/AdminDashboard/")}>
-              Admin Dashboard
-            </NavButton>
+            <NavButton onClick={() => navigate("/Metrics/")}>Metrics</NavButton>
+            {adminUser && (
+              <NavButton onClick={() => navigate("/AdminDashboard/")}>
+                Admin Dashboard
+              </NavButton>
+            )}
           </ButtonGroup>{" "}
           {/* logout button */}
           <NavButton

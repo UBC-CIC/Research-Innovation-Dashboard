@@ -14,9 +14,15 @@
 | [Metrics](#Metrics)                         | Top 100 research keywords word cloud                  |
 | [Admin Dashboard](#Admin-Dashboard)         | Update logs, Changing Scopus IDs, Viewing Flagged IDs |
 
+**Note:** The screenshots contained in this User Guide show some information as redacted to obscure data that is not fully up to date.
+<br>
+
 ## Home
 
-The Home page contains a search bar that will return both researcher and publication results that match the user-inputted search term. Researcher results are displayed on the top section of the home page, and publication results are displayed below. More details on the researcher and publication search components can be found in the sections [Researchers Search](#Researchers-Search) and [Publications Search](#Publications-Search).
+The Home page is a combination of both the [Researchers Search Component](#Researchers-Search) and the [Publications Search Component](#Publications-Search), containing a search bar that returns both researcher and publication results that match the user-inputted search term. The researcher results are displayed on the top section of the home page, and publication results are displayed below.
+
+![alt text](images/userGuide/home01.png)
+![alt text](images/userGuide/home02.png)
 
 ## Researchers Search
 
@@ -30,7 +36,7 @@ Clicking on the `Show All` button will open a window displaying all the possible
 
 ## Publications Search
 
-The filter for publications can be found on the left hand sidebar. There is one category to filter by (Journal). Clicking on the `All Journals` tab will open a dropdown displaying all the possible journal options.
+The search bar on this page returns publication results that match the user inputted search term. The filter for publications can be found on the left hand sidebar. There is one category to filter by (Journal). Clicking on the `All Journals` tab will open a dropdown displaying all the possible journal options.
 
 ![alt text](images/userGuide/publications01.png)
 
@@ -38,6 +44,8 @@ To select the journal options you would like to filter by, click the journal nam
 ![alt text](images/userGuide/publications02.png)
 
 ## Advanced Search
+
+The advanced search page offers a more detailed method of finding information on the website, and increases search accuracy by allowing users to specify additional requirements for a search.
 
 The advanced search page can be accessed by clicking the `Advanced Search` button underneath the search bar in either the Home tab (will return results for both researchers and publications), Researchers tab (will only return results for researchers) or Publications tab (will only return results for publications).
 
@@ -80,13 +88,19 @@ The Rankings tab displays a table with all researchers ranked by their H index f
 
 ## Metrics
 
-The Metrics tab displays a word cloud containing the top 100 keywords in UBC research during a user selected date range. The font size of each word in the word cloud corresponds to the frequency that that word has appeared in publication titles during the selected date range. The selected date range can be changed by moving either one of the date range slider buttons. A new word cloud will then be formed with the words for the updated date range. The earliest available year is 1908, and the latest available year is the current year.
+The Metrics tab displays a word cloud containing the top 100 keywords in UBC research during a user selected date range. The font size of each word in the word cloud corresponds to the frequency that that word has appeared in publication titles during the selected date range. The earliest available year is 1908, and the latest available year is the current year.
 ![alt text](images/userGuide/metrics01.png)
+
+The selected date range can be changed by moving either one of the date range slider buttons. A new word cloud will then be formed with the words for the updated date range.
+
+//new image here
 
 To view the exact number of times a certain keyword has appeared, hover over the word and a popup will appear. If you would like to search for that keyword, click the word to open a new tab containing the search results.
 ![alt text](images/userGuide/metrics02.png)
 
 ## Admin Dashboard
+
+The admin dashboard page is only accessible by admin users. Once the user has logged in, this page is used for viewing logs of when data has been updated on the site, changing Scopus IDs of researchers on the site, and viewing any discrepencies in researcher entries.
 
 The admin dashboard page contains three tabs.
 
