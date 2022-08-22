@@ -209,6 +209,19 @@ export class AppsyncStack extends Stack {
         similarResearchers(keywordsString: String!, scopus_id: String!): [ResearcherOpenSearch]
         totalPublicationPerYear: [pubsPerYear]
         wordCloud(gte: Int!, lte: Int!): [wordCloud]
+        changeScopusId(oldScopusId: String!, newScopusId: String!): Boolean
+        lastUpdatedResearchersList: lastUpdated
+        getUpdatePublicationsLogs: [updatePublicationsLogType]
+      }
+
+      type updatePublicationsLogType {
+        number_of_publications_updated: Int
+        date_updated: String
+      }
+
+      type lastUpdated {
+        preferred_name: String
+        last_updated: String
       }
       
       type Ranking {
@@ -264,6 +277,7 @@ export class AppsyncStack extends Stack {
         scopus_id: String!
         second_department: String
         second_faculty: String
+        last_updated: String
       }
       
       type ResearcherOpenSearch {
@@ -371,7 +385,8 @@ export class AppsyncStack extends Stack {
     "getAllDistinctJournals", "getAllFaculty", "getAllResearchersRankings", "getNumberOfResearcherPubsAllYears",
     "getNumberOfResearcherPubsLastFiveYears", "getPub", "getResearcher", "getResearcherElsevier", "getResearcherFull",
     "getResearcherOrcid", "getResearcherPubsByCitations", "getResearcherPubsByTitle", "getResearcherPubsByYear",
-    "getResearcherRankingsByDepartment", "getResearcherRankingsByFaculty", "totalPublicationPerYear", "wordCloud"];
+    "getResearcherRankingsByDepartment", "getResearcherRankingsByFaculty", "totalPublicationPerYear", "wordCloud",
+    "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs"];
 
     for(var i = 0; i<postgresqlDBQueryList.length; i++){
       const resolver = new appsync.CfnResolver(this, postgresqlDBQueryList[i], {

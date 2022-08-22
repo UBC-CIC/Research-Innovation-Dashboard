@@ -4,8 +4,11 @@ import boto3
 import psycopg2
 import os
 import math
+import time
 
 print("Starting Update Publications")
+
+NumberOfPublicationsUpdate = 0
 
 ssm_client = boto3.client('ssm', region_name='ca-central-1')
 sm_client = boto3.client('secretsmanager')
@@ -79,8 +82,6 @@ def createListOfResearchersToUpdate():
             #Update everyones h-index everytime updatePublications is ran
             query = "UPDATE public.elsevier_data SET h_index="+str(h_index)+" WHERE id='"+author_scopus_ids[i+k][0]+"'"
             researchersToUpdateArray.append(author_scopus_ids[i+k][0])
-    
-    cursor.close()
     connection.commit()
     
     #Return list of researchers that need to be updated.
@@ -96,6 +97,8 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
     The function fetches the missing publications for the given author ID.
     The function then returns the list of missing functions.
     """
+
+    #Fetch author first and last name here
 
     #This function will be run for every researcher that needs to be updated.
     #But some reseracher might publish with other ubc reserachers.
@@ -118,10 +121,8 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
     
     #Check if the researchers new publication has already been inserted into the database.
     if(StoredResults > totalResults):
-        print("Throw An Error")
         return []
     if(StoredResults == totalResults):
-        print("No Publications To Get")
         return []
     
     #For each of the researchers 25 new publications check if it is already in the database.
@@ -151,7 +152,6 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
             results = cursor.fetchone()
             #If publication not in the database we need to put into the db
             if(results[0] == 0):
-                print("Adding New Publication")
                 author_ids = []
                 author_names = []
                 if(list(keys).count('dc:title')):
@@ -172,51 +172,61 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
                     link = publication['link'][2]['@href']
                 if (list(keys).count('author')):
                     scopus_authors = publication['author']
+                    #This flag is used to see if the specfic author is added to the publication
+                    flag = 0
                     for author in scopus_authors:
+                        if(author['authid'] == author_id):
+                            flag = 1
                         author_ids.append(author['authid'])
                         author_names.append(author['authname'])
+                    if(int(publication['author-count']['@total']) > 100 and flag == 0):
+                        #Add Author to ids and names because they were not added yet
+                        author_ids.append(author_id)
+                        #Find out how to add author name
                 missingPublications.append({'doi': doi, 'id': id, 'title': title, 
                         'keywords': keywords, 'journal': journal, 'cited_by': cited_by, 
                         'year_published': year_published, 'author_ids': author_ids, 
                         'author_names': author_names, 'link': link})
                 StoredResults += 1
                 connection.commit()
-            if(int(publication['author-count']['@total']) > 100):
-                print("ID of publication with over 100")
-                print(str(id))
-                #If the publication is above 100 check if the current researcher is in it
-                query = "SELECT COUNT(*) FROM publication_data WHERE id='"+id+"' AND ('"+author_id+"' = ANY(author_ids))"
-                cursor.execute(query)
-                authorInPublicationResult = cursor.fetchone()
+            
+            else:
+                keys = publication.keys()
+                if(list(keys).count('author-count')):
+                    if(int(publication['author-count']['@total']) > 100):
+                        #If the publication is above 100 check if the current researcher is in it
+                        query = "SELECT COUNT(*) FROM publication_data WHERE id='"+id+"' AND ('"+author_id+"' = ANY(author_ids))"
+                        cursor.execute(query)
+                        authorInPublicationResult = cursor.fetchone()
 
-                #If author is not in publication add them to it
-                if(authorInPublicationResult[0] == 0):
-                    print("Missing Author Adding them to paper")
-                    query = "SELECT * FROM publication_data WHERE id='"+id+"'"
-                    cursor.execute(query)
-                    pubToAddAuthorToResult = cursor.fetchone()
-                    #Add researcher to author id array
-                    authorIdArray = pubToAddAuthorToResult[5]
-                    authorIdArray.append(author_id)
-                    authorIdArray = str(authorIdArray).replace('\'', '"').replace('[', '{').replace(']', '}')
-                    query = "UPDATE publication_data SET author_ids='"+authorIdArray+"' WHERE id='"+id+"' "
-                    cursor.execute(query)
-                    #Update Author Keywords
-                    publicationToUpdate = []
-                    #Get Keywords to Update
-                    if(list(keys).count('authkeywords')):
-                        keywords_string = publication['authkeywords']
-                        keywords = keywords_string.split('|')
-                        keywords = [keyword.strip() for keyword in keywords]
-                    publicationToUpdate.append({'keywords': keywords})
-                    #Store new keywords
-                    store_keywords(author_id, publicationToUpdate, cursor)
-                    #Commit Changes to database
-                    connection.commit()
+                        #If author is not in publication add them to it
+                        if(authorInPublicationResult[0] == 0):
+                            NumberOfPublicationsUpdate = NumberOfPublicationsUpdate + 1
+                            query = "SELECT * FROM publication_data WHERE id='"+id+"'"
+                            cursor.execute(query)
+                            pubToAddAuthorToResult = cursor.fetchone()
+                            #Add researcher to author id array
+                            authorIdArray = pubToAddAuthorToResult[5]
+                            authorIdArray.append(author_id)
+                            authorIdArray = str(authorIdArray).replace('\'', '"').replace('[', '{').replace(']', '}')
+                            query = "UPDATE publication_data SET author_ids='"+authorIdArray+"' WHERE id='"+id+"' "
+                            cursor.execute(query)
+                            #Update Author Keywords
+                            publicationToUpdate = []
+                            #Get Keywords to Update
+                            if(list(keys).count('authkeywords')):
+                                keywords_string = publication['authkeywords']
+                                keywords = keywords_string.split('|')
+                                keywords = [keyword.strip() for keyword in keywords]
+                            publicationToUpdate.append({'keywords': keywords})
+                            #Store new keywords
+                            store_keywords(author_id, publicationToUpdate, cursor)
+                            #Commit Changes to database
+                            connection.commit()
 
-            #If the publication is in the database but the researcher is not attached we should add them
-            #Increase their document count and add to their keywords
-            #Don't add it to missing documents
+                            #If the publication is in the database but the researcher is not attached we should add them
+                            #Increase their document count and add to their keywords
+                            #Don't add it to missing documents
 
         #Check if we got all the new publications
         if(StoredResults == totalResults):
@@ -228,7 +238,6 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
         next_url = rjson['search-results']['link'][2]['@href']
         response = requests.get(next_url, headers=headers)
         rjson = response.json()
-    print(currentPage)
     return missingPublications
 
 def getResearcherCurrentNumDocuments(author_id, cursor):
@@ -328,6 +337,7 @@ def updateResearchers(researchersToUpdateArray, instoken, apikey, connection, cu
         
         #For each author that contributed to these publications at UBC you need to update their num_documents!
         for publication in missingPublications:
+            NumberOfPublicationsUpdate = NumberOfPublicationsUpdate + 1
             for author_id in publication['author_ids']:
                 #Check if the author is in the UBC database
                 query = "SELECT COUNT(*) FROM elsevier_data WHERE id='"+author_id+"'"
@@ -348,14 +358,13 @@ def updateResearchers(researchersToUpdateArray, instoken, apikey, connection, cu
         # Need to keep num_documents up to date
         # Need to keep keywords up to date
         ###
-    
-    cursor.close()
 
 #Update all researchers number of publications
 #We might never need this because it should be correct at all times 
 #and removing a researcher does not decrease your publications
 def updateAllResearchersNumDocuments(cursor, connection):
     #UPDATE H_INDEX AS WELL!
+    time_string = str(time.time())
     query = "SELECT * FROM researcher_data"
     cursor.execute(query)
     results = cursor.fetchall()
@@ -366,7 +375,12 @@ def updateAllResearchersNumDocuments(cursor, connection):
         countResult = cursor.fetchone()
         query = "UPDATE elsevier_data SET num_documents = "+str(countResult[0])+" WHERE id = '"+str(results[i][12])+"'"
         cursor.execute(query)
+        #Update last updated column in researcher_data
+        query = "UPDATE researcher_data SET last_updated = '"+time_string+"' WHERE scopus_id = '"+str(results[i][12])+"' "
+        cursor.execute(query)
     connection.commit()
+
+    #Change the last updated value
 
 def removePublicationsWithNoUbcResearcher(cursor, connection):
     query = "SELECT * FROM publication_data WHERE NOT EXISTS (SELECT * FROM researcher_data WHERE researcher_data.scopus_id = ANY(publication_data.author_ids))"
@@ -376,6 +390,7 @@ def removePublicationsWithNoUbcResearcher(cursor, connection):
     for i in range(0, len(results)):
         query = "DELETE FROM publication_data WHERE id='"+str(results[i][0])+"'"
         cursor.execute(query)
+        NumberOfPublicationsUpdate = NumberOfPublicationsUpdate + 1
     connection.commit()
 
 instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
@@ -387,13 +402,23 @@ cursor = connection.cursor()
 
 #Remove all publications with no ubc researcher
 removePublicationsWithNoUbcResearcher(cursor, connection)
+print("Finished Removing Publications")
 #Set researchers number of documents to be what we have in the database
 updateAllResearchersNumDocuments(cursor, connection)
+print("Finished Updating Num Documents")
 #Create a list of researchers that need to be updated
 researcherArray = createListOfResearchersToUpdate()
+print("Finished Creating List Of Researchers To Update")
+print("List of Researchers:")
 print(researcherArray)
+print("List of Researchers Printed")
 #Using the List of Researchers Put their new publications into the database
 updateResearchers(researcherArray, instoken, apikey, connection, cursor)
-#updateResearchers(["6507098498"], instoken, apikey, connection, cursor)
+print("Finished Updating Researchers")
+#Add to the updating table
+query = "INSERT INTO update_publications_logs(date_updated, number_of_publications_updated) VALUES ('"+str(time.time())+"', "+str(NumberOfPublicationsUpdate)+")"
+
+print("Number of Publications Added: "+str(NumberOfPublicationsUpdate))
+cursor.close()
 
 print("Finished Updating Publication")

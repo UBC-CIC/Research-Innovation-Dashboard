@@ -49,7 +49,6 @@ def lambda_handler(event, context):
     columns.append(createColumn('campus', 'character varying', '', False))
     columns.append(createColumn('scopus_id', 'character varying', '', False))
     columns.append(createColumn('keywords', 'character varying', '', False))
-    columns.append(createColumn('extra_scopus_ids', 'character varying[]', '', False))
     columns.append(createColumn('last_updated', 'character varying', '', True))
     query = createQuery('researcher_data', columns)
     cursor.execute(query)
@@ -60,16 +59,14 @@ def lambda_handler(event, context):
     columns.append(createColumn('num_citations', 'integer', '', False))
     columns.append(createColumn('num_documents', 'integer', '', False))
     columns.append(createColumn('h_index', 'double precision', '', False))
-    columns.append(createColumn('orcid_id', 'character varying', '', False))
-    columns.append(createColumn('last_updated', 'character varying', '', True))
+    columns.append(createColumn('orcid_id', 'character varying', '', True))
     query = createQuery('elsevier_data', columns)
     cursor.execute(query)
     
     # Create Orcid Data Table
     columns = []
     columns.append(createColumn('id', 'character varying', 'NOT NULL PRIMARY KEY', False))
-    columns.append(createColumn('num_patents_filed', 'integer', '', False))
-    columns.append(createColumn('last_updated', 'character varying', '', True))
+    columns.append(createColumn('num_patents_filed', 'integer', '', True))
     query = createQuery('orcid_data', columns)
     cursor.execute(query)
     
@@ -84,19 +81,23 @@ def lambda_handler(event, context):
     columns.append(createColumn('author_names', 'character varying', '', False))
     columns.append(createColumn('keywords', 'character varying', '', False))
     columns.append(createColumn('doi', 'character varying', '', False))
-    columns.append(createColumn('link', 'character varying', '', False))
-    columns.append(createColumn('last_updated', 'character varying', '', True))
+    columns.append(createColumn('link', 'character varying', '', True))
     query = createQuery('publication_data', columns)
     cursor.execute(query)
     
-    # Create Last Updated Table
+    # Create Update Logs Table
     columns = []
     columns.append(createColumn('table_name', 'character varying', 'NOT NULL PRIMARY KEY', False))
     columns.append(createColumn('last_updated', 'character varying', '', True))
-    query = createQuery('update_data', columns)
+    query = createQuery('data_update_logs', columns)
+    cursor.execute(query)
+    
+    # Create Update Publications Logs Table
+    columns = []
+    columns.append(createColumn('date_updated', 'character varying', 'NOT NULL PRIMARY KEY', False))
+    columns.append(createColumn('number_of_publications_updated', 'character varying', '', True))
+    query = createQuery('update_publications_logs', columns)
     cursor.execute(query)
     
     cursor.close()
     connection.commit()
-
-    return {}
