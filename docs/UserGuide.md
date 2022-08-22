@@ -93,7 +93,7 @@ The Metrics tab displays a word cloud containing the top 100 keywords in UBC res
 
 The selected date range can be changed by moving either one of the date range slider buttons. A new word cloud will then be formed with the words for the updated date range.
 
-//new image here
+![alt text](images/userGuide/metrics03.png)
 
 To view the exact number of times a certain keyword has appeared, hover over the word and a popup will appear. If you would like to search for that keyword, click the word to open a new tab containing the search results.
 ![alt text](images/userGuide/metrics02.png)
