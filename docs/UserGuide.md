@@ -109,7 +109,6 @@ The admin dashboard page contains three tabs.
 
 The Logs tab contains two tables. The first table displays logs of the time at which publications are updated, as well as the number of publications that are updated.
 ![alt text](images/userGuide/adminDashboard04.png)
-<br>
 The second table displays logs of the time at which researchres are updated, as well as the name of the researcher that are updated.
 ![alt text](images/userGuide/adminDashboard05.png)
 
