@@ -168,14 +168,21 @@ To set up user accounts on the app, you will need to do the following steps
 ![alt text](images/deploymentGuide/s3_search.jpg)
 4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
 ![alt text](images/deploymentGuide/s3_bucket_search.jpg)
-5. Click on the `researcher_data` folder then click `Upload`.
-6. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file then click `Upload`.
-7. Once the upload is complete click `Close`
+5. Click on `Create Folder`
+![alt text](images/deploymentGuide/s3_bucket_page.jpg)
+6. Enter `researcher_data` as the folder name then click `Create Folder`.
+![alt text](images/deploymentGuide/s3_create_folder.jpg)
+7. Click on the `researcher_data` folder then click `Upload`.
+![alt text](images/deploymentGuide/s3_opened_folder.jpg)
+8. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file then click `Upload`.
+![alt text](images/deploymentGuide/s3_upload.jpg)
+9. Once the upload is complete click `Close`
+![alt text](images/deploymentGuide/s3_upload_complete.jpg)
 
 # Step 7: Run the Data Pipeline
 1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Step Functions` in the search bar.
 ![alt text](images/deploymentGuide/step_function_search.jpg)
-2. In the State Machine search bar enter `DataFetchStateMachine` and click the name of the top result.
+2. In the State Machine search bar enter `DataFetchStateMachine` and click the name of the top result (The exact name of the state machine may vary but it will always begin with `DataFetchStateMachine`.
 ![alt text](images/deploymentGuide/state_machine_search.jpg)
 3. Click `Start Execution`
 ![alt text](images/deploymentGuide/state_machine_page.jpg)
