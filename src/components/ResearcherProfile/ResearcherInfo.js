@@ -18,6 +18,7 @@ export default function Researcher_Info(props) {
                         <Typography>{"Email: "+props.researcher_information.email}</Typography>
                         <Typography>{"Phone: "+props.researcher_information.phone_number}</Typography>
                         <Typography>{"Office: "+props.researcher_information.office}</Typography>
+                        <Typography>{"Scopus ID: "+props.researcher_information.scopusId}</Typography>
                     </Paper>
             </Paper>
         </Grid>

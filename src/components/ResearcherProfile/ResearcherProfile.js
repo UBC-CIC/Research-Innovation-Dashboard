@@ -326,6 +326,7 @@ export default function Researcher_profile_overview() {
               email,
               phone_number,
               office,
+              scopusId,
             }}
           />
           <ResearcherHighlights
