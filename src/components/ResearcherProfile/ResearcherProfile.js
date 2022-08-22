@@ -55,6 +55,7 @@ export default function Researcher_profile_overview() {
   const [showPublications, setShowPublications] = useState(false);
   const [showSimilarResearchers, setShowSimilarResearchers] = useState(false);
   const [similarResearchersArray, setSimilarResearchersArray] = useState([]);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(0)
 
   const [numberOfPublicationsToShow, setNumberOfPublicationsToShow] =
     useState(2);
@@ -215,6 +216,8 @@ export default function Researcher_profile_overview() {
     set_h_index(researcher_data.h_index);
     set_funding("");
     set_num_patents_filed(researcher_data.num_patents_filed);
+    setLastUpdatedAt(researcher_data.last_updated);
+
     set_num_licensed_patents(0);
 
     const result = await API.graphql({
@@ -327,6 +330,7 @@ export default function Researcher_profile_overview() {
               phone_number,
               office,
               scopusId,
+              lastUpdatedAt,
             }}
           />
           <ResearcherHighlights

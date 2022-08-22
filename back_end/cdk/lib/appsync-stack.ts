@@ -277,6 +277,7 @@ export class AppsyncStack extends Stack {
         scopus_id: String!
         second_department: String
         second_faculty: String
+        last_updated: String
       }
       
       type ResearcherOpenSearch {
