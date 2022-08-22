@@ -8,7 +8,11 @@ import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
 
 export class DataFetchStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+    super(scope, id, {
+      env: {
+          region: 'ca-central-1'
+      },
+    });
 
     /*
       Define Lambda Layers
