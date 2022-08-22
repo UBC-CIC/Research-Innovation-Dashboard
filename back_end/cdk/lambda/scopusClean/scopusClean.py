@@ -1,12 +1,13 @@
 import csv
 import codecs
 import boto3
+import os
 
 s3_client = boto3.client("s3")
 
 def lambda_handler(event, context):
     
-    bucket_name = 'vpri-innovation-dashboard'
+    bucket_name = os.environ.get('S3_BUCKET_NAME')
     key = 'researcher_data/scopus_ids.csv'
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
     csv_file = codecs.getreader("utf-8-sig")(data["Body"])

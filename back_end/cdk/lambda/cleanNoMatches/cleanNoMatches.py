@@ -3,6 +3,7 @@ import codecs
 import requests
 import boto3
 from pyjarowinkler.distance import get_jaro_distance
+import os
 
 s3_client = boto3.client("s3")
 ssm_client = boto3.client('ssm')
@@ -17,7 +18,7 @@ def split_array(lst, n):
     return ret_arr
 
 def lambda_handler(event, context):
-    bucket_name = 'vpri-innovation-dashboard'
+    bucket_name = os.environ.get('S3_BUCKET_NAME')
     key = event['file_key']
     iteration_number = event['iteration_number']
     data = s3_client.get_object(Bucket=bucket_name, Key=key)

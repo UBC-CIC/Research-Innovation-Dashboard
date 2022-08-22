@@ -4,6 +4,7 @@ import psycopg2
 import csv
 import codecs
 import time
+import os
 
 ssm_client = boto3.client('ssm')
 sm_client = boto3.client('secretsmanager')
@@ -69,7 +70,7 @@ def storeLastUpdated(updatedTable, credentials):
 
 def lambda_handler(event, context):
     credentials = getCredentials()
-    bucket_name = 'vpri-innovation-dashboard'
+    bucket_name = os.environ.get('S3_BUCKET_NAME')
     
     # Fetch data from the matches folder
     folder = 'researcher_data/matches/'

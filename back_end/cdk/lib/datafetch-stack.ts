@@ -14,6 +14,15 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
+    // Create the S3 Bucket
+    const s3Bucket = new s3.Bucket(this, 's3-bucket', {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      versioned: false,
+      publicReadAccess: false,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+    });
+
     /*
       Define Lambda Layers
     */
@@ -57,6 +66,9 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/scopusClean'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
+      environment: {
+        S3_BUCKET_NAME: s3Bucket.bucketName,
+      },
     });
     scopusClean.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
@@ -70,6 +82,9 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/ubcClean'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
+      environment: {
+        S3_BUCKET_NAME: s3Bucket.bucketName,
+      },
     });
     ubcClean.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
@@ -84,6 +99,9 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/compareNames'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
+      environment: {
+        S3_BUCKET_NAME: s3Bucket.bucketName,
+      },
     });
     compareNames.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
@@ -98,6 +116,9 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/cleanNoMatches'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
+      environment: {
+        S3_BUCKET_NAME: s3Bucket.bucketName,
+      },
     });
     cleanNoMatches.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
@@ -131,6 +152,9 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/researcherFetch'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
+      environment: {
+        S3_BUCKET_NAME: s3Bucket.bucketName,
+      },
     });
     researcherFetch.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
@@ -310,15 +334,7 @@ export class DataFetchStack extends cdk.Stack {
       definition: dataFetchDefinition,
     });
 
-    // Create the S3 Bucket
-    const s3Bucket = new s3.Bucket(this, 's3-bucket', {
-      bucketName: 'vpri-innovation-dashboard',
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-      versioned: false,
-      publicReadAccess: false,
-      encryption: s3.BucketEncryption.S3_MANAGED,
-    });
+    // Give the lambdas permission to access the S3 Bucket
     s3Bucket.grantReadWrite(scopusClean);
     s3Bucket.grantReadWrite(ubcClean);
     s3Bucket.grantReadWrite(compareNames);
