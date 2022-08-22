@@ -359,3 +359,24 @@ export const wordCloud = /* GraphQL */ `
     }
   }
 `;
+export const changeScopusId = /* GraphQL */ `
+  query ChangeScopusId($oldScopusId: String!, $newScopusId: String!) {
+    changeScopusId(oldScopusId: $oldScopusId, newScopusId: $newScopusId)
+  }
+`;
+export const lastUpdatedResearchersList = /* GraphQL */ `
+  query LastUpdatedResearchersList {
+    lastUpdatedResearchersList {
+      preferred_name
+      last_updated
+    }
+  }
+`;
+export const getUpdatePublicationsLogs = /* GraphQL */ `
+  query GetUpdatePublicationsLogs {
+    getUpdatePublicationsLogs {
+      number_of_publications_updated
+      date_updated
+    }
+  }
+`;
