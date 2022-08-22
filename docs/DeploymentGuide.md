@@ -197,6 +197,10 @@ To set up user accounts on the app, you will need to do the following steps
 2. Click `User Pools` from the left hand sidebar and select the user pool that corresponds to the project name.
    ![alt text](images/webApp/webapp02.png)
 3. Select the user which you want to set to Admin
+   ![alt text](images/webApp/webapp12.png)
 4. Scroll down, and click **Add user to group**
+   ![alt text](images/webApp/webapp13.png)
 5. Select **Admins** and click **Add**
+   ![alt text](images/webApp/webapp14.png)
 6. The user is now an Admin! (If you are having issues, try relogging on the web app)
+   ![alt text](images/webApp/webapp15.png)
