@@ -249,14 +249,16 @@ export class DataFetchStack extends cdk.Stack {
     });
     cleanNoMatchesMap.iterator(cleanNoMatchesInvoke);
 
+    /*
     const nameMatchDefinition = scopusCleanInvoke
     .next(ubcCleanInvoke)
     .next(compareNamesMap)
     .next(cleanNoMatchesMap);
-  
+    
   const nameMatch = new sfn.StateMachine(this, 'Name Match State Machine', {
     definition: nameMatchDefinition,
   });
+  */
 
     /*
         Set up data fetch step function
@@ -269,13 +271,6 @@ export class DataFetchStack extends cdk.Stack {
       lambdaFunction: researcherFetch,
       outputPath: '$.Payload',
     });
-    /*
-    const researcherMap = new sfn.Map(this, 'Researcher Map', {
-      maxConcurrency: 40,
-      itemsPath: '$'
-    });
-    researcherMap.iterator(researcherFetchInvoke);
-    */
 
     const elsevierFetchInvoke = new tasks.LambdaInvoke(this, 'Fetch Elsevier Data', {
       lambdaFunction: elsevierFetch,
@@ -297,7 +292,11 @@ export class DataFetchStack extends cdk.Stack {
     })
     publicationMap.iterator(publicationFetchInvoke);
 
-    const dataFetchDefinition = createTablesInvoke
+    const dataFetchDefinition = scopusCleanInvoke
+      .next(ubcCleanInvoke)
+      .next(compareNamesMap)
+      .next(cleanNoMatchesMap)
+      .next(createTablesInvoke)
       .next(researcherFetchInvoke)
       .next(elsevierFetchInvoke)
       .next(orcidFetchInvoke)
@@ -323,11 +322,5 @@ export class DataFetchStack extends cdk.Stack {
     s3Bucket.grantReadWrite(researcherFetch);
     s3Bucket.grantReadWrite(elsevierFetch); // DELETE ME
     s3Bucket.grantReadWrite(new iam.AccountRootPrincipal());
-
-    // Upload the Scopus and UBC data to the bucket
-    new s3deploy.BucketDeployment(this, 'DeployFiles', {
-      sources: [s3deploy.Source.asset('./data')],
-      destinationBucket: s3Bucket,
-    });
   }
 }

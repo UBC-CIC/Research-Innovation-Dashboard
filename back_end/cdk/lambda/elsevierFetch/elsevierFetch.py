@@ -3,8 +3,7 @@ import requests
 import boto3
 import psycopg2
 import os
-from datetime import datetime
-import pytz
+import time
 import csv
 import codecs
 
@@ -34,11 +33,11 @@ Given an array of authors, stores the authors attached information in the
 elsevier_data table of the database
 '''
 def storeAuthors(authors, credentials):
+    time_string = str(time.time())
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     for author in authors:
-        now = datetime.now(pytz.timezone("Canada/Pacific"))
-        dt_string = now.strftime("%d/%m/%Y %H:%M:%S") + " PST"
+        time_string = str(time.time())
         if 'num_citations' not in author.keys():
             author['num_citations'] = 0
         if 'num_documents' not in author.keys():
@@ -48,9 +47,9 @@ def storeAuthors(authors, credentials):
         if 'orcid_id' not in author.keys():
             author['orcid_id'] = '0'
         queryline1 = "INSERT INTO public.elsevier_data(id, num_citations, num_documents, h_index, orcid_id, last_updated) "
-        queryline2 = "VALUES ('" + str(author['scopus_id']) + "', " + str(author['num_citations']) + ", " + str(author['num_documents']) + ", " + str(author['h_index']) + ", '" + author['orcid_id'] + ", '" + dt_string + "')"
+        queryline2 = "VALUES ('" + str(author['scopus_id']) + "', " + str(author['num_citations']) + ", " + str(author['num_documents']) + ", " + str(author['h_index']) + ", '" + author['orcid_id'] + "', '" + time_string + "')"
         queryline3 = "ON CONFLICT (id) DO UPDATE "
-        queryline4 = "SET num_citations='" + str(author['num_citations']) + "', num_documents='" + str(author['num_documents']) + "', h_index='" + str(author['h_index']) + "', orcid_id='" + author['orcid_id'] + "', last_updated" + dt_string + "'"
+        queryline4 = "SET num_citations='" + str(author['num_citations']) + "', num_documents='" + str(author['num_documents']) + "', h_index='" + str(author['h_index']) + "', orcid_id='" + author['orcid_id'] + "', last_updated='" + time_string + "'"
         cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
     cursor.close()
     connection.commit()
@@ -138,17 +137,16 @@ def scopusFetch(authors):
                         author['num_citations'] = data['cited-by-count']
 
 '''
-Stores the current time in the update_data table
+Stores the current time in the 'update_data' table
 '''
 def storeLastUpdated(updatedTable, credentials):
-    now = datetime.now(pytz.timezone("Canada/Pacific"))
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S") + " PST"
+    time_string = str(time.time())
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     queryline1 = "INSERT INTO public.update_data(table_name, last_updated) "
-    queryline2 = "VALUES ('" + updatedTable + "', '" + dt_string + "')"
+    queryline2 = "VALUES ('" + updatedTable + "', '" + time_string + "')"
     queryline3 = "ON CONFLICT (table_name) DO UPDATE "
-    queryline4 = "SET last_updated='" + dt_string + "'"
+    queryline4 = "SET last_updated='" + time_string + "'"
     cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
     cursor.close()
     connection.commit()
@@ -162,23 +160,22 @@ def lambda_handler(event, context):
     credentials = getCredentials()
     authors = []
     author_scopus_ids = getAuthorIds(credentials)
-    #for i in range(len(author_scopus_ids)):
-        #authors.append({'scopus_id': author_scopus_ids[i][0]})
-    #scopusFetch(authors)
-    #sciValFetch(authors)
+    for i in range(len(author_scopus_ids)):
+        authors.append({'scopus_id': author_scopus_ids[i][0]})
+    scopusFetch(authors)
+    sciValFetch(authors)
 
     # DELETE THIS
+    '''
     bucket_name = 'vpri-innovation-dashboard'
     key = 'elsevier_data.csv'
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
     rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
     for row in rows:
-        authors.append({'scopus_id': row['SCOPUS_ID'], 'orcid_id': row['ORCID_ID'], 'num_documents': row['NUM_DOCUMENTS'], 'NUM_CITATIONS': row['NUM_CITATIONS'], 'h-index': row['H-INDEX']})
-
+        authors.append({'scopus_id': row['SCOPUS_ID'], 'orcid_id': row['ORCID_ID'], 'num_documents': row['NUM_DOCUMENTS'], 'num_citations': row['NUM_CITATIONS'], 'h_index': row['H-INDEX']})
+    '''
     storeAuthors(authors, credentials)
     storeLastUpdated('elsevier_data', credentials)
     max_authors = int(os.environ.get('SCOPUS_MAX_AUTHORS'))
     return splitArray(author_scopus_ids, max_authors)
     
-    
-

@@ -3,8 +3,7 @@ import json
 import boto3
 import psycopg2
 import os
-from datetime import datetime
-import pytz
+import time
 
 ssm_client = boto3.client('ssm')
 sm_client = boto3.client('secretsmanager')
@@ -37,7 +36,6 @@ def fetch_publications(author_id):
     query = {'query': 'AU-ID(' + author_id + ')', 'view' : 'COMPLETE', 'cursor': '*'}
     
     response = requests.get(url, headers=headers, params=query)
-    print(response.headers)
     rjson = response.json()
     stored_results = 0
     total_results = int(rjson['search-results']['opensearch:totalResults'])
@@ -107,6 +105,7 @@ def store_publications(publications, credentials):
     cursor = connection.cursor()
     
     for publication in publications:
+        time_string = str(time.time())
         # Format each field
         publication['id'] = publication['id']
         publication['title'] = publication['title'].replace('\'', "''")
@@ -116,10 +115,10 @@ def store_publications(publications, credentials):
         publication['journal'] = publication['journal'].replace("'", "''")
         publication['cited_by'] = str(publication['cited_by'])
         publication['year_published'] = publication['year_published']
-        queryline1 = "INSERT INTO public.publication_data(id, doi, title, author_ids, author_names, keywords, journal, cited_by, year_published, link) "
-        queryline2 = "VALUES ('" + publication['id'] + "', '" + publication['doi'] + "', '" + publication['title'] + "', '" + publication['author_ids'] + "', '" + publication['author_names'] + "', '" + publication['keywords'] + "', '" + publication['journal'] + "', '" + publication['cited_by'] + "', '" + publication['year_published'] + "', '" + publication['link'] + "')"
+        queryline1 = "INSERT INTO public.publication_data(id, doi, title, author_ids, author_names, keywords, journal, cited_by, year_published, link, last_updated) "
+        queryline2 = "VALUES ('" + publication['id'] + "', '" + publication['doi'] + "', '" + publication['title'] + "', '" + publication['author_ids'] + "', '" + publication['author_names'] + "', '" + publication['keywords'] + "', '" + publication['journal'] + "', '" + publication['cited_by'] + "', '" + publication['year_published'] + "', '" + publication['link'] + "', '" + time_string + "')"
         queryline3 = "ON CONFLICT (id) DO UPDATE "
-        queryline4 = "SET doi='" + publication['doi'] + "', title='" + publication['title'] + "', author_ids='" + publication['author_ids'] + "', author_names='" + publication['author_names'] + "', journal='" + publication['journal'] + "', year_published='" + publication['year_published'] + "', cited_by='" + publication['cited_by'] + "', keywords='" + publication['keywords'] + "', link='" + publication['link'] + "'"
+        queryline4 = "SET doi='" + publication['doi'] + "', title='" + publication['title'] + "', author_ids='" + publication['author_ids'] + "', author_names='" + publication['author_names'] + "', journal='" + publication['journal'] + "', year_published='" + publication['year_published'] + "', cited_by='" + publication['cited_by'] + "', keywords='" + publication['keywords'] + "', link='" + publication['link'] + "', last_updated='" + time_string + "'"
         cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
     
     cursor.close()
@@ -135,14 +134,6 @@ def store_keywords(author_id, publications, credentials):
         for keyword in publication['keywords']:
             unsorted_keywords.append(keyword)
     
-    # Sort keywords, remove duplicates, and format the string
-    '''
-    sorted_keywords = sorted(unsorted_keywords, key = unsorted_keywords.count, reverse = True)
-    keywords = []
-    for element in sorted_keywords:
-        if element not in keywords:
-            keywords.append(element)
-    '''
     keywords = unsorted_keywords
     
     for keyword in keywords:
@@ -163,14 +154,13 @@ def store_keywords(author_id, publications, credentials):
 Stores the current time in the update_data table
 '''
 def storeLastUpdated(updatedTable, credentials):
-    now = datetime.now(pytz.timezone("Canada/Pacific"))
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S") + " PST"
+    time_string = str(time.time())
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     queryline1 = "INSERT INTO public.update_data(table_name, last_updated) "
-    queryline2 = "VALUES ('" + updatedTable + "', '" + dt_string + "')"
+    queryline2 = "VALUES ('" + updatedTable + "', '" + time_string + "')"
     queryline3 = "ON CONFLICT (table_name) DO UPDATE "
-    queryline4 = "SET last_updated='" + dt_string + "'"
+    queryline4 = "SET last_updated='" + time_string + "'"
     cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
     cursor.close()
     connection.commit()
@@ -188,5 +178,4 @@ def lambda_handler(event, context):
         store_keywords(author_id[0], publications, credentials)
         store_publications(publications, credentials)
     storeLastUpdated('publication_data', credentials)
-    
     

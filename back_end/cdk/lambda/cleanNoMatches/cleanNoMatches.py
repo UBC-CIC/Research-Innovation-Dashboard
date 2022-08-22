@@ -135,7 +135,7 @@ def lambda_handler(event, context):
                              match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['JARO_DISTANCE'],
                              match['CLOSEST_MATCH_NAME'], match['CLOSEST_MATCH_ID'], match['CLOSEST_MATCH_NAME_CLEANED']])
     
-    #upload the data into s3
+    #upload the missing matches into s3
     key = 'researcher_data/no_matches_cleaned/no_matches_cleaned' + str(iteration_number) + '.csv'
     bucket.upload_file('/tmp/no_matches_cleaned.csv', key)
 

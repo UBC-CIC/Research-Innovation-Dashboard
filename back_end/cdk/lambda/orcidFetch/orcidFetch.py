@@ -3,8 +3,7 @@ import boto3
 import psycopg2
 import json
 import os
-from datetime import datetime
-import pytz
+import time
 
 ssm_client = boto3.client('ssm')
 sm_client = boto3.client('secretsmanager')
@@ -45,14 +44,13 @@ Given an array of authors, stores the authors attached information in the
 orcid_data table of the database
 '''
 def storeAuthors(authors, credentials):
-    now = datetime.now(pytz.timezone("Canada/Pacific"))
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S") + " PST"
+    time_string = str(time.time())
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     for author in authors:
-        queryline1 = "INSERT INTO public.orcid_data(id, num_patents_filed, last_updated) VALUES ('" + str(author['orcid_id']) + "', " + str(author['num_patents']) + ", '" + dt_string + "')"
+        queryline1 = "INSERT INTO public.orcid_data(id, num_patents_filed, last_updated) VALUES ('" + str(author['orcid_id']) + "', " + str(author['num_patents']) + ", '" + time_string + "')"
         queryline2 = "ON CONFLICT (id) DO UPDATE "
-        queryline3 = "SET num_patents_filed='" + str(author['num_patents']) + "'"
+        queryline3 = "SET num_patents_filed='" + str(author['num_patents']) + "', last_updated='" + time_string + "'"
         cursor.execute(queryline1 + queryline2 + queryline3)
     cursor.close()
     connection.commit()
@@ -81,14 +79,13 @@ def orcidParseWorks(activities):
 Stores the current time in the update_data table
 '''
 def storeLastUpdated(updatedTable, credentials):
-    now = datetime.now(pytz.timezone("Canada/Pacific"))
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S") + " PST"
+    time_string = str(time.time())
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     queryline1 = "INSERT INTO public.update_data(table_name, last_updated) "
-    queryline2 = "VALUES ('" + updatedTable + "', '" + dt_string + "')"
+    queryline2 = "VALUES ('" + updatedTable + "', '" + time_string + "')"
     queryline3 = "ON CONFLICT (table_name) DO UPDATE "
-    queryline4 = "SET last_updated='" + dt_string + "'"
+    queryline4 = "SET last_updated='" + time_string + "'"
     cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
     cursor.close()
     connection.commit()
