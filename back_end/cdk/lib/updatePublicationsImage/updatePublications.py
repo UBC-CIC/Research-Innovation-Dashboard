@@ -96,6 +96,8 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
     The function then returns the list of missing functions.
     """
 
+    global NumberOfPublicationsUpdate
+
     #Fetch author first and last name here
 
     #This function will be run for every researcher that needs to be updated.
@@ -328,6 +330,8 @@ def updateResearchers(researchersToUpdateArray, instoken, apikey, connection, cu
     The function then puts the publications into the database.
     """
 
+    global NumberOfPublicationsUpdate
+
     #Loop through all researchers to update.
     while (len(researchersToUpdateArray) > 0):
         #Get the front of lists missing publications
@@ -381,6 +385,7 @@ def updateAllResearchersNumDocuments(cursor, connection):
     #Change the last updated value
 
 def removePublicationsWithNoUbcResearcher(cursor, connection):
+    global NumberOfPublicationsUpdate
     query = "SELECT * FROM publication_data WHERE NOT EXISTS (SELECT * FROM researcher_data WHERE researcher_data.scopus_id = ANY(publication_data.author_ids))"
     cursor.execute(query)
     results = cursor.fetchall()
@@ -397,6 +402,7 @@ apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', Wi
 credentials = getCredentials()
 connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
 cursor = connection.cursor()
+
 
 NumberOfPublicationsUpdate = 0
 

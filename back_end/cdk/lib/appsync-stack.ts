@@ -26,7 +26,6 @@ export class AppsyncStack extends Stack {
       parameterName: 'VPRIGraphQLAPIIdOutput',
     }).stringValue;
 
-    /*THIS POLICY NEEDS TO BE CHANGED!*/
     //Create a role for lambda to access the postgresql database
     const lambdaRole = new Role(this, 'PostgresLambdaRole', {
         roleName: 'PostgresLambdaRole',
@@ -37,9 +36,6 @@ export class AppsyncStack extends Stack {
                     new PolicyStatement({
                         effect: Effect.ALLOW,
                         actions: [
-                          //Secrets Manager
-                          "secretsmanager:GetSecretValue",
-
                           //Logs
                           "logs:CreateLogGroup",
                           "logs:CreateLogStream",
@@ -56,6 +52,14 @@ export class AppsyncStack extends Stack {
                           "ec2:UnassignPrivateIpAddresses"
                         ],
                         resources: ['*']
+                    }),
+                    new PolicyStatement({
+                      effect: Effect.ALLOW,
+                        actions: [
+                          //Secrets Manager
+                          "secretsmanager:GetSecretValue",
+                        ],
+                        resources: ['arn:aws:secretsmanager:ca-central-1:${this.account}:secret:vpri/credentials/*']
                     })
                 ]
             }),
