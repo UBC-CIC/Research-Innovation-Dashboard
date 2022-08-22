@@ -7,6 +7,8 @@ import placeholderResearchPhoto from '../../assets/images/researcherPlaceholderI
 import Stack from '@mui/material/Stack';
 
 export default function Researcher_Info(props) {
+    var date = new Date(props.researcher_information.lastUpdatedAt * 1000);
+
     return(
         <Grid item xs={4} sx={{}}>
             <Paper variant='outlined' sx={{height: "100%", borderTop: "0px", borderRight: "0px", borderBottom: "0px"}} square={true} elevation={0} component={Stack} direction="row">
@@ -19,7 +21,12 @@ export default function Researcher_Info(props) {
                         <Typography>{"Phone: "+props.researcher_information.phone_number}</Typography>
                         <Typography>{"Office: "+props.researcher_information.office}</Typography>
                         <Typography>{"Scopus ID: "+props.researcher_information.scopusId}</Typography>
-                        <Typography>{"Researcher Was Last Updated On: "+props.researcher_information.lastUpdatedAt}</Typography>
+                        <Typography>{"Updated On: "+date.getDate()+
+          "/"+(date.getMonth()+1)+
+          "/"+date.getFullYear()+
+          " "+date.getHours()+
+          ":"+date.getMinutes()+
+          ":"+date.getSeconds()}</Typography>
                     </Paper>
             </Paper>
         </Grid>

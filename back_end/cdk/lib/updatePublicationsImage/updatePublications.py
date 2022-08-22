@@ -8,8 +8,6 @@ import time
 
 print("Starting Update Publications")
 
-NumberOfPublicationsUpdate = 0
-
 ssm_client = boto3.client('ssm', region_name='ca-central-1')
 sm_client = boto3.client('secretsmanager')
 
@@ -399,6 +397,8 @@ apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', Wi
 credentials = getCredentials()
 connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
 cursor = connection.cursor()
+
+NumberOfPublicationsUpdate = 0
 
 #Remove all publications with no ubc researcher
 removePublicationsWithNoUbcResearcher(cursor, connection)
