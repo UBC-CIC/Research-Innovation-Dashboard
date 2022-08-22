@@ -6,6 +6,7 @@
 
 ## Description
 ### Back End Flow (1-15)
+![Architecture diagram](../docs/images/architecture-diagram-back-end.png)
 
 1. Raw Scopus and UBC HR data are fetched from an Amazon S3 bucket in the form of comma separated values (CSV) files. Both datasets are cleaned which involves standardizing the names present in both datasets. The results are then stored as CSV files in a new folder within the S3 bucket.
 2. The standardized names are compared in order to match Scopus Ids to UBC HR data. This process uses a string metric called Jaro-Winkler distance in order to determine if two names are the same. The match that has the highest Jaro-Winkler distance is considered to be the closest match. If the Jaro-Winkler distance is above a certain threshold the match is considered final. If the match is below the threshold then the match requires further processing in step 3. If two or more potential matches have the same Jaro-Winkler Distance those matches are processed further in step 4.
@@ -24,6 +25,7 @@
 15. AWS AppSync triggers the PostgreSQL Lambda and passes the correct variables needed to get the required data.
 
 ### Front End Flow (16-19)
+![Architecture diagram](../docs/images/architecture-diagram-front-end.png)
 16. All queries approved by AWS Web Application Firewall (WAF) are passed to AppSync.
 17. All queries are first sent to AWS WAF. This helps prevent malicious users from getting data or breaking the website with DDOS attacks.
 18. Users connect to the webpage, where access to AWS resources is done through authentication using AWS Cognito.
