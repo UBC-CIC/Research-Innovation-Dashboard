@@ -5,7 +5,7 @@
 ![Architecture diagram](../docs/images/architecture-diagram.png)
 
 ## Description
-### Back End Flow (1-9)
+### Back End Flow (1-15)
 
 1. Raw Scopus and UBC HR data are fetched from an Amazon S3 bucket in the form of comma separated values (CSV) files. Both datasets are cleaned which involves standardizing the names present in both datasets. The results are then stored as CSV files in a new folder within the S3 bucket.
 2. The standardized names are compared in order to match Scopus Ids to UBC HR data. This process uses a string metric called Jaro-Winkler distance in order to determine if two names are the same. The match that has the highest Jaro-Winkler distance is considered to be the closest match. If the Jaro-Winkler distance is above a certain threshold the match is considered final. If the match is below the threshold then the match requires further processing in step 3. If two or more potential matches have the same Jaro-Winkler Distance those matches are processed further in step 4.
@@ -16,6 +16,15 @@
 7. For each Scopus Id in the database, metrics are fetched from the SciVal and Scopus APIs. Number of documents, number of citations, and ORCID Id are obtained from Scopus and a 5-year h-index is obtained from SciVal. This data is stored in the Postgres database.
 8. The number of filed patents listed on ORCID is fetched from the ORCID API and stored in the database
 9. Each researcher's publication data is fetched from the Scopus API and stored in the database. This data includes each publication’s title, associated keywords, author names and Scopus ids, journal title, and the number of times the publication has been cited.
+10. Every Saturday at midnight a python docker container hosted on AWS fargate will be run to update the publications of the researchers in the database. The container will update researcher’s h-indexes and number of publications. Update publications will also add newly published publications to the database and remove publications with no current UBC researchers.
+11. When any changes are made to the PostgreSQL database AWS Data Migration Service (DMS) will replicate the new changes from the database to OpenSearch. This makes the data searchable and keeps the searches up to date.
+12. When queried, the Lambda communicates with AWS OpenSearch and executes the search required.
+13. AWS Appsync triggers the OpenSearch Lambda and passes the correct variables needed to execute the query.
+14. When queried, Lambda connects to the RDS PostgreSQL database and gets the data requested by AppSync.
+15. AWS AppSync triggers the PostgreSQL Lambda and passes the correct variables needed to get the required data.
 
-### Front End Flow (?-?)
-
+### Front End Flow (16-19)
+16. All queries approved by AWS Web Application Firewall (WAF) are passed to AppSync.
+17. All queries are first sent to AWS WAF. This helps prevent malicious users from getting data or breaking the website with DDOS attacks.
+18. Users connect to the webpage, where access to AWS resources is done through authentication using AWS Cognito.
+19. Users navigate to the VPRI application in their web browser.
