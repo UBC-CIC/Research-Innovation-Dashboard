@@ -58,6 +58,8 @@ export class FargateStack extends Stack {
     const taskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDef', {
       executionRole: fargateUpdatePublicationsRole,
       taskRole: fargateUpdatePublicationsRole,
+      memoryLimitMiB: 2048,
+      cpu: 1024,
     });
 
     //Create and attach the docker container to the task

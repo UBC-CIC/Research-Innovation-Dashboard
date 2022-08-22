@@ -53,6 +53,19 @@ type Query {
   similarResearchers(scopus_id: String!): [ResearcherOpenSearch]
   totalPublicationPerYear: [pubsPerYear]
   wordCloud: [wordCloud]
+  changeScopusId(oldScopusId: String!, newScopusId: String!): Boolean
+	lastUpdatedResearchersList: [lastUpdated]
+  getUpdatePublicationsLogs: [updatePublicationsLogType]
+}
+
+type updatePublicationsLogType {
+	number_of_publications_updated: Int
+	date_updated: String
+}
+
+type lastUpdated {
+	preferred_name: String
+	last_updated: String
 }
 
 type Ranking {
