@@ -171,3 +171,15 @@ To set up user accounts on the app, you will need to do the following steps
 5. Click on the `researcher_data` folder then click `Upload`.
 6. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file then click `Upload`.
 7. Once the upload is complete click `Close`
+
+# Step 7: Run the Data Pipeline
+1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Step Functions` in the search bar.
+![alt text](images/deploymentGuide/step_function_search.jpg)
+2. In the State Machine search bar enter `DataFetchStateMachine` and click the name of the top result.
+![alt text](images/deploymentGuide/state_machine_search.jpg)
+3. Click `Start Execution`
+![alt text](images/deploymentGuide/state_machine_page.jpg)
+4. In the box that appears click `Start Execution`. Do not edit the text in the input field.
+![alt text](images/deploymentGuide/start_execution.jpg)
+5. The data pipeline will now run on its own and populate the database. This process will take ~90 minutes. If you navigate to the page you visited in part 2 of this step you can view the status of the data pipeline. Once it is finished running the step function execution status will say `Succeeded`.
+![alt text](images/deploymentGuide/state_machine_success.jpg)
