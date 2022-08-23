@@ -1,10 +1,11 @@
 import * as cdk from 'aws-cdk-lib';
+import { triggers } from 'aws-cdk-lib';
 import { aws_lambda as lambda } from 'aws-cdk-lib';
 import { aws_iam as iam} from 'aws-cdk-lib';
 import  { aws_s3 as s3 } from 'aws-cdk-lib'
-import { aws_s3_deployment as s3deploy } from 'aws-cdk-lib';
 import { aws_stepfunctions as sfn} from 'aws-cdk-lib';
 import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
+import { Stack, StackProps } from 'aws-cdk-lib';
 
 export class DataFetchStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
@@ -56,6 +57,21 @@ export class DataFetchStack extends cdk.Stack {
 
     // The layer containing the numpy library (AWS Managed)
     const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', 'arn:aws:lambda:ca-central-1:336392948345:layer:AWSDataWrangler-Python39:5')
+
+    // Create the database tables (runs during deployment)
+    const createTables = new triggers.TriggerFunction(this, 'createTables', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'createTables.lambda_handler',
+      layers: [psycopg2],
+      code: lambda.Code.fromAsset('lambda/createTables'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+    });
+    createTables.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'SecretsManagerReadWrite',
+      ),
+    );
 
     /*
       Define Lambdas and add correct permissions
@@ -131,20 +147,6 @@ export class DataFetchStack extends cdk.Stack {
       ),
     );
 
-    const createTables = new lambda.Function(this, 'createTables', {
-      runtime: lambda.Runtime.PYTHON_3_9,
-      handler: 'createTables.lambda_handler',
-      layers: [psycopg2],
-      code: lambda.Code.fromAsset('lambda/createTables'),
-      timeout: cdk.Duration.minutes(15),
-      memorySize: 512,
-    });
-    createTables.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'SecretsManagerReadWrite',
-      ),
-    );
-   
     const researcherFetch = new lambda.Function(this, 'researcherFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'researcherFetch.lambda_handler',
@@ -278,23 +280,8 @@ export class DataFetchStack extends cdk.Stack {
     cleanNoMatchesMap.iterator(cleanNoMatchesInvoke);
 
     /*
-    const nameMatchDefinition = scopusCleanInvoke
-    .next(ubcCleanInvoke)
-    .next(compareNamesMap)
-    .next(cleanNoMatchesMap);
-    
-  const nameMatch = new sfn.StateMachine(this, 'Name Match State Machine', {
-    definition: nameMatchDefinition,
-  });
-  */
-
-    /*
         Set up data fetch step function
     */
-    const createTablesInvoke = new tasks.LambdaInvoke(this, 'Create DB Tables', {
-      lambdaFunction: createTables,
-      outputPath: '$.Payload',
-    });
     const researcherFetchInvoke = new tasks.LambdaInvoke(this, 'Fetch Researchers', {
       lambdaFunction: researcherFetch,
       outputPath: '$.Payload',
@@ -324,7 +311,6 @@ export class DataFetchStack extends cdk.Stack {
       .next(ubcCleanInvoke)
       .next(compareNamesMap)
       .next(cleanNoMatchesMap)
-      .next(createTablesInvoke)
       .next(researcherFetchInvoke)
       .next(elsevierFetchInvoke)
       .next(orcidFetchInvoke)
@@ -340,7 +326,6 @@ export class DataFetchStack extends cdk.Stack {
     s3Bucket.grantReadWrite(compareNames);
     s3Bucket.grantReadWrite(cleanNoMatches);
     s3Bucket.grantReadWrite(researcherFetch);
-    s3Bucket.grantReadWrite(elsevierFetch); // DELETE ME
     s3Bucket.grantReadWrite(new iam.AccountRootPrincipal());
   }
 }
