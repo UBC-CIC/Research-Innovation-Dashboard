@@ -117,9 +117,9 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
 
     keys = rjson.keys()
 
-    # if(list(keys).count('search-results') == 0):
-    #     print("Issue with search result returned from scopus")
-    #     return []
+    if(list(keys).count('search-results') == 0):
+        print("Scopus Search Limit Hit Update Publications will run again next week")
+        return []
     
     totalResults = int(rjson['search-results']['opensearch:totalResults'])
     totalNumberOfPages = math.ceil(totalResults/25)
@@ -429,7 +429,8 @@ print("List of Researchers Printed")
 updateResearchers(researcherArray, instoken, apikey, connection, cursor)
 print("Finished Updating Researchers")
 #Add to the updating table
-query = "INSERT INTO update_publications_logs(date_updated, number_of_publications_updated) VALUES ('"+str(time.time())+"', "+str(NumberOfPublicationsUpdate)+")"
+query = "INSERT INTO update_publications_logs(date_updated, number_of_publications_updated) VALUES ('"+str(time.time())+"', '"+str(NumberOfPublicationsUpdate)+"')"
+cursor.execute(query)
 
 print("Number of Publications Added: "+str(NumberOfPublicationsUpdate))
 connection.commit()
