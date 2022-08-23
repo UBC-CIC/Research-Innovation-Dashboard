@@ -30,41 +30,36 @@ export class AppsyncStack extends Stack {
     const lambdaRole = new Role(this, 'PostgresLambdaRole', {
         roleName: 'PostgresLambdaRole',
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-        inlinePolicies: {
-            additional: new PolicyDocument({
-                statements: [
-                    new PolicyStatement({
-                        effect: Effect.ALLOW,
-                        actions: [
-                          //Logs
-                          "logs:CreateLogGroup",
-                          "logs:CreateLogStream",
-                          "logs:PutLogEvents",
-                          
-                          //VPC
-                          "logs:CreateLogGroup",
-                          "logs:CreateLogStream",
-                          "logs:PutLogEvents",
-                          "ec2:CreateNetworkInterface",
-                          "ec2:DescribeNetworkInterfaces",
-                          "ec2:DeleteNetworkInterface",
-                          "ec2:AssignPrivateIpAddresses",
-                          "ec2:UnassignPrivateIpAddresses"
-                        ],
-                        resources: ['*']
-                    }),
-                    new PolicyStatement({
-                      effect: Effect.ALLOW,
-                        actions: [
-                          //Secrets Manager
-                          "secretsmanager:GetSecretValue",
-                        ],
-                        resources: ['arn:aws:secretsmanager:ca-central-1:${this.account}:secret:vpri/credentials/*']
-                    })
-                ]
-            }),
-        },
     });
+
+    lambdaRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        //Logs
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        
+        //VPC
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "ec2:CreateNetworkInterface",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DeleteNetworkInterface",
+        "ec2:AssignPrivateIpAddresses",
+        "ec2:UnassignPrivateIpAddresses"
+      ],
+      resources: ['*']
+    }));
+    lambdaRole.addToPolicy(new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: [
+          //Secrets Manager
+          "secretsmanager:GetSecretValue",
+        ],
+        resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:vpri/credentials/*`]
+    }));
 
     //Create Lamabda Service role for the Appsync datasources
     const appsyncLambdaServiceRole = new Role(this, 'appsyncLambdaServiceRole', {
@@ -210,7 +205,7 @@ export class AppsyncStack extends Stack {
         getResearcherRankingsByFaculty(prime_faculty: String!): [Ranking]
         searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
         searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]
-        similarResearchers(keywordsString: String!, scopus_id: String!): [ResearcherOpenSearch]
+        similarResearchers(scopus_id: String!): [ResearcherOpenSearch]
         totalPublicationPerYear: [pubsPerYear]
         wordCloud(gte: Int!, lte: Int!): [wordCloud]
         changeScopusId(oldScopusId: String!, newScopusId: String!): Boolean
