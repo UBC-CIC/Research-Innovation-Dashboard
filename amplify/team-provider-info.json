@@ -13,7 +13,8 @@
     },
     "categories": {
       "auth": {
-        "vpriinnovationdashbo197a129c": {}
+        "vpriinnovationdashbo197a129c": {},
+        "userPoolGroups": {}
       }
     }
   }

@@ -11,6 +11,8 @@ import {
   Box,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { API } from "aws-amplify";
+import { lastUpdatedResearchersList } from "../../graphql/queries";
 
 const StyledTableCell = styled(TableCell)`
   color: #002145;
@@ -21,28 +23,35 @@ const UpdateResearcherLogTable = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const mockData = [
-    { name: "Christy Lam", last_updated: "Tue Aug 16 2022 13:59:37 GMT-0700" },
-    { name: "John Lee", last_updated: "Mon Aug 15 2022 13:59:37 GMT-0700" },
-    { name: "Test Test", last_updated: "Sun Aug 14 2022 13:59:37 GMT-0700" },
-    { name: "Hao Li", last_updated: "Sat Aug 13 2022 13:59:37 GMT-0700" },
-    {
-      name: "Ian Moss",
-      last_updated: "Fri Aug 12 2022 13:59:37 GMT-0700",
-    },
-    {
-      name: "John Smith",
-      last_updated: "Fri Aug 12 2022 13:59:37 GMT-0700",
-    },
-    {
-      name: "Jane Moss",
-      last_updated: "Fri Aug 12 2022 13:59:37 GMT-0700",
-    },
-  ];
+  const [updatedResearchersList, setUpdatedResearchersList] = useState();
+
+  useEffect(() => {
+    const getLog = async () => {
+      const res = await API.graphql({
+        query: lastUpdatedResearchersList,
+      });
+      const researcherLog = res.data.lastUpdatedResearchersList;
+      //convert unix timestamps from response into readable dates
+      const researcherLogConvertedDates = researcherLog.map((entry) => {
+        const unixTimestamp = entry.last_updated;
+        //multiply unix timestamp to milliseconds by multiplying by 1000, then create a new date object with the returned value
+        const dateObject = new Date(unixTimestamp * 1000);
+        const formattedDate = dateObject.toLocaleString();
+        return {
+          preferred_name: entry.preferred_name,
+          last_updated: formattedDate,
+        };
+      });
+      setUpdatedResearchersList(researcherLogConvertedDates);
+    };
+    getLog();
+  }, []);
 
   // avoid a layout jump in the table when reaching the last page with empty rows
   let emptyRows =
-    page <= 0 ? 0 : Math.max(0, (1 + page) * rowsPerPage - mockData.length);
+    page <= 0
+      ? 0
+      : Math.max(0, (1 + page) * rowsPerPage - updatedResearchersList.length);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -54,62 +63,66 @@ const UpdateResearcherLogTable = () => {
   };
 
   return (
-    <>
-      <TableContainer component={Paper}>
-        <Table aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <StyledTableCell>Researcher Name</StyledTableCell>
-              <StyledTableCell>Date Updated</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {(rowsPerPage > 0
-              ? mockData.slice(
-                  page * rowsPerPage,
-                  page * rowsPerPage + rowsPerPage
-                )
-              : mockData
-            ).map((researcher, index) => (
-              <TableRow
-                key={index}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  <Box
-                    sx={{
-                      whiteSpace: "nowrap",
-                      textOverflow: "ellipsis",
-                      width: "250px",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {researcher.name}
-                  </Box>
-                </TableCell>
-                <TableCell>{researcher.last_updated}</TableCell>
+    updatedResearchersList && (
+      <>
+        <TableContainer component={Paper}>
+          <Table aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>Researcher Name</StyledTableCell>
+                <StyledTableCell>Date Updated</StyledTableCell>
               </TableRow>
-            ))}
-            {emptyRows > 0 && (
-              <TableRow style={{ height: 53 * emptyRows }}>
-                <TableCell colSpan={6} />
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[5, 10]}
-        component="div"
-        count={mockData && mockData.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        showFirstButton
-        showLastButton
-      />
-    </>
+            </TableHead>
+            <TableBody>
+              {(rowsPerPage > 0
+                ? updatedResearchersList.slice(
+                    page * rowsPerPage,
+                    page * rowsPerPage + rowsPerPage
+                  )
+                : updatedResearchersList
+              ).map((researcher, index) => (
+                <TableRow
+                  key={index}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    <Box
+                      sx={{
+                        whiteSpace: "nowrap",
+                        textOverflow: "ellipsis",
+                        width: "250px",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {researcher.preferred_name}
+                    </Box>
+                  </TableCell>
+                  <TableCell>{researcher.last_updated}</TableCell>
+                </TableRow>
+              ))}
+              {emptyRows > 0 && (
+                <TableRow style={{ height: 53 * emptyRows }}>
+                  <TableCell colSpan={6} />
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[5, 10]}
+          component="div"
+          count={
+            lastUpdatedResearchersList && lastUpdatedResearchersList.length
+          }
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          showFirstButton
+          showLastButton
+        />
+      </>
+    )
   );
 };
 
