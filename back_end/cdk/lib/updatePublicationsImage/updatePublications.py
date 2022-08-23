@@ -114,6 +114,12 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
     
     response = requests.get(url, headers=headers, params=query)
     rjson = response.json()
+
+    keys = rjson.keys()
+
+    # if(list(keys).count('search-results') == 0):
+    #     print("Issue with search result returned from scopus")
+    #     return []
     
     totalResults = int(rjson['search-results']['opensearch:totalResults'])
     totalNumberOfPages = math.ceil(totalResults/25)
@@ -407,13 +413,14 @@ cursor = connection.cursor()
 NumberOfPublicationsUpdate = 0
 
 #Remove all publications with no ubc researcher
-removePublicationsWithNoUbcResearcher(cursor, connection)
+#removePublicationsWithNoUbcResearcher(cursor, connection)
 print("Finished Removing Publications")
 #Set researchers number of documents to be what we have in the database
-updateAllResearchersNumDocuments(cursor, connection)
+#updateAllResearchersNumDocuments(cursor, connection)
 print("Finished Updating Num Documents")
 #Create a list of researchers that need to be updated
-researcherArray = createListOfResearchersToUpdate()
+researcherArray = ['24780156300', '6507241110', '56524143000', '55303035400', '6701751316', '7102724618', '26535316100', '7005946022', '56290074900', '6507135309', '55443867700', '6603878036', '36242994000', '57194437967', '7102066850', '7004291380', '54891894200', '7403721377', '6503859699', '57204260006', '56189070000', '56533353400', '7403209759', '56276238300', '8523674100', '6603040453', '56200648100', '36570895900', '55249804200', '56047639900', '24476103300', '6604003557', '55553154800', '6701695087', '7004538010', '23006227200', '55557518400', '6507222166', '7401925803', '7004194090', '6603730069', '56677497700', '35814269600', '7003782379', '7401988878', '6602127998', '15760896300', '57074849800', '55617387200', '56260421000', '6507657349', '56277682600', '55847157700', '7401620219', '6507819244', '56209011700', '7006924138', '23979872600', '14069349900', '6603261278', '8966559100', '8400603000', '36021837800', '6507654767']
+#createListOfResearchersToUpdate()
 print("Finished Creating List Of Researchers To Update")
 print("List of Researchers:")
 print(researcherArray)
@@ -425,6 +432,7 @@ print("Finished Updating Researchers")
 query = "INSERT INTO update_publications_logs(date_updated, number_of_publications_updated) VALUES ('"+str(time.time())+"', "+str(NumberOfPublicationsUpdate)+")"
 
 print("Number of Publications Added: "+str(NumberOfPublicationsUpdate))
+connection.commit()
 cursor.close()
 
 print("Finished Updating Publication")
