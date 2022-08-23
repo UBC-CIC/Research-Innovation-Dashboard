@@ -44,21 +44,21 @@ const FlaggedIds = () => {
     ],
     [
       {
-        name: "Test test",
+        name: "John Smith",
         scopus_id: 34234,
         employee_id: 990983,
         faculty: "Faculty of Arts",
         department: "Anthropology",
       },
       {
-        name: "Test test",
+        name: "John Smith",
         scopus_id: 34234,
         employee_id: 273894,
         faculty: "Faculty of Arts",
         department: "Sociology",
       },
       {
-        name: "Test test",
+        name: "John Smith",
         scopus_id: 34234,
         employee_id: 283747,
         faculty: "Faculty of Arts",

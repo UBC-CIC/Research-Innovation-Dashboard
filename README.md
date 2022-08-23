@@ -36,6 +36,7 @@ For instructions on how to navigate the web app interface, refer to the [Web App
 │   ├── actions
 |   ├── assets/images
 │   ├── components/
+│   │   ├── AdminDashboard/
 │   │   ├── authentication/
 │   │   ├── Rankings/
 │   │   ├── ResearcherProfile/

@@ -21,13 +21,13 @@ First, clone the GitHub repository onto your machine. To do this:
 3. Clone the github repository by entering the following:
 
 ```bash
-git clone https://github.com/UBC-CIC/VPRI-innovation-dashboard.git
+git clone https://github.com/UBC-CIC/Research-Innovation-Dashboard
 ```
 
 The code should now be in the folder you created. Navigate into the folder containing the Amplify project by running the command:
 
 ```bash
-cd VPRI-innovation-dashboard
+cd Research-Innovation-Dashboard
 ```
 
 # Step 2: Frontend Deployment
@@ -48,7 +48,7 @@ This step creates the IAM role called **amplifyconsole-vpri-backend-role** that 
 
 The **Deploy to Amplify Console** button will take you to your AWS console to deploy the front-end solution.
 
-<a href="https://console.aws.amazon.com/amplify/home#/deploy?repo=https://github.com/UBC-CIC/VPRI-innovation-dashboard">
+<a href="https://console.aws.amazon.com/amplify/home#/deploy?repo=https://github.com/UBC-CIC/Research-Innovation-Dashboard">
     <img src="https://oneclick.amplifyapp.com/button.svg" alt="Deploy to Amplify Console">
 </a>
 
@@ -61,7 +61,7 @@ The **Deploy to Amplify Console** button will take you to your AWS console to de
    Refer to [AWS's Page on Single Page Apps](https://docs.aws.amazon.com/amplify/latest/userguide/redirects.html#redirects-for-single-page-web-apps-spa) for further information on why we did that
    ![alt text](images/amplifyConsole/amplify-console-05.png)
 
-# Step 3: Backend Deployment
+# Step 2: Backend Deployment
 
 It's time to set up everything that goes on behind the scenes! For more information on how the backend works, feel free to refer to the Architecture Deep Dive, but an understanding of the backend is not necessary for deployment.
 
@@ -124,9 +124,54 @@ Now that the CDK has deployed all the resources you need to press a few buttons 
 5. If a popup prompts you to restart or resume click `restart` and then click `start task`.
    ![alt text](images/webApp/webapp11.png)
 
-### TroubleShooting
+# Step 4: Upload the Elsevier API Key and Institution Token
 
-# Step 4: Creating a User
+1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Systems Manager` in the search bar.
+   ![alt text](images/deploymentGuide/systems_manager_search.jpg)
+2. Click `Parameter Store` frome the left hand sidebar (It is under the Application Management header).
+   ![alt text](images/deploymentGuide/parameter_store_location.jpg)
+3. Click `Create parameter`.
+   ![alt text](images/deploymentGuide/parameter_store_page.jpg)
+4. For the parameter name enter `/service/elsevier/api/user_name/key`, for tier select standard, for type select SecureString, for KMS key source select `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier API key. Once you have entered the parameter details click `Create Parameter`.
+   ![alt text](images/deploymentGuide/create_parameter1.jpg)
+5. Once the API key parameter is finished being created, click `Create parameter` again.
+6. For the parameter name enter `/service/elsevier/api/user_name/instoken`, for tier select standard, for type select SecureString, for KMS key source selec `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier institution token. Once you have entered the parameter details click `Create Parameter`.
+   ![alt text](images/deploymentGuide/create_parameter2.jpg)
+
+# Step 5: Upload Data to S3
+
+1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for UBC and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
+   ![alt text](images/deploymentGuide/scival_download.jpg)
+2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: `put link to example data here`. This file must be named `ubc_data.csv`
+3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
+   ![alt text](images/deploymentGuide/s3_search.jpg)
+4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
+   ![alt text](images/deploymentGuide/s3_bucket_search.jpg)
+5. Click on `Create Folder`
+   ![alt text](images/deploymentGuide/s3_bucket_page.jpg)
+6. Enter `researcher_data` as the folder name then click `Create Folder`.
+   ![alt text](images/deploymentGuide/s3_create_folder.jpg)
+7. Click on the `researcher_data` folder then click `Upload`.
+   ![alt text](images/deploymentGuide/s3_opened_folder.jpg)
+8. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file then click `Upload`.
+   ![alt text](images/deploymentGuide/s3_upload.jpg)
+9. Once the upload is complete click `Close`
+   ![alt text](images/deploymentGuide/s3_upload_complete.jpg)
+
+# Step 6: Run the Data Pipeline
+
+1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Step Functions` in the search bar.
+   ![alt text](images/deploymentGuide/step_function_search.jpg)
+2. In the State Machine search bar enter `DataFetchStateMachine` and click the name of the top result (The exact name of the state machine may vary but it will always begin with `DataFetchStateMachine`.
+   ![alt text](images/deploymentGuide/state_machine_search.jpg)
+3. Click `Start Execution`
+   ![alt text](images/deploymentGuide/state_machine_page.jpg)
+4. In the box that appears click `Start Execution`. Do not edit the text in the input field.
+   ![alt text](images/deploymentGuide/start_execution.jpg)
+5. The data pipeline will now run on its own and populate the database. This process will take ~90 minutes. If you navigate to the page you visited in part 2 of this step you can view the status of the data pipeline. Once it is finished running the step function execution status will say `Succeeded`.
+   ![alt text](images/deploymentGuide/state_machine_success.jpg)
+
+# Step 7: Creating a User
 
 To set up user accounts on the app, you will need to do the following steps
 
@@ -145,48 +190,17 @@ To set up user accounts on the app, you will need to do the following steps
    ![alt text](images/webApp/webapp06.png)
 7. The new user account has been created!
 
-# Step 5: Upload the Elsevier API Key and Institution Token
+## Registering Admin Accounts
 
-1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Systems Manager` in the search bar.
-![alt text](images/deploymentGuide/systems_manager_search.jpg)
-2. Click `Parameter Store` frome the left hand sidebar (It is under the Application Management header).
-![alt text](images/deploymentGuide/parameter_store_location.jpg)
-3. Click `Create parameter`.
-![alt text](images/deploymentGuide/parameter_store_page.jpg)
-4. For the parameter name enter `/service/elsevier/api/user_name/key`, for tier select standard, for type select SecureString, for KMS key source select `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier API key. Once you have entered the parameter details click `Create Parameter`.
-![alt text](images/deploymentGuide/create_parameter1.jpg)
-5. Once the API key parameter is finished being created, click `Create parameter` again.
-6. For the parameter name enter `/service/elsevier/api/user_name/instoken`, for tier select standard, for type select SecureString, for KMS key source selec `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier institution token. Once you have entered the parameter details click `Create Parameter`.
-![alt text](images/deploymentGuide/create_parameter2.jpg)
-
-# Step 6: Upload Data to S3
-
-1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for UBC and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
-![alt text](images/deploymentGuide/scival_download.jpg)
-2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: `put link to example data here`. This file must be named `ubc_data.csv`
-3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
-![alt text](images/deploymentGuide/s3_search.jpg)
-4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
-![alt text](images/deploymentGuide/s3_bucket_search.jpg)
-5. Click on `Create Folder`
-![alt text](images/deploymentGuide/s3_bucket_page.jpg)
-6. Enter `researcher_data` as the folder name then click `Create Folder`.
-![alt text](images/deploymentGuide/s3_create_folder.jpg)
-7. Click on the `researcher_data` folder then click `Upload`.
-![alt text](images/deploymentGuide/s3_opened_folder.jpg)
-8. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file then click `Upload`.
-![alt text](images/deploymentGuide/s3_upload.jpg)
-9. Once the upload is complete click `Close`
-![alt text](images/deploymentGuide/s3_upload_complete.jpg)
-
-# Step 7: Run the Data Pipeline
-1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Step Functions` in the search bar.
-![alt text](images/deploymentGuide/step_function_search.jpg)
-2. In the State Machine search bar enter `DataFetchStateMachine` and click the name of the top result (The exact name of the state machine may vary but it will always begin with `DataFetchStateMachine`.
-![alt text](images/deploymentGuide/state_machine_search.jpg)
-3. Click `Start Execution`
-![alt text](images/deploymentGuide/state_machine_page.jpg)
-4. In the box that appears click `Start Execution`. Do not edit the text in the input field.
-![alt text](images/deploymentGuide/start_execution.jpg)
-5. The data pipeline will now run on its own and populate the database. This process will take ~90 minutes. If you navigate to the page you visited in part 2 of this step you can view the status of the data pipeline. Once it is finished running the step function execution status will say `Succeeded`.
-![alt text](images/deploymentGuide/state_machine_success.jpg)
+1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Cognito` in the search bar.
+   ![alt text](images/webApp/webapp01.png)
+2. Click `User Pools` from the left hand sidebar and select the user pool that corresponds to the project name.
+   ![alt text](images/webApp/webapp02.png)
+3. Select the user which you want to set to Admin
+   ![alt text](images/webApp/webapp12.png)
+4. Scroll down, and click **Add user to group**
+   ![alt text](images/webApp/webapp13.png)
+5. Select **Admins** and click **Add**
+   ![alt text](images/webApp/webapp14.png)
+6. The user is now an Admin! (If you are having issues, try relogging on the web app)
+   ![alt text](images/webApp/webapp15.png)
