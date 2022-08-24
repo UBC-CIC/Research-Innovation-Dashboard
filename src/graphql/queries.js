@@ -147,6 +147,7 @@ export const getPub = /* GraphQL */ `
 export const getResearcher = /* GraphQL */ `
   query GetResearcher($id: ID!) {
     getResearcher(id: $id) {
+      employee_id
       areas_of_interest
       campus
       email
@@ -378,6 +379,27 @@ export const getUpdatePublicationsLogs = /* GraphQL */ `
     getUpdatePublicationsLogs {
       number_of_publications_updated
       date_updated
+    }
+  }
+`;
+export const getFlaggedIds = /* GraphQL */ `
+  query GetFlaggedIds {
+    getFlaggedIds {
+      employee_id
+      areas_of_interest
+      campus
+      email
+      first_name
+      job_stream
+      last_name
+      orcid_id
+      preferred_name
+      prime_department
+      prime_faculty
+      rank
+      scopus_id
+      second_department
+      second_faculty
     }
   }
 `;
