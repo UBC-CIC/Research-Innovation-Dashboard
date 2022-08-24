@@ -18,8 +18,7 @@ export default function Researcher_Info(props) {
                         <Typography> {props.researcher_information.prime_faculty}</Typography>
                         <Typography>{"Department: "+props.researcher_information.prime_department}</Typography>
                         <Typography>{"Email: "+props.researcher_information.email}</Typography>
-                        <Typography>{"Phone: "+props.researcher_information.phone_number}</Typography>
-                        <Typography>{"Office: "+props.researcher_information.office}</Typography>
+                        <Typography>{"Rank: "+props.researcher_information.rank}</Typography>
                         <Typography>{"Scopus ID: "+props.researcher_information.scopusId}</Typography>
                         <Typography>{"Updated On: "+date.getDate()+
           "/"+(date.getMonth()+1)+

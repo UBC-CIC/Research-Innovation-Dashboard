@@ -56,6 +56,7 @@ export default function Researcher_profile_overview() {
   const [showSimilarResearchers, setShowSimilarResearchers] = useState(false);
   const [similarResearchersArray, setSimilarResearchersArray] = useState([]);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(0)
+  const [rank, setRank] = useState("")
 
   const [numberOfPublicationsToShow, setNumberOfPublicationsToShow] =
     useState(2);
@@ -217,6 +218,7 @@ export default function Researcher_profile_overview() {
     set_funding("");
     set_num_patents_filed(researcher_data.num_patents_filed);
     setLastUpdatedAt(researcher_data.last_updated);
+    setRank(researcher_data.rank);
 
     set_num_licensed_patents(0);
 
@@ -331,6 +333,7 @@ export default function Researcher_profile_overview() {
               office,
               scopusId,
               lastUpdatedAt,
+              rank,
             }}
           />
           <ResearcherHighlights

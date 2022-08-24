@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { styled } from "@mui/material/styles";
 import {
   Box,
@@ -11,6 +11,8 @@ import {
   Paper,
   Alert,
 } from "@mui/material";
+import { API } from "aws-amplify";
+import { getFlaggedIds } from "../../graphql/queries";
 
 const StyledTableCell = styled(TableCell)`
   color: #002145;
@@ -18,57 +20,20 @@ const StyledTableCell = styled(TableCell)`
 `;
 
 const FlaggedIds = () => {
-  const mockData = [
-    [
-      {
-        name: "Robert Carruthers",
-        scopus_id: 12345,
-        employee_id: 123840,
-        faculty: "Faculty of Medicine",
-        department: "Anesthesiology",
-      },
-      {
-        name: "Robert Carruthers",
-        scopus_id: 12345,
-        employee_id: 203942,
-        faculty: "Faculty of Medicine",
-        department: "Family Medicine",
-      },
-      {
-        name: "Robert Carruthers",
-        scopus_id: 12345,
-        employee_id: 234233,
-        faculty: "Faculty of Medicine",
-        department: "Neuroscience",
-      },
-    ],
-    [
-      {
-        name: "John Smith",
-        scopus_id: 34234,
-        employee_id: 990983,
-        faculty: "Faculty of Arts",
-        department: "Anthropology",
-      },
-      {
-        name: "John Smith",
-        scopus_id: 34234,
-        employee_id: 273894,
-        faculty: "Faculty of Arts",
-        department: "Sociology",
-      },
-      {
-        name: "John Smith",
-        scopus_id: 34234,
-        employee_id: 283747,
-        faculty: "Faculty of Arts",
-        department: "Philosophy",
-      },
-    ],
-  ];
+  const [flaggedData, setFlaggedData] = useState();
+
+  useEffect(() => {
+    const getFlaggedData = async () => {
+      const res = await API.graphql({
+        query: getFlaggedIds,
+      });
+      setFlaggedData(res.data.getFlaggedIds);
+    };
+    getFlaggedData();
+  }, []);
 
   const renderIdTables = () => {
-    return mockData.map((data, index) => {
+    return flaggedData.map((data, index) => {
       return (
         <TableContainer component={Paper} key={index}>
           <Table aria-label="Flagged Id table">
@@ -95,7 +60,7 @@ const FlaggedIds = () => {
                         overflow: "wrap",
                       }}
                     >
-                      {researcher.name}
+                      {researcher.preferred_name}
                     </Box>
                   </TableCell>
                   <TableCell>
@@ -125,7 +90,7 @@ const FlaggedIds = () => {
                         overflow: "wrap",
                       }}
                     >
-                      {researcher.faculty}
+                      {researcher.prime_faculty}
                     </Box>
                   </TableCell>
                   <TableCell>
@@ -135,7 +100,7 @@ const FlaggedIds = () => {
                         overflow: "wrap",
                       }}
                     >
-                      {researcher.department}
+                      {researcher.prime_department}
                     </Box>
                   </TableCell>
                   <TableCell>
@@ -159,10 +124,10 @@ const FlaggedIds = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: "2em" }}>
-      {mockData.length > 0 ? (
+      {flaggedData && flaggedData.length > 0 ? (
         <>
           <Alert severity="info">
-            There are <strong>{mockData.length}</strong> researchers with
+            There are <strong>{flaggedData.length}</strong> researchers with
             flagged IDs
           </Alert>
           {renderIdTables()}
