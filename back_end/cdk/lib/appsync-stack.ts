@@ -26,6 +26,40 @@ export class AppsyncStack extends Stack {
       parameterName: 'VPRIGraphQLAPIIdOutput',
     }).stringValue;
 
+  //   const lambdaRole = new Role(this, 'PostgresLambdaRole', {
+  //     roleName: 'PostgresLambdaRole',
+  //     assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+  //     inlinePolicies: {
+  //         additional: new PolicyDocument({
+  //             statements: [
+  //                 new PolicyStatement({
+  //                     effect: Effect.ALLOW,
+  //                     actions: [
+  //                       //Secrets Manager
+  //                       "secretsmanager:GetSecretValue",
+
+  //                       //Logs
+  //                       "logs:CreateLogGroup",
+  //                       "logs:CreateLogStream",
+  //                       "logs:PutLogEvents",
+
+  //                       //VPC
+  //                       "logs:CreateLogGroup",
+  //                       "logs:CreateLogStream",
+  //                       "logs:PutLogEvents",
+  //                       "ec2:CreateNetworkInterface",
+  //                       "ec2:DescribeNetworkInterfaces",
+  //                       "ec2:DeleteNetworkInterface",
+  //                       "ec2:AssignPrivateIpAddresses",
+  //                       "ec2:UnassignPrivateIpAddresses"
+  //                     ],
+  //                     resources: ['*']
+  //                 })
+  //             ]
+  //         }),
+  //     },
+  // });
+
     //Create a role for lambda to access the postgresql database
     const lambdaRole = new Role(this, 'PostgresLambdaRole', {
         roleName: 'PostgresLambdaRole',
@@ -209,7 +243,7 @@ export class AppsyncStack extends Stack {
         totalPublicationPerYear: [pubsPerYear]
         wordCloud(gte: Int!, lte: Int!): [wordCloud]
         changeScopusId(oldScopusId: String!, newScopusId: String!): Boolean
-        lastUpdatedResearchersList: lastUpdated
+        lastUpdatedResearchersList: [lastUpdated]
         getUpdatePublicationsLogs: [updatePublicationsLogType]
       }
 
