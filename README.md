@@ -1,4 +1,4 @@
-# VPRI-innovation-dashboard
+# Research-Innovation-Dashboard
 
 | Index                                               | Description                                             |
 | :-------------------------------------------------- | :------------------------------------------------------ |
