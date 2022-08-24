@@ -140,4 +140,6 @@ def lambda_handler(event, context):
     key = 'researcher_data/no_matches_cleaned/no_matches_cleaned' + str(iteration_number) + '.csv'
     bucket.upload_file('/tmp/no_matches_cleaned.csv', key)
 
-    return
+    # Set up the input to identifyDuplicates
+    key = 'researcher_data/duplicates/duplicates' + str(iteration_number) + '.csv'
+    return {'file_key': key, 'iteration_number': iteration_number}

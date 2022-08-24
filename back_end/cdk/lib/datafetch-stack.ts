@@ -147,6 +147,30 @@ export class DataFetchStack extends cdk.Stack {
       ),
     );
 
+    const identifyDuplicates = new lambda.Function(this, 'identifyDuplicates', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'identifyDuplicates.lambda_handler',
+      layers: [pyjarowinkler, requests],
+      code: lambda.Code.fromAsset('lambda/identifyDuplicates'),
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512,
+      environment: {
+        S3_BUCKET_NAME: s3Bucket.bucketName,
+        SCIVAL_MAX_AUTHORS: '100',
+        SCIVAL_URL: 'https://api.elsevier.com/analytics/scival/author/metrics',
+      },
+    });
+    cleanNoMatches.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonS3FullAccess',
+      ),
+    );
+    cleanNoMatches.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'AmazonSSMReadOnlyAccess',
+      ),
+    );
+
     const researcherFetch = new lambda.Function(this, 'researcherFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'researcherFetch.lambda_handler',
@@ -256,10 +280,12 @@ export class DataFetchStack extends cdk.Stack {
       lambdaFunction: scopusClean,
       outputPath: '$.Payload',
     });
+
     const ubcCleanInvoke = new tasks.LambdaInvoke(this, 'Clean UBC Data', {
       lambdaFunction: ubcClean,
       outputPath: '$.Payload',
     });
+
     const compareNamesInvoke = new tasks.LambdaInvoke(this, 'Perform Name Comparison', {
       lambdaFunction: compareNames,
       outputPath: '$.Payload',
@@ -269,6 +295,7 @@ export class DataFetchStack extends cdk.Stack {
       itemsPath: '$'
     });
     compareNamesMap.iterator(compareNamesInvoke);
+
     const cleanNoMatchesInvoke = new tasks.LambdaInvoke(this, 'Perform Additional Comparisons On Missed Matches', {
       lambdaFunction: cleanNoMatches,
       outputPath: '$.Payload',
@@ -279,9 +306,16 @@ export class DataFetchStack extends cdk.Stack {
     });
     cleanNoMatchesMap.iterator(cleanNoMatchesInvoke);
 
-    /*
-        Set up data fetch step function
-    */
+    const identifyDuplicatesInvoke = new tasks.LambdaInvoke(this, 'Perform Additional Comparisons Duplicate Profiles', {
+      lambdaFunction: identifyDuplicates,
+      outputPath: '$.Payload',
+    });
+    const identifyDuplicatesMap = new sfn.Map(this, 'Duplicates Map', {
+      maxConcurrency: 1,
+      itemsPath: '$'
+    });
+    identifyDuplicatesMap.iterator(identifyDuplicatesInvoke);
+
     const researcherFetchInvoke = new tasks.LambdaInvoke(this, 'Fetch Researchers', {
       lambdaFunction: researcherFetch,
       outputPath: '$.Payload',
@@ -311,6 +345,7 @@ export class DataFetchStack extends cdk.Stack {
       .next(ubcCleanInvoke)
       .next(compareNamesMap)
       .next(cleanNoMatchesMap)
+      .next(identifyDuplicatesMap)
       .next(researcherFetchInvoke)
       .next(elsevierFetchInvoke)
       .next(orcidFetchInvoke)
@@ -325,6 +360,7 @@ export class DataFetchStack extends cdk.Stack {
     s3Bucket.grantReadWrite(ubcClean);
     s3Bucket.grantReadWrite(compareNames);
     s3Bucket.grantReadWrite(cleanNoMatches);
+    s3Bucket.grantReadWrite(identifyDuplicates);
     s3Bucket.grantReadWrite(researcherFetch);
     s3Bucket.grantReadWrite(new iam.AccountRootPrincipal());
   }
