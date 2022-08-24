@@ -18,7 +18,6 @@ export class DatabaseStack extends Stack {
 
     this.secretPath = 'vpri/credentials/dbCredentials';
 
-    // Need to rename this parameter group to not be hi!!
     const parameterGroup = new rds.ParameterGroup(this, "rdsParameterGroup", {
       engine: rds.DatabaseInstanceEngine.postgres({
         version: rds.PostgresEngineVersion.VER_13_4,
