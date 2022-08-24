@@ -45,8 +45,9 @@ When update publications is run, each researcher has their h-index value and las
 
 If a researcher has published a paper since the update publications function last ran, the following values will be changed in that researcher’s row in the researchers table: num_documents and keywords. Each newly published publication will be added to the publications table.
 
-
+![Database Schema](../docs/images/Database-Schema.png)
 ## Update Publications Flow of Code:
+![Update Publications Code Flow](../docs/images/Update-Publications-Code-Flow-Photo.png)
 
 ### Remove Publications without UBC author:
 This function removes all the publications in the database that do not have an active UBC researcher listed as an author. An active UBC researcher is someone who has a row in the researchers table. Papers may get deleted because a researcher is removed from the researchers table or because a researcher's Scopus ID is changed. 
