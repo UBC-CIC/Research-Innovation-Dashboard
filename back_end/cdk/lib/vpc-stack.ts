@@ -3,6 +3,7 @@ import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as iam from 'aws-cdk-lib/aws-iam'
+import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 
 export class VpcStack extends Stack {
     public readonly vpc: ec2.Vpc;
@@ -55,5 +56,14 @@ export class VpcStack extends Stack {
     this.openSearchVPCPermissions = new iam.CfnServiceLinkedRole(this, 'OpenSearchSLR', {
         awsServiceName: 'opensearchservice.amazonaws.com'
     });
+
+    //Create Role For DMS to work
+    const role = new iam.Role(this, 'dms-vpc-role', {
+      assumedBy: new iam.ServicePrincipal('dms.amazonaws.com'),
+      description: 'DMS Role To Create Replication Group',
+      roleName: 'dms-vpc-role'
+    });
+
+    role.addManagedPolicy(ManagedPolicy.fromManagedPolicyArn(this, 'DMS-VPC-Managed-Policy', 'arn:aws:iam::aws:policy/service-role/AmazonDMSVPCManagementRole'));
   }
 }

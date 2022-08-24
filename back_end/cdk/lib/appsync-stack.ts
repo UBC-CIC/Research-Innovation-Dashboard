@@ -26,41 +26,40 @@ export class AppsyncStack extends Stack {
       parameterName: 'VPRIGraphQLAPIIdOutput',
     }).stringValue;
 
-    /*THIS POLICY NEEDS TO BE CHANGED!*/
     //Create a role for lambda to access the postgresql database
     const lambdaRole = new Role(this, 'PostgresLambdaRole', {
         roleName: 'PostgresLambdaRole',
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-        inlinePolicies: {
-            additional: new PolicyDocument({
-                statements: [
-                    new PolicyStatement({
-                        effect: Effect.ALLOW,
-                        actions: [
-                          //Secrets Manager
-                          "secretsmanager:GetSecretValue",
-
-                          //Logs
-                          "logs:CreateLogGroup",
-                          "logs:CreateLogStream",
-                          "logs:PutLogEvents",
-                          
-                          //VPC
-                          "logs:CreateLogGroup",
-                          "logs:CreateLogStream",
-                          "logs:PutLogEvents",
-                          "ec2:CreateNetworkInterface",
-                          "ec2:DescribeNetworkInterfaces",
-                          "ec2:DeleteNetworkInterface",
-                          "ec2:AssignPrivateIpAddresses",
-                          "ec2:UnassignPrivateIpAddresses"
-                        ],
-                        resources: ['*']
-                    })
-                ]
-            }),
-        },
     });
+
+    lambdaRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        //Logs
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        
+        //VPC
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "ec2:CreateNetworkInterface",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DeleteNetworkInterface",
+        "ec2:AssignPrivateIpAddresses",
+        "ec2:UnassignPrivateIpAddresses"
+      ],
+      resources: ['*']
+    }));
+    lambdaRole.addToPolicy(new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: [
+          //Secrets Manager
+          "secretsmanager:GetSecretValue",
+        ],
+        resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:vpri/credentials/*`]
+    }));
 
     //Create Lamabda Service role for the Appsync datasources
     const appsyncLambdaServiceRole = new Role(this, 'appsyncLambdaServiceRole', {
@@ -206,12 +205,13 @@ export class AppsyncStack extends Stack {
         getResearcherRankingsByFaculty(prime_faculty: String!): [Ranking]
         searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
         searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]
-        similarResearchers(keywordsString: String!, scopus_id: String!): [ResearcherOpenSearch]
+        similarResearchers(scopus_id: String!): [ResearcherOpenSearch]
         totalPublicationPerYear: [pubsPerYear]
         wordCloud(gte: Int!, lte: Int!): [wordCloud]
         changeScopusId(oldScopusId: String!, newScopusId: String!): Boolean
-        lastUpdatedResearchersList: lastUpdated
+        lastUpdatedResearchersList: [lastUpdated]
         getUpdatePublicationsLogs: [updatePublicationsLogType]
+        getFlaggedIds: [[Researcher]]
       }
 
       type updatePublicationsLogType {
@@ -234,6 +234,7 @@ export class AppsyncStack extends Stack {
       }
       
       type Researcher {
+        employee_id: String
         areas_of_interest: String
         campus: String
         email: String
@@ -386,7 +387,7 @@ export class AppsyncStack extends Stack {
     "getNumberOfResearcherPubsLastFiveYears", "getPub", "getResearcher", "getResearcherElsevier", "getResearcherFull",
     "getResearcherOrcid", "getResearcherPubsByCitations", "getResearcherPubsByTitle", "getResearcherPubsByYear",
     "getResearcherRankingsByDepartment", "getResearcherRankingsByFaculty", "totalPublicationPerYear", "wordCloud",
-    "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs"];
+    "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs", "getFlaggedIds"];
 
     for(var i = 0; i<postgresqlDBQueryList.length; i++){
       const resolver = new appsync.CfnResolver(this, postgresqlDBQueryList[i], {

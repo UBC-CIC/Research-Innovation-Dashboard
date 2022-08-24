@@ -80,7 +80,16 @@ Now that you are in the backend directory, install the core dependencies with th
 npm install
 ```
 
-## Step 2: CDK Deployment
+## Step 2: Upload the Elsevier API Key and Institution Token
+
+While in the backend folder, run the following commands. Ensure you replace "INSTITUTION_TOKEN" in the first command with your own Elsevier institution token and you replace "API_KEY" in the second command with your own Elsevier API key.
+
+```bash
+aws ssm put-parameter --name "/service/elsevier/api/user_name/instoken" --value "INSTITUTION_TOKEN" --type SecureString --overwrite
+aws ssm put-parameter --name "/service/elsevier/api/user_name/key" --value "API_KEY" --type SecureString --overwrite
+```
+
+## Step 3: CDK Deployment
 
 Initialize the CDK stacks (required only if you have not deployed this stack before). Note the CDK deployment assumes you are deploying in ca-central-1
 
@@ -109,7 +118,7 @@ cdk deploy FargateStack --profile your-profile-name
 cdk deploy DataFetchStack --profile your-profile-name
 ```
 
-## Step 3: Start DMS Replication
+## Step 4: Start DMS Replication
 
 Now that the CDK has deployed all the resources you need to press a few buttons on the AWS console to start data replication.
 
@@ -123,20 +132,6 @@ Now that the CDK has deployed all the resources you need to press a few buttons 
    ![alt text](images/webApp/webapp10.png)
 5. If a popup prompts you to restart or resume click `restart` and then click `start task`.
    ![alt text](images/webApp/webapp11.png)
-
-# Step 4: Upload the Elsevier API Key and Institution Token
-
-1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Systems Manager` in the search bar.
-   ![alt text](images/deploymentGuide/systems_manager_search.jpg)
-2. Click `Parameter Store` frome the left hand sidebar (It is under the Application Management header).
-   ![alt text](images/deploymentGuide/parameter_store_location.jpg)
-3. Click `Create parameter`.
-   ![alt text](images/deploymentGuide/parameter_store_page.jpg)
-4. For the parameter name enter `/service/elsevier/api/user_name/key`, for tier select standard, for type select SecureString, for KMS key source select `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier API key. Once you have entered the parameter details click `Create Parameter`.
-   ![alt text](images/deploymentGuide/create_parameter1.jpg)
-5. Once the API key parameter is finished being created, click `Create parameter` again.
-6. For the parameter name enter `/service/elsevier/api/user_name/instoken`, for tier select standard, for type select SecureString, for KMS key source selec `My current account`, for KMS Key ID select `alias/aws/ssm`, for data type select text, and for the value enter your Elsevier institution token. Once you have entered the parameter details click `Create Parameter`.
-   ![alt text](images/deploymentGuide/create_parameter2.jpg)
 
 # Step 5: Upload Data to S3
 
