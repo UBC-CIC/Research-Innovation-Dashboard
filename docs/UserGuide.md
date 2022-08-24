@@ -10,6 +10,7 @@
 | [Researchers Search](#Researchers-Search)   | Researcher search and related filters                 |
 | [Publications Search](#Publications-Search) | Publications search and related filters               |
 | [Advanced Search](#Advanced-Search)         | Advanced search                                       |
+| [Researcher Profile](#Researcher-Profile)   | Researcher profile and information page               |
 | [Rankings](#Rankings)                       | Researcher rankings by department or faculty          |
 | [Metrics](#Metrics)                         | Top 100 research keywords word cloud                  |
 | [Admin Dashboard](#Admin-Dashboard)         | Update logs, Changing Scopus IDs, Viewing Flagged IDs |
@@ -80,6 +81,38 @@ There are 4 possible advanced search fields.
 Search results can also be refined by filtering researchers by department or by faculty. Publications can be filtered by year and by journal.
 <br>
 ![alt text](images/userGuide/advancedSearch03.png)
+
+## Researcher Profile
+
+The researcher profile page contains general information about a researcher, their publications, areas of interest and a list of similar researchers.
+
+### General Information
+
+The researcher's general information including name, faculty, department, email, phone number, office Scopus ID, and time last updated are displayed here.
+![alt text](images/userGuide/researcherProfile01.png)
+
+### Researcher Highlights
+
+Some of the researcher's highlights are displayed here, including their number of publications, H-index, funding and a graph displaying their number of publications each year for the past five years.
+![alt text](images/userGuide/researcherProfile02.png)
+
+Clicking on the expand arrow icon on the smaller graph will display a graph below that shows the number of publications each year for the past 15 years.
+![alt text](images/userGuide/researcherProfile04.png)
+![alt text](images/userGuide/researcherProfile03.png)
+
+### Areas of Interest and Similar Researchers
+
+This section displays a list of the researcher's areas of interest. The researcher's top five areas of interest are shown by default. To view all, click the `View All Areas of Interest` button.
+![alt text](images/userGuide/researcherProfile05.png)
+Clicking the `10 Similar Researchers` button will display a list of researchers that are in the same faculty, department, or have similar areas of interest.
+![alt text](images/userGuide/researcherProfile06.png)
+
+### Publications
+
+This section displays a list of the researcher's publications, along with information about the number of citations and the year published. Clicking on the publication title will open the publication in Scopus.
+![alt text](images/userGuide/researcherProfile07.png)
+Clicking on the arrow button beside `Citations` (circled in the previous image) will sort the publications by ascending number of citations
+![alt text](images/userGuide/researcherProfile08.png)
 
 ## Rankings
 

@@ -21,7 +21,7 @@ First, clone the GitHub repository onto your machine. To do this:
 3. Clone the github repository by entering the following:
 
 ```bash
-git clone https://github.com/UBC-CIC/Research-Innovation-Dashboard
+git clone https://github.com/UBC-CIC/Research-Innovation-Dashboard.git
 ```
 
 The code should now be in the folder you created. Navigate into the folder containing the Amplify project by running the command:

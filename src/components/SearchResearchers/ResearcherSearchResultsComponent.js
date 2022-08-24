@@ -62,7 +62,7 @@ export default function ResearcherSearchResultsComponent(props) {
   return researchSearchResults ? (
     <Grid container>
       {researchSearchResults.length === 0 && (
-        <Paper elevation={0} square={true} sx={{ width: "100%" }}>
+        <Paper elevation={0} square={true} sx={{ width: "100%", ml: "2%" }}>
           <Typography variant="h4">No Researcher Search Results</Typography>
         </Paper>
       )}
