@@ -51,29 +51,29 @@ If a researcher has published a paper since the update publications function las
 ### Remove Publications without UBC author:
 This function removes all the publications in the database that do not have an active UBC researcher listed as an author. An active UBC researcher is someone who has a row in the researchers table. Papers may get deleted because a researcher is removed from the researchers table or because a researcher's Scopus ID is changed. 
 
-## Update All Researcher Number Of Documents:
+### Update All Researcher Number Of Documents:
 This function queries the database for each researcher and sets the num_documents to a new value if required.
 
 ### Create List of Researchers that need to be updated:
 This function queries the database and Scopus to check if a researcher needs to be updated. If the researcher has less documents in the database than on Scopus the researcher must be updated and the code adds them to a list. This function also updates every researcher's h-index regardless of their number of documents changing. This is because their h-index can change even if they don’t publish a new paper.
 
-## Update Researchers:
-Update researchers fetches the publications of each researcher. There is a limitation with Scopus when you query for an author's publications. For each publication it will only show the first 100 authors on the publication, which can cause problems because UBC authors on those publications might not be in the first 100 authors. So when the update publications function comes across a publication there are four possible options:
+### Update Researchers:
+This function fetches the publications of each researcher. There is a limitation with Scopus when you query for an author's publications. For each publication it will only show the first 100 authors on the publication, which can cause problems because UBC authors on those publications might not be in the first 100 authors. So when the update publications function comes across a publication there are four possible options:
 The publication is not in the database and the publication has less than 100 authors.
 The publication is in the database and has less than 100 authors.
 The publication is not in the database and has more than 100 authors.
 The publication is in the database and has more than 100 authors.
 
-### The publication is not in the database and the publication has less than 100 authors:
+#### The publication is not in the database and the publication has less than 100 authors:
 Add the publication to the database, update any researchers num_documents who were a part of this publication and add to those researchers’ keywords with the keywords attached to this publication.
 
-### The publication is in the database and has less than 100 authors:
+#### The publication is in the database and has less than 100 authors:
 The code skips this publication because it is already in the database. Every author should have the keywords already and their num_documents should include this publication.
 
-### The publication is not in the database and has more than 100 authors:
+#### The publication is not in the database and has more than 100 authors:
 Check if the author which is being queried for in Scopus appears in the first 100 authors. If that author does not appear in the first 100, add that author to the array of author IDs and author names, then add the publication to the database and update any UBC authors’ keywords and num_documents.
 
-### The publication is in the database and has more than 100 authors:
+#### The publication is in the database and has more than 100 authors:
 Check if the publication has the queried author’s ID stored. If the author is already attached to the paper, skip this publication. If the author is not attached to the paper, add the current author to the publication, update the author’s keywords and increase their number of documents by one.
 
 
