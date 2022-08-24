@@ -32,7 +32,7 @@ const WordCloud = () => {
     useState(displayedDateRange);
   const [loading, setLoading] = useState(false);
   const options = {
-    colors: ["#23D2DC", "#2376DC", "#23DC89"],
+    colors: ["#0055B7", "#40B4E5", "#97D4E9"],
     enableTooltip: true,
     deterministic: true,
     fontFamily: "Arial",
