@@ -31,7 +31,7 @@
 17. Users connect to the webpage, where access to AWS resources is done through authentication using AWS Cognito.
 18. Users navigate to the VPRI application in their web browser.
 
-# Update Publications Deep Dive
+# Update Publications Deep Dive (9)
 
 The goal of the update publications feature is to keep the database up to date when researchers publish new papers.
 
