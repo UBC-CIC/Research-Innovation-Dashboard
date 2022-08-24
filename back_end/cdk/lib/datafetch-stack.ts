@@ -5,7 +5,7 @@ import { aws_iam as iam} from 'aws-cdk-lib';
 import  { aws_s3 as s3 } from 'aws-cdk-lib'
 import { aws_stepfunctions as sfn} from 'aws-cdk-lib';
 import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 export class DataFetchStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
@@ -74,6 +74,83 @@ export class DataFetchStack extends cdk.Stack {
     );
 
     /*
+        Create the lambda roles
+    */
+    const nameMatchRole = new Role(this, 'NameMatchRole', {
+      roleName: 'NameMatchRole',
+      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+    });
+    nameMatchRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // S3
+        "s3:ListBucket",
+        "s3:*Object"
+      ],
+      resources: [s3Bucket.bucketArn]
+    }));
+    nameMatchRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // Parameter Store
+        "ssm:DescribeParameters",
+      ],
+      resources: ["*"]
+    }));
+    nameMatchRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // Parameter Store
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+        "ssm:GetParametersByPath",
+      ],
+      resources: [`arn:aws:ssm:ca-central-1:${this.account}:parameter/service/elsevier/api/user_name/*`]
+    }));
+
+    const dataFetchRole = new Role(this, 'DataFetchRole', {
+      roleName: 'DataFetchRole',
+      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+    });
+    dataFetchRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // Secrets Manager
+        "secretsmanager:GetSecretValue",
+      ],
+      resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:vpri/credentials/*`]
+    }));
+    dataFetchRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // S3
+        "s3:ListBucket",
+        "s3:*Object"
+      ],
+      resources: [s3Bucket.bucketArn]
+    }));
+    dataFetchRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // Parameter Store
+        "ssm:DescribeParameters",
+      ],
+      resources: ["*"]
+    }));
+    dataFetchRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // Parameter Store
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+        "ssm:GetParametersByPath",
+      ],
+      resources: [
+        `arn:aws:ssm:ca-central-1:${this.account}:parameter/service/elsevier/api/user_name/*`,
+      ]
+    }));
+
+    /*
       Define Lambdas and add correct permissions
     */
     const scopusClean = new lambda.Function(this, 'scopusClean', {
@@ -81,32 +158,24 @@ export class DataFetchStack extends cdk.Stack {
       handler: 'scopusClean.lambda_handler',
       code: lambda.Code.fromAsset('lambda/scopusClean'),
       timeout: cdk.Duration.minutes(15),
+      role: nameMatchRole,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
     });
-    scopusClean.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonS3FullAccess',
-      ),
-    );
 
     const ubcClean = new lambda.Function(this, 'ubcClean', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'ubcClean.lambda_handler',
       code: lambda.Code.fromAsset('lambda/ubcClean'),
       timeout: cdk.Duration.minutes(15),
+      role: nameMatchRole,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
     });
-    ubcClean.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonS3FullAccess',
-      ),
-    );
 
     const compareNames = new lambda.Function(this, 'compareNames', {
       runtime: lambda.Runtime.PYTHON_3_9,
@@ -114,16 +183,12 @@ export class DataFetchStack extends cdk.Stack {
       layers: [pyjarowinkler, numpy],
       code: lambda.Code.fromAsset('lambda/compareNames'),
       timeout: cdk.Duration.minutes(15),
+      role: nameMatchRole,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
     });
-    compareNames.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonS3FullAccess',
-      ),
-    );
 
     const cleanNoMatches = new lambda.Function(this, 'cleanNoMatches', {
       runtime: lambda.Runtime.PYTHON_3_9,
@@ -131,21 +196,12 @@ export class DataFetchStack extends cdk.Stack {
       layers: [pyjarowinkler, requests],
       code: lambda.Code.fromAsset('lambda/cleanNoMatches'),
       timeout: cdk.Duration.minutes(15),
+      role: nameMatchRole,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
     });
-    cleanNoMatches.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonS3FullAccess',
-      ),
-    );
-    cleanNoMatches.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonSSMReadOnlyAccess',
-      ),
-    );
 
     const identifyDuplicates = new lambda.Function(this, 'identifyDuplicates', {
       runtime: lambda.Runtime.PYTHON_3_9,
@@ -153,6 +209,7 @@ export class DataFetchStack extends cdk.Stack {
       layers: [pyjarowinkler, requests],
       code: lambda.Code.fromAsset('lambda/identifyDuplicates'),
       timeout: cdk.Duration.minutes(15),
+      role: nameMatchRole,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
@@ -160,16 +217,6 @@ export class DataFetchStack extends cdk.Stack {
         SCIVAL_URL: 'https://api.elsevier.com/analytics/scival/author/metrics',
       },
     });
-    cleanNoMatches.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonS3FullAccess',
-      ),
-    );
-    cleanNoMatches.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonSSMReadOnlyAccess',
-      ),
-    );
 
     const researcherFetch = new lambda.Function(this, 'researcherFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
@@ -177,26 +224,12 @@ export class DataFetchStack extends cdk.Stack {
       layers: [psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/researcherFetch'),
       timeout: cdk.Duration.minutes(15),
+      role: dataFetchRole,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
     });
-    researcherFetch.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonS3FullAccess',
-      ),
-    );
-    researcherFetch.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonSSMReadOnlyAccess',
-      ),
-    );
-    researcherFetch.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'SecretsManagerReadWrite',
-      ),
-    );
 
     const elsevierFetch = new lambda.Function(this, 'elsevierFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
@@ -204,6 +237,7 @@ export class DataFetchStack extends cdk.Stack {
       layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/elsevierFetch'),
       timeout: cdk.Duration.minutes(15),
+      role: dataFetchRole,
       memorySize: 512,
       environment: {
         SCIVAL_MAX_AUTHORS: '100',
@@ -212,21 +246,6 @@ export class DataFetchStack extends cdk.Stack {
         SCOPUS_URL: 'https://api.elsevier.com/content/author',
       },
     });
-    elsevierFetch.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonSSMReadOnlyAccess',
-      ),
-    );
-    elsevierFetch.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'SecretsManagerReadWrite',
-      ),
-    );
-    researcherFetch.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonS3FullAccess',
-      ),
-    );
 
     const orcidFetch = new lambda.Function(this, 'orcidFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
@@ -234,21 +253,12 @@ export class DataFetchStack extends cdk.Stack {
       layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/orcidFetch'),
       timeout: cdk.Duration.minutes(15),
+      role: dataFetchRole,
       memorySize: 512,
       environment: {
         ORCID_URL: 'http://pub.orcid.org/'
       },
     });
-    orcidFetch.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonSSMReadOnlyAccess',
-      ),
-    );
-    orcidFetch.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'SecretsManagerReadWrite',
-      ),
-    );
 
     const publicationFetch = new lambda.Function(this, 'publicationFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
@@ -256,25 +266,16 @@ export class DataFetchStack extends cdk.Stack {
       layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/publicationFetch'),
       timeout: cdk.Duration.minutes(15),
+      role: dataFetchRole,
       memorySize: 512,
       environment: {
         RESULTS_PER_PAGE: '25',
         SCOPUS_SEARCH_URL: 'https://api.elsevier.com/content/search/scopus'
       },
     });
-    publicationFetch.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'AmazonSSMReadOnlyAccess',
-      ),
-    );
-    publicationFetch.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'SecretsManagerReadWrite',
-      ),
-    );
 
     /*
-        Set up name matching step function
+        Set up the step function
     */
     const scopusCleanInvoke = new tasks.LambdaInvoke(this, 'Clean Scopus Data', {
       lambdaFunction: scopusClean,
