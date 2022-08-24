@@ -28,6 +28,7 @@ export default function ResearcherSearchResultsComponent(props) {
     researchSearchResults
       .filter((data, index) => researcherPaginationCallback(data, index))
       .map((researcher) => {
+        console.log(researcher.rank);
         return (
           <Paper
             key={researcher.scopus_id}
@@ -47,7 +48,7 @@ export default function ResearcherSearchResultsComponent(props) {
                 style={{ fontSize: "24px" }}
                 to={"/Researchers/" + researcher.scopus_id + "/"}
               >
-                {researcher.preferred_name} <br />
+                {researcher.preferred_name} {(researcher.rank === "Adjunct Professor") && "*"} <br />
               </Link>
               <Typography> {researcher.prime_faculty}</Typography>
               <Typography>
