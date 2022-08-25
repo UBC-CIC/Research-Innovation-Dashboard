@@ -198,7 +198,7 @@ export default function RankingsByDepartment(props) {
                     variant="h3"
                     justifyContent={"center"}
                   >
-                    Rankings By Department
+                    Impact By Department
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
@@ -224,7 +224,7 @@ export default function RankingsByDepartment(props) {
                     sx={{ textAlign: "center" }}
                   >
                     <Typography variant="body1" align="center">
-                      Rank
+                      Impact
                     </Typography>
                   </Paper>
                 </Grid>
