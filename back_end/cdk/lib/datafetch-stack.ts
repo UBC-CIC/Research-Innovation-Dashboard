@@ -6,9 +6,10 @@ import  { aws_s3 as s3 } from 'aws-cdk-lib'
 import { aws_stepfunctions as sfn} from 'aws-cdk-lib';
 import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { DatabaseStack } from './database-stack';
 
 export class DataFetchStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, props?: cdk.StackProps) {
     super(scope, id, {
       env: {
           region: 'ca-central-1'

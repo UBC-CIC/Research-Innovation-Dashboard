@@ -142,4 +142,4 @@ def lambda_handler(event, context):
 
     # Set up the input to identifyDuplicates
     key = 'researcher_data/duplicates/duplicates' + str(iteration_number) + '.csv'
-    return {'file_key': key, 'iteration_number': iteration_number}
+    return {'file_key_duplicates': key, 'iteration_number': iteration_number}

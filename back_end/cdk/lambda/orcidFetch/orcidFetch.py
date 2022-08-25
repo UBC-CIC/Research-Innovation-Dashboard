@@ -76,13 +76,13 @@ def orcidParseWorks(activities):
     return patent_count
 
 '''
-Stores the current time in the update_data table
+Stores the current time in the data_update_logs table
 '''
 def storeLastUpdated(updatedTable, credentials):
     time_string = str(time.time())
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
-    queryline1 = "INSERT INTO public.update_data(table_name, last_updated) "
+    queryline1 = "INSERT INTO public.data_update_logs(table_name, last_updated) "
     queryline2 = "VALUES ('" + updatedTable + "', '" + time_string + "')"
     queryline3 = "ON CONFLICT (table_name) DO UPDATE "
     queryline4 = "SET last_updated='" + time_string + "'"

@@ -160,9 +160,10 @@ def lambda_handler(event, context):
         highest_h_index = 0
         primary_scopus_id = ''
         for author in author_subset:
-            if(author['h_index'] > highest_h_index):
-                highest_h_index = author['h_index']
-                primary_scopus_id = author['SCOPUS_ID']
+            if ('h_index' in author.keys()):
+                if(author['h_index'] > highest_h_index):
+                    highest_h_index = author['h_index']
+                    primary_scopus_id = author['SCOPUS_ID']
         for author in author_subset:
             if(author['SCOPUS_ID'] == primary_scopus_id):
                 extra_ids = []
@@ -193,4 +194,3 @@ def lambda_handler(event, context):
     bucket.upload_file('/tmp/unsolved_duplicates.csv', key)
     
     return
-                
