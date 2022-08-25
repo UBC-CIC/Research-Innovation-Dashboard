@@ -172,9 +172,7 @@ function Navbar(props) {
             >
               Publications
             </NavButton>
-            <NavButton onClick={() => navigate("/Rankings/")}>
-              Rankings
-            </NavButton>
+            <NavButton onClick={() => navigate("/Impact/")}>Impact</NavButton>
             <NavButton onClick={() => navigate("/Metrics/")}>Metrics</NavButton>
             {adminUser && (
               <NavButton onClick={() => navigate("/AdminDashboard/")}>

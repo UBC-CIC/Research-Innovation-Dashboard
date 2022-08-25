@@ -71,7 +71,7 @@ function PageContainer(props) {
           {adminUser && (
             <Route path="/AdminDashboard/" element={<AdminDashboard />} />
           )}
-          <Route path="/Rankings/" element={<Rankings />} />
+          <Route path="/Impact/" element={<Rankings />} />
           <Route
             path="/AdvancedSearch/:SearchForWhat/:AllWords/:ExactPhrase/:AnyWords/:NoneOfTheseWords/:Department/:Faculty/:yearFrom/:yearTo/:Journal"
             element={<AdvancedSearchComponent />}
