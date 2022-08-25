@@ -11,7 +11,7 @@
 | [Publications Search](#Publications-Search) | Publications search and related filters               |
 | [Advanced Search](#Advanced-Search)         | Advanced search                                       |
 | [Researcher Profile](#Researcher-Profile)   | Researcher profile and information page               |
-| [Rankings](#Rankings)                       | Researcher rankings by department or faculty          |
+| [Impact](#Impact)                           | Researcher impact by department or faculty            |
 | [Metrics](#Metrics)                         | Top 100 research keywords word cloud                  |
 | [Admin Dashboard](#Admin-Dashboard)         | Update logs, Changing Scopus IDs, Viewing Flagged IDs |
 
@@ -114,13 +114,17 @@ Clicking the `10 Similar Researchers` button will display a list of researchers 
 This section displays a list of the researcher's publications, along with information about the number of citations and the year published. Clicking on the publication title will open the publication in Scopus.
 <br>
 ![alt text](images/userGuide/researcherProfile07.png)
-<br>
-Clicking on the arrow button beside `Citations` (circled in the previous image) will sort the publications by ascending number of citations
+
+Hovering over the `Title` table column header will display an arrow icon. Clicking on this arrow icon will show the list of publications in alphabetical order.
 ![alt text](images/userGuide/researcherProfile08.png)
+![alt text](images/userGuide/researcherProfile09.png)
 
-## Rankings
+Hovering over the `Year Published` table column header display an arrow icon. Clicking on this arrow icon will sort the publications by year published starting from the most recent year.
+![alt text](images/userGuide/researcherProfile10.png)
 
-The Rankings tab displays a table with all researchers ranked by their H index for the past 5 years. Rankings can be filtered by department or by faculty by clicking on the `Rank By Department` or `Rank By Faculty` toggle tabs above the rankings table.
+## Impact
+
+The Impact tab displays a table with all researchers sorted by their H index for the past 5 years. Researcher impact can be filtered by department or by faculty by clicking on the `Impact By Department` or `Impact By Faculty` toggle tabs above the impacts table.
 ![alt text](images/userGuide/rankings01.png)
 
 ## Metrics
