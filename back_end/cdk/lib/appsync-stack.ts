@@ -9,7 +9,6 @@ import * as cdk from 'aws-cdk-lib'
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { DatabaseStack } from './database-stack';
-//import { aws_waf as waf } from 'aws-cdk-lib';
 import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
 
 export class AppsyncStack extends Stack {
@@ -84,7 +83,7 @@ export class AppsyncStack extends Stack {
     // The layer containing the postgres library
     const postgresLayer = new lambda.LayerVersion(this, 'postgres', {
       code: lambda.Code.fromAsset('./layers/postgres.zip'),
-      compatibleRuntimes: [lambda.Runtime.NODEJS_14_X],
+      compatibleRuntimes: [lambda.Runtime.NODEJS_16_X],
       description: 'Contains the postgres library',
     });
 
@@ -94,7 +93,7 @@ export class AppsyncStack extends Stack {
     // Create the postgresql db query function.
     const queryDbFunction = new lambda.Function(this, 'postgresQuery', {
       functionName: "postgresQuery",
-      runtime: lambda.Runtime.NODEJS_14_X,
+      runtime: lambda.Runtime.NODEJS_16_X,
       handler: 'index.handler',
       timeout: cdk.Duration.seconds(300),
       role: lambdaRole,
@@ -399,7 +398,7 @@ export class AppsyncStack extends Stack {
       resolver.addDependsOn(postgresqlDataSource);
     }
 
-    // Lets add a firewall
+    // Waf Firewall
     const waf = new wafv2.CfnWebACL(this, 'waf', {
       description: 'waf for VPRI',
       scope: 'REGIONAL',

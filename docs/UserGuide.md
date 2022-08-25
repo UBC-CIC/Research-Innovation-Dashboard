@@ -27,7 +27,7 @@ The Home page is a combination of both the [Researchers Search Component](#Resea
 
 ## Researchers Search
 
-The search bar on this page returns researcher results that match the user inputted search term. Filters for researchers can be found on the left hand sidebar. There are 2 categories to filter by (Department, Faculty).
+The search bar on this page returns researcher results that match the user inputted search term. Researchers that are adjunct professors will have a `*` character beside their name. Filters for researchers can be found on the left hand sidebar. There are 2 categories to filter by (Department, Faculty).
 
 ![alt text](images/userGuide/researchers01.png)
 
@@ -89,6 +89,7 @@ The researcher profile page contains general information about a researcher, the
 ### General Information
 
 The researcher's general information including name, faculty, department, email, phone number, office Scopus ID, and time last updated are displayed here.
+<br>
 ![alt text](images/userGuide/researcherProfile01.png)
 
 ### Researcher Highlights
@@ -103,6 +104,7 @@ Clicking on the expand arrow icon on the smaller graph will display a graph belo
 ### Areas of Interest and Similar Researchers
 
 This section displays a list of the researcher's areas of interest. The researcher's top five areas of interest are shown by default. To view all, click the `View All Areas of Interest` button.
+<br>
 ![alt text](images/userGuide/researcherProfile05.png)
 Clicking the `10 Similar Researchers` button will display a list of researchers that are in the same faculty, department, or have similar areas of interest.
 ![alt text](images/userGuide/researcherProfile06.png)
@@ -110,7 +112,9 @@ Clicking the `10 Similar Researchers` button will display a list of researchers 
 ### Publications
 
 This section displays a list of the researcher's publications, along with information about the number of citations and the year published. Clicking on the publication title will open the publication in Scopus.
+<br>
 ![alt text](images/userGuide/researcherProfile07.png)
+<br>
 Clicking on the arrow button beside `Citations` (circled in the previous image) will sort the publications by ascending number of citations
 ![alt text](images/userGuide/researcherProfile08.png)
 
