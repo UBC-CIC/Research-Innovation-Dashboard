@@ -82,7 +82,7 @@ npm install
 
 ## Step 2: Upload the Elsevier API Key and Institution Token
 
-While in the backend folder, run the following commands. Ensure you replace "INSTITUTION_TOKEN" in the first command with your own Elsevier institution token and you replace "API_KEY" in the second command with your own Elsevier API key.
+While in the `back_end/cdk` folder, run the following commands. Ensure you replace "INSTITUTION_TOKEN" in the first command with your own Elsevier institution token and you replace "API_KEY" in the second command with your own Elsevier API key.
 
 ```bash
 aws ssm put-parameter --name "/service/elsevier/api/user_name/instoken" --value "INSTITUTION_TOKEN" --type SecureString --overwrite
@@ -137,7 +137,7 @@ Now that the CDK has deployed all the resources you need to press a few buttons 
 
 1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for UBC and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
    ![alt text](images/deploymentGuide/scival_download.jpg)
-2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: `put link to example data here`. This file must be named `ubc_data.csv`
+2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `ubc_data.csv`
 3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
    ![alt text](images/deploymentGuide/s3_search.jpg)
 4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
@@ -148,7 +148,7 @@ Now that the CDK has deployed all the resources you need to press a few buttons 
    ![alt text](images/deploymentGuide/s3_create_folder.jpg)
 7. Click on the `researcher_data` folder then click `Upload`.
    ![alt text](images/deploymentGuide/s3_opened_folder.jpg)
-8. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: `insert file link here`) then click `Upload`.
+8. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: [Example Matches File](example_data/manual_matches(example).csv)) then click `Upload`.
    ![alt text](images/deploymentGuide/s3_upload.jpg)
 9. Once the upload is complete click `Close`
    ![alt text](images/deploymentGuide/s3_upload_complete.jpg)
