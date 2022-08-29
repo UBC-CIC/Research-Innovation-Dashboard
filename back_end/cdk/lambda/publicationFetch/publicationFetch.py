@@ -129,11 +129,13 @@ Given an author's Scopus id and the authors publications, stores all keywords
 associated with a researcher as an unsorted list (contains duplicate keywords)
 '''
 def store_keywords(author_id, publications, credentials):
+    pub_ids = []
     unsorted_keywords = []
     for publication in publications:
+        pub_ids.append(publication['id'])
         for keyword in publication['keywords']:
             unsorted_keywords.append(keyword)
-    
+    pub_ids = str(pub_ids).replace("'", '"').replace('[', '{').replace(']', '}')
     keywords = unsorted_keywords
     
     for keyword in keywords:
@@ -144,7 +146,7 @@ def store_keywords(author_id, publications, credentials):
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     
-    query = "UPDATE public.researcher_data SET keywords='" + keywords_string + "' WHERE scopus_id='" + author_id + "'"
+    query = "UPDATE public.researcher_data SET keywords='" + keywords_string + "', pub_ids='" + pub_ids + "' WHERE scopus_id='" + author_id + "'"
     cursor.execute(query)
     
     cursor.close()
