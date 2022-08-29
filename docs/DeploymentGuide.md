@@ -148,7 +148,7 @@ Now that the CDK has deployed all the resources you need to press a few buttons 
    ![alt text](images/deploymentGuide/s3_create_folder.jpg)
 7. Click on the `researcher_data` folder then click `Upload`.
    ![alt text](images/deploymentGuide/s3_opened_folder.jpg)
-8. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file then click `Upload`.
+8. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: `insert file link here`) then click `Upload`.
    ![alt text](images/deploymentGuide/s3_upload.jpg)
 9. Once the upload is complete click `Close`
    ![alt text](images/deploymentGuide/s3_upload_complete.jpg)
