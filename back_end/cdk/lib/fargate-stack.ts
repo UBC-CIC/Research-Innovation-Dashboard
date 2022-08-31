@@ -82,7 +82,7 @@ export class FargateStack extends Stack {
         month: '*',
         weekDay: 'SAT'
       }),
-      subnetSelection: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED},
+      subnetSelection: {subnetType: ec2.SubnetType.PUBLIC},
       platformVersion: ecs.FargatePlatformVersion.LATEST,
     });
   }
