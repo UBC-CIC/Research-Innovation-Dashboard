@@ -8,6 +8,7 @@ import Stack from '@mui/material/Stack';
 
 export default function Researcher_Info(props) {
     var date = new Date(props.researcher_information.lastUpdatedAt * 1000);
+    var formattedDate = date.toLocaleString();
 
     return(
         <Grid item xs={4} sx={{}}>
@@ -20,12 +21,7 @@ export default function Researcher_Info(props) {
                         <Typography>{"Email: "+props.researcher_information.email}</Typography>
                         <Typography>{"Rank: "+props.researcher_information.rank}</Typography>
                         <Typography>{"Scopus ID: "+props.researcher_information.scopusId}</Typography>
-                        <Typography>{"Updated On: "+date.getDate()+
-          "/"+(date.getMonth()+1)+
-          "/"+date.getFullYear()+
-          " "+date.getHours()+
-          ":"+date.getMinutes()+
-          ":"+date.getSeconds()}</Typography>
+                        <Typography>{formattedDate}</Typography>
                     </Paper>
             </Paper>
         </Grid>
