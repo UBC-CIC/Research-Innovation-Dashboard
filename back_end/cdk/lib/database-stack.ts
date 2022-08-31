@@ -42,7 +42,7 @@ export class DatabaseStack extends Stack {
       }),
       instanceType: ec2.InstanceType.of(
         ec2.InstanceClass.BURSTABLE3,
-        ec2.InstanceSize.MICRO,
+        ec2.InstanceSize.MEDIUM,
       ),
       credentials: rds.Credentials.fromGeneratedSecret('postgres', {
         secretName: this.secretPath
@@ -55,9 +55,9 @@ export class DatabaseStack extends Stack {
       backupRetention: cdk.Duration.days(7),
       deleteAutomatedBackups: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      deletionProtection: true,
+      deletionProtection: false,
       databaseName: 'vpriDatabase',
-      publiclyAccessible: true,
+      publiclyAccessible: false,
       parameterGroup: parameterGroup,
     });
 

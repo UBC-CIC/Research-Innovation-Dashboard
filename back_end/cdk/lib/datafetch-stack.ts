@@ -6,10 +6,10 @@ import  { aws_s3 as s3 } from 'aws-cdk-lib'
 import { aws_stepfunctions as sfn} from 'aws-cdk-lib';
 import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { DatabaseStack } from './database-stack';
+import { VpcStack } from './vpc-stack';
 
 export class DataFetchStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, vpcStack: VpcStack, props?: cdk.StackProps) {
     super(scope, id, {
       env: {
           region: 'ca-central-1'
@@ -58,21 +58,6 @@ export class DataFetchStack extends cdk.Stack {
 
     // The layer containing the numpy library (AWS Managed)
     const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', 'arn:aws:lambda:ca-central-1:336392948345:layer:AWSDataWrangler-Python39:5')
-
-    // Create the database tables (runs during deployment)
-    const createTables = new triggers.TriggerFunction(this, 'createTables', {
-      runtime: lambda.Runtime.PYTHON_3_9,
-      handler: 'createTables.lambda_handler',
-      layers: [psycopg2],
-      code: lambda.Code.fromAsset('lambda/createTables'),
-      timeout: cdk.Duration.minutes(15),
-      memorySize: 512,
-    });
-    createTables.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'SecretsManagerReadWrite',
-      ),
-    );
 
     /*
         Create the lambda roles
@@ -150,6 +135,30 @@ export class DataFetchStack extends cdk.Stack {
         `arn:aws:ssm:ca-central-1:${this.account}:parameter/service/elsevier/api/user_name/*`,
       ]
     }));
+    dataFetchRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // Parameter Store
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:CreateNetworkInterface",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DescribeInstances",
+        "ec2:AttachNetworkInterface"
+      ],
+      resources: ["*"]
+    }));
+
+    // Create the database tables (runs during deployment)
+    const createTables = new triggers.TriggerFunction(this, 'createTables', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'createTables.lambda_handler',
+      layers: [psycopg2],
+      code: lambda.Code.fromAsset('lambda/createTables'),
+      timeout: cdk.Duration.minutes(15),
+      role: dataFetchRole,
+      memorySize: 512,
+      vpc: vpcStack.vpc,
+    });
 
     /*
       Define Lambdas and add correct permissions
@@ -230,6 +239,7 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
+      vpc: vpcStack.vpc,
     });
 
     const elsevierFetch = new lambda.Function(this, 'elsevierFetch', {
@@ -246,6 +256,7 @@ export class DataFetchStack extends cdk.Stack {
         SCOPUS_MAX_AUTHORS: '25',
         SCOPUS_URL: 'https://api.elsevier.com/content/author',
       },
+      vpc: vpcStack.vpc,
     });
 
     const orcidFetch = new lambda.Function(this, 'orcidFetch', {
@@ -259,6 +270,7 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         ORCID_URL: 'http://pub.orcid.org/'
       },
+      vpc: vpcStack.vpc,
     });
 
     const publicationFetch = new lambda.Function(this, 'publicationFetch', {
@@ -273,6 +285,7 @@ export class DataFetchStack extends cdk.Stack {
         RESULTS_PER_PAGE: '25',
         SCOPUS_SEARCH_URL: 'https://api.elsevier.com/content/search/scopus'
       },
+      vpc: vpcStack.vpc,
     });
 
     /*
