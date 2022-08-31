@@ -49,6 +49,7 @@ def lambda_handler(event, context):
     columns.append(createColumn('campus', 'character varying', '', False))
     columns.append(createColumn('scopus_id', 'character varying', '', False))
     columns.append(createColumn('extra_ids', 'character varying[]', '', False))
+    columns.append(createColumn('pub_ids', 'character varying[]', '', False))
     columns.append(createColumn('keywords', 'character varying', '(1000000)', False))
     columns.append(createColumn('last_updated', 'character varying', '', True))
     query = createQuery('researcher_data', columns)
