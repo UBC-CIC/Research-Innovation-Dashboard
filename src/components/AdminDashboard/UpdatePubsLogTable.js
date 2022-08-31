@@ -41,7 +41,7 @@ const UpdatePubsLogTable = () => {
           date_updated: formattedDate,
         };
       });
-      setUpdatePublicationLogs(publicationLogConvertedDates);
+      setUpdatePublicationLogs(publicationLogConvertedDates.reverse());
     };
     getLogs();
   }, []);

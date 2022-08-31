@@ -50,7 +50,7 @@ export default function PublicationSearchResultsComponent(props) {
         gridAutoRows="1fr"
         style={{ marginLeft: "2%", marginRight: "2%" }}
       >
-        <Grid item xs={8}>
+        <Grid item xs={10}>
           <Paper
             square={true}
             elevation={0}
@@ -59,18 +59,6 @@ export default function PublicationSearchResultsComponent(props) {
           >
             <Typography align="center" variant="h6">
               Title
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={2}>
-          <Paper
-            square={true}
-            elevation={0}
-            variant="outlined"
-            sx={{ textAlign: "center" }}
-          >
-            <Typography align="center" variant="h6">
-              Cited By
             </Typography>
           </Paper>
         </Grid>

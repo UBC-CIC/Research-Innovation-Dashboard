@@ -169,4 +169,3 @@ def lambda_handler(event, context):
     storeLastUpdated('elsevier_data', credentials)
     max_authors = int(os.environ.get('SCOPUS_MAX_AUTHORS'))
     return splitArray(author_scopus_ids, max_authors)
-    

@@ -32,20 +32,22 @@ export default function Rankings_Navigation(props) {
           sx={{ fontSize: buttonFontSize, paddingLeft: "0%" }}
           onClick={props.onClickFunctions.byDepartmentButton}
         >
-          Rank By Department
+          Impact By Department
         </Button>
         <Button
           sx={{ fontSize: buttonFontSize }}
           onClick={props.onClickFunctions.byFacultyButton}
         >
-          Rank By Faculty
+          Impact By Faculty
         </Button>
-        {props.enableOverallRankings && <Button
-          sx={{ fontSize: buttonFontSize }}
-          onClick={props.onClickFunctions.overallRankingsButton}
-        >
-          Overall Rankings
-        </Button>}
+        {props.enableOverallRankings && (
+          <Button
+            sx={{ fontSize: buttonFontSize }}
+            onClick={props.onClickFunctions.overallRankingsButton}
+          >
+            Overall Impact
+          </Button>
+        )}
       </ButtonGroup>
     );
   }

@@ -4,16 +4,17 @@
 
 - [Deployment Guides](./DeploymentGuide.md)
 
-| Index                                       | Description                                           |
-| :------------------------------------------ | :---------------------------------------------------- |
-| [Home](#Home)                               | Main search bar (Search Everything)                   |
-| [Researchers Search](#Researchers-Search)   | Researcher search and related filters                 |
-| [Publications Search](#Publications-Search) | Publications search and related filters               |
-| [Advanced Search](#Advanced-Search)         | Advanced search                                       |
-| [Researcher Profile](#Researcher-Profile)   | Researcher profile and information page               |
-| [Rankings](#Rankings)                       | Researcher rankings by department or faculty          |
-| [Metrics](#Metrics)                         | Top 100 research keywords word cloud                  |
-| [Admin Dashboard](#Admin-Dashboard)         | Update logs, Changing Scopus IDs, Viewing Flagged IDs |
+| Index                                        | Description                                           |
+| :------------------------------------------  | :---------------------------------------------------- |
+| [Home](#Home)                                | Main search bar (Search Everything)                   |
+| [Researchers Search](#Researchers-Search)    | Researcher search and related filters                 |
+| [Publications Search](#Publications-Search)  | Publications search and related filters               |
+| [Advanced Search](#Advanced-Search)          | Advanced search                                       |
+| [Researcher Profile](#Researcher-Profile)    | Researcher profile and information page               |
+| [Impact](#Impact)                            | Researcher impact by department or faculty            |
+| [Metrics](#Metrics)                          | Top 100 research keywords word cloud                  |
+| [Admin Dashboard](#Admin-Dashboard)          | Update logs, Changing Scopus IDs, Viewing Flagged IDs |
+| [Updating Researchers](#Updating-Researchers)| Process for Updating Researcher Data                  |
 
 **Note:** The screenshots contained in this User Guide show some information as redacted to obscure data that is not fully up to date.
 <br>
@@ -114,13 +115,17 @@ Clicking the `10 Similar Researchers` button will display a list of researchers 
 This section displays a list of the researcher's publications, along with information about the number of citations and the year published. Clicking on the publication title will open the publication in Scopus.
 <br>
 ![alt text](images/userGuide/researcherProfile07.png)
-<br>
-Clicking on the arrow button beside `Citations` (circled in the previous image) will sort the publications by ascending number of citations
+
+Hovering over the `Title` table column header will display an arrow icon. Clicking on this arrow icon will show the list of publications in alphabetical order.
 ![alt text](images/userGuide/researcherProfile08.png)
+![alt text](images/userGuide/researcherProfile09.png)
 
-## Rankings
+Hovering over the `Year Published` table column header display an arrow icon. Clicking on this arrow icon will sort the publications by year published starting from the most recent year.
+![alt text](images/userGuide/researcherProfile10.png)
 
-The Rankings tab displays a table with all researchers ranked by their H index for the past 5 years. Rankings can be filtered by department or by faculty by clicking on the `Rank By Department` or `Rank By Faculty` toggle tabs above the rankings table.
+## Impact
+
+The Impact tab displays a table with all researchers sorted by their H index for the past 5 years. Researcher impact can be filtered by department or by faculty by clicking on the `Impact By Department` or `Impact By Faculty` toggle tabs above the impacts table.
 ![alt text](images/userGuide/rankings01.png)
 
 ## Metrics
@@ -163,3 +168,41 @@ The flagged IDs tab displays researchers that have had their Scopus ID flagged. 
 
 Below that, flagged researcher entries are grouped into tables with the columns containing Researcher Name, Scopus ID, Employee ID, Department, Faculty and Reason Flagged information.
 ![alt text](images/userGuide/adminDashboard07.png)
+
+## Updating Researchers
+
+### Step 1: Upload Data to S3
+
+1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for UBC and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
+   ![alt text](images/deploymentGuide/scival_download.jpg)
+2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `ubc_data.csv`
+3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
+   ![alt text](images/deploymentGuide/s3_search.jpg)
+4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
+   ![alt text](images/deploymentGuide/s3_bucket_search.jpg)
+5. Click on the `researcher_data` folder.
+   ![alt text](images/userGuide/folder_select.jpg)
+6. Select the `ubc_data.csv` and `scopus_ids.csv` files (also select the `manual_matches.csv` file if it is present) and click `Delete`
+   ![alt text](images/userGuide/file_select.jpg)
+7. Type `permanently delete` in the text input field then click `Delete objects`.
+   ![alt text](images/userGuide/file_deletion.jpg)
+8. Click `Close` once the deletion is finished.
+   ![alt text](images/userGuide/deletion_close.jpg)
+9. Click `Add Files` and select the `scopus_ids.csv` file from part 1 and the `ubc_data.csv` file from part 2 (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: [Example Matches File](example_data/manual_matches(example).csv)) then click `Upload`.
+   ![alt text](images/deploymentGuide/s3_upload.jpg)
+10. Once the upload is complete click `Close`
+   ![alt text](images/deploymentGuide/s3_upload_complete.jpg)
+
+### Step 2: Run the Data Pipeline
+
+1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Step Functions` in the search bar.
+   ![alt text](images/deploymentGuide/step_function_search.jpg)
+2. In the State Machine search bar enter `DataFetchStateMachine` and click the name of the top result (The exact name of the state machine may vary but it will always begin with `DataFetchStateMachine`.
+   ![alt text](images/deploymentGuide/state_machine_search.jpg)
+3. Click `Start Execution`
+   ![alt text](images/deploymentGuide/state_machine_page.jpg)
+4. In the box that appears click `Start Execution`. Do not edit the text in the input field.
+   ![alt text](images/deploymentGuide/start_execution.jpg)
+5. The data pipeline will now run on its own and populate the database. This process will take ~90 minutes. If you navigate to the page you visited in part 2 of this step you can view the status of the data pipeline. Once it is finished running the step function execution status will say `Succeeded`.
+   ![alt text](images/deploymentGuide/state_machine_success.jpg)
+

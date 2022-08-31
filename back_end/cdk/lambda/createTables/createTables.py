@@ -48,7 +48,8 @@ def lambda_handler(event, context):
     columns.append(createColumn('second_faculty', 'character varying', '', False))
     columns.append(createColumn('campus', 'character varying', '', False))
     columns.append(createColumn('scopus_id', 'character varying', '', False))
-    columns.append(createColumn('keywords', 'character varying', '', False))
+    columns.append(createColumn('extra_ids', 'character varying[]', '', False))
+    columns.append(createColumn('keywords', 'character varying', '(1000000)', False))
     columns.append(createColumn('last_updated', 'character varying', '', True))
     query = createQuery('researcher_data', columns)
     cursor.execute(query)
@@ -59,14 +60,16 @@ def lambda_handler(event, context):
     columns.append(createColumn('num_citations', 'integer', '', False))
     columns.append(createColumn('num_documents', 'integer', '', False))
     columns.append(createColumn('h_index', 'double precision', '', False))
-    columns.append(createColumn('orcid_id', 'character varying', '', True))
+    columns.append(createColumn('orcid_id', 'character varying', '', False))
+    columns.append(createColumn('last_updated', 'character varying', '', True))
     query = createQuery('elsevier_data', columns)
     cursor.execute(query)
     
     # Create Orcid Data Table
     columns = []
     columns.append(createColumn('id', 'character varying', 'NOT NULL PRIMARY KEY', False))
-    columns.append(createColumn('num_patents_filed', 'integer', '', True))
+    columns.append(createColumn('num_patents_filed', 'integer', '', False))
+    columns.append(createColumn('last_updated', 'character varying', '', True))
     query = createQuery('orcid_data', columns)
     cursor.execute(query)
     
@@ -81,7 +84,8 @@ def lambda_handler(event, context):
     columns.append(createColumn('author_names', 'character varying', '', False))
     columns.append(createColumn('keywords', 'character varying', '', False))
     columns.append(createColumn('doi', 'character varying', '', False))
-    columns.append(createColumn('link', 'character varying', '', True))
+    columns.append(createColumn('link', 'character varying', '', False))
+    columns.append(createColumn('last_updated', 'character varying', '', True))
     query = createQuery('publication_data', columns)
     cursor.execute(query)
     

@@ -42,7 +42,7 @@ const UpdateResearcherLogTable = () => {
           last_updated: formattedDate,
         };
       });
-      setUpdatedResearchersList(researcherLogConvertedDates);
+      setUpdatedResearchersList(researcherLogConvertedDates.reverse());
     };
     getLog();
   }, []);

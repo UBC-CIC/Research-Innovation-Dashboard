@@ -5,6 +5,7 @@ import csv
 import codecs
 import time
 import os
+from botocore.errorfactory import ClientError
 
 ssm_client = boto3.client('ssm')
 sm_client = boto3.client('secretsmanager')
@@ -44,8 +45,12 @@ def storeResearcher(researcher, scopus_id, credentials):
     prime_faculty = researcher['PRIMARY_FACULTY_AFFILIATION'].replace("'", "''")
     second_faculty = researcher['SECONDARY_FACULTY_AFFILIATION'].replace("'", "''")
     campus = researcher['PRIMARY_CAMPUS_LOCATION'].replace("'", "''")
-    queryline1 = "INSERT INTO public.researcher_data(employee_id, first_name, preferred_name, last_name, email, rank, job_stream, prime_department, second_department, prime_faculty, second_faculty, campus, scopus_id, last_updated) "
-    queryline2 = "VALUES ('" + employee_id + "', '" + first_name + "', '" + preferred_name + "', '" + last_name + "', '" + email + "', '" + rank + "', '" + job_stream + "', '" + prime_department + "', '" + second_department + "', '" + prime_faculty + "', '" + second_faculty + "', '" + campus + "', '" + scopus_id + "', '" + time_string + "')"
+    if (researcher['EXTRA_IDS']):
+        extra_ids = str(researcher['EXTRA_IDS']).replace("'", '"').replace('[', '{').replace(']', '}')
+    else:
+        extra_ids = '{}'
+    queryline1 = "INSERT INTO public.researcher_data(employee_id, first_name, preferred_name, last_name, email, rank, job_stream, prime_department, second_department, prime_faculty, second_faculty, campus, scopus_id, extra_ids, last_updated) "
+    queryline2 = "VALUES ('" + employee_id + "', '" + first_name + "', '" + preferred_name + "', '" + last_name + "', '" + email + "', '" + rank + "', '" + job_stream + "', '" + prime_department + "', '" + second_department + "', '" + prime_faculty + "', '" + second_faculty + "', '" + campus + "', '" + scopus_id + "', '" + extra_ids + "', '" + time_string + "')"
     queryline3 = "ON CONFLICT (employee_id) DO UPDATE "
     queryline4 = "SET first_name='" + first_name + "', preferred_name='" + preferred_name + "', last_name='" + last_name + "', email='" + email + "', rank='" + rank + "', job_stream='" + job_stream + "', prime_department='" + prime_department + "', second_department='" + second_department + "', prime_faculty='" + prime_faculty + "', second_faculty='" + second_faculty + "', campus='" + campus + "', scopus_id='" + scopus_id + "', last_updated='" + time_string + "'"
     cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
@@ -93,6 +98,40 @@ def lambda_handler(event, context):
             rows = getFile(bucket_name, obj['Key'])
             for researcher in rows:
                 storeResearcher(researcher, researcher['SCOPUS_ID'], credentials)
+
+    # Fetch data from the solved_duplicates folder
+    folder = 'researcher_data/duplicates/solved_duplicates'
+    paginator = s3_client.get_paginator('list_objects')
+    pages = paginator.paginate(Bucket=bucket_name, Prefix=folder)
+    
+    for page in pages:
+        for obj in page['Contents']:
+            rows = getFile(bucket_name, obj['Key'])
+            for researcher in rows:
+                researcher['EXTRA_IDS'] = []
+                storeResearcher(researcher, researcher['SCOPUS_ID'], credentials)
+                
+    # Fetch data from the unsolved_duplicates folder
+    folder = 'researcher_data/duplicates/unsolved_duplicates'
+    paginator = s3_client.get_paginator('list_objects')
+    pages = paginator.paginate(Bucket=bucket_name, Prefix=folder)
+    
+    for page in pages:
+        for obj in page['Contents']:
+            rows = getFile(bucket_name, obj['Key'])
+            for researcher in rows:
+                storeResearcher(researcher, researcher['SCOPUS_ID'], credentials)
+           
+    # Fetch the manually created matches
+    try:
+        key = 'researcher_data/manual_matches.csv'
+        data = s3_client.get_object(Bucket=bucket_name, Key=key)
+        rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
+        for researcher in rows:
+            storeResearcher(researcher, researcher['SCOPUS_ID'], credentials)
+    except ClientError:
+        # Manual matches could not be found
+        pass
 
     storeLastUpdated('researcher_data', credentials)
 
