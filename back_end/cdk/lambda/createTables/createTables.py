@@ -15,13 +15,21 @@ def getCredentials():
     credentials['db'] = secrets['dbname']
     return credentials
 
+'''
+Given a table name and a list of columns created using createColumn, returns a postgres query to create a table called table_name
+with columns as defined in the columns list
+'''
 def createQuery(table_name, columns):
     query = 'CREATE TABLE IF NOT EXISTS public.' + table_name + ' ('
     for column in columns:
         query = query + column
     query = query + ');'
     return query
-        
+
+'''
+Given a column_name, data type, constraints(eg. NOT NULL), and a boolean detailing whether the column is the last one to be added,
+Returns a column section of a postgres create table query which can be fed into createQuery
+'''        
 def createColumn(column_name, columnType, constraints, final_column):
     column = column_name + ' ' + columnType + ' ' + constraints
     if not final_column:

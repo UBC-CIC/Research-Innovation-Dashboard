@@ -11,6 +11,9 @@ ssm_client = boto3.client('ssm')
 sm_client = boto3.client('secretsmanager')
 s3_client = boto3.client("s3")
 
+'''
+Fetches the rds database credentials from secrets manager
+'''
 def getCredentials():
     credentials = {}
 
@@ -22,11 +25,17 @@ def getCredentials():
     credentials['db'] = secrets['dbname']
     return credentials
 
+'''
+Given an S3 bucket and an S3 object key for a .csv file, returns the rows of the .csv file as a list
+'''
 def getFile(bucket_name, key):
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
     rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
     return rows
 
+'''
+Given a dict of researcher info and a scopus_id, stores the researchers data in the researcher_data table
+'''
 def storeResearcher(researcher, scopus_id, credentials):
     credentials = getCredentials()
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
@@ -73,6 +82,11 @@ def storeLastUpdated(updatedTable, credentials):
     connection.commit()
     return
 
+'''
+Fetches the matches that were found in compareNames, identifyDuplicates, and cleanNoMatches and stores them in the database.
+Also stores any matches stored in the manual_matches.csv file if it is present
+Requires no input
+'''
 def lambda_handler(event, context):
     credentials = getCredentials()
     bucket_name = os.environ.get('S3_BUCKET_NAME')

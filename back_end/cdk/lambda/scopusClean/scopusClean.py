@@ -5,6 +5,11 @@ import os
 
 s3_client = boto3.client("s3")
 
+'''
+Fetches a .csv file of Scopus data from S3 then cleans the name data by setting 
+all characters to lower case, removing all special characters. 
+Requires no input
+'''
 def lambda_handler(event, context):
     
     bucket_name = os.environ.get('S3_BUCKET_NAME')

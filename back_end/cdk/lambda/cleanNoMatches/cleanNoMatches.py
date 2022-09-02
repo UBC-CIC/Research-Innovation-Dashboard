@@ -11,12 +11,22 @@ instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instok
 apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
 elsevier_headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
 
+'''
+Given a list lst and a number n, splits lst into sections of size n and returns the sections in a list
+'''
 def split_array(lst, n):
     ret_arr = []
     for i in range(0, len(lst), n):
          ret_arr.append(lst[i:i + n])
     return ret_arr
 
+'''
+Fetches potential matches from the no_matches folder in S3 and compares their
+department and faculty data to areas of interest on Scopus to determine if a match is certain.
+Also compares the matches name to name variants found in Scopus. Matches that pass this comparison
+are stored in the found_matches folders in .csv files and the matches that fail the comparison are
+stored in the no_matches_cleaned folder in .csv files.
+'''
 def lambda_handler(event, context):
     bucket_name = os.environ.get('S3_BUCKET_NAME')
     key = event['file_key']

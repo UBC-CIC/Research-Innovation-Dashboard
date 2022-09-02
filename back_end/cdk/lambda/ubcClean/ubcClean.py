@@ -5,7 +5,14 @@ import os
 
 s3_client = boto3.client("s3")
 
+'''
+Fetches a .csv file of HR data from S3, removes all researchers with irrelevant ranks, then cleans 
+the name data by setting all characters to lower case, removing all special characters. Returns a list
+of start and end indices that is fed to the next step of the step function
+Requires no input
+'''
 def lambda_handler(event, context):
+    # Researchers with these ranks are kept
     ranks = ['Acting Assistant Professor (tenure-track)', 'Adjunct Professor', 'Affiliate Assistant Professor', 
          'Affiliate Associate Professor', 'Affiliate Instructor', 'Affiliate Professor', 'Affiliate Professor of Teaching', 
          'Affiliate Senior Instructor', 'Assistant Professor', 'Assistant Professor (grant tenure-track)', 
@@ -60,6 +67,7 @@ def lambda_handler(event, context):
     key = 'researcher_data/ubc_clean.csv'
     bucket.upload_file('/tmp/ubc_clean.csv', key)
     
+    #Prepare the input of the next state in the step function
     nextStateInput = []
     for i in range(int(clean_rows_count/100)):
         nextStateInput.append({'startIndex': i * 100, 'endIndex': i * 100 + 99})

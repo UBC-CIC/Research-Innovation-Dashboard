@@ -12,6 +12,10 @@ instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instok
 apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
 elsevier_headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
 
+'''
+Given a list of potential matches, returns a list containing the match with the highest Jaro-Winkler distance.
+If multiple matches share the highest Jaro-Winkler Distance then they are returned in the list as well
+'''
 def PruneMatches(matches):
     pruned_matches = []
     max_jaro_distance = 0
@@ -24,12 +28,20 @@ def PruneMatches(matches):
             pruned_matches.append(match)
     return pruned_matches
 
+'''
+Given a list lst and a number n, splits lst into sections of size n and returns the sections in a list
+'''
 def splitArray(lst, n):
     ret_arr = []
     for i in range(0, len(lst), n):
          ret_arr.append(lst[i:i + n])
     return ret_arr
 
+'''
+Given a set of duplicate matches, checks for similarity between the matches department and faculty data
+and the areas of interest associated with the Scopus id. Returns a list of matches who have similarity
+between their department/faculty and the areas of interest of their Scopus id.
+'''
 def confirmMatches(duplicates_split):
     found_matches = []
     no_matches = []
@@ -81,7 +93,6 @@ Given an array of authors, fetches the 5 year h-index from the Scival API
 for each author and appends it to the authors info. Fetches data for 100 
 authors on each API call
 '''
-
 def sciValFetch(authors):
     url = os.environ.get('SCIVAL_URL')
     max_authors = int(os.environ.get('SCIVAL_MAX_AUTHORS'))
@@ -103,6 +114,10 @@ def sciValFetch(authors):
                     if(list(result['metrics'][0].keys()).count('value')):
                         author['h_index'] = result['metrics'][0]['value']
 
+'''
+Fetches a .csv file of duplicate matches from S3 and identifies the best matching Scopus id. If no definite match can be found then the Scopus id with
+te highest h-index is set as the primary Scopus id
+'''
 def lambda_handler(event, context):
     iteration_number = event['iteration_number']
     # Fetch the correct file from s3

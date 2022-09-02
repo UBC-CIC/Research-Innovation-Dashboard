@@ -7,6 +7,10 @@ import os
 
 s3_client = boto3.client("s3")
 
+'''
+Compares the given ubc_name to the last name in each scopus_id_row. Returns all matches that have
+a Jaro-Winkler distance greater than or equal to 0.95
+'''
 def SearchIdsLastName(ubc_name, scopus_id_rows):
     matches = []
     max_jaro_distance = 0
@@ -30,6 +34,10 @@ def SearchIdsLastName(ubc_name, scopus_id_rows):
     else:
         return(True, matches)
 
+'''
+Compares the given ubc_name to the first name in each scopus_id_row. Returns all matches that have
+a Jaro-Winkler distance greater than or equal to 0.95
+'''
 def SearchIdsFirstName(ubc_name, scopus_id_rows, email):
     matches = []
     max_jaro_distance = 0
@@ -40,14 +48,6 @@ def SearchIdsFirstName(ubc_name, scopus_id_rows, email):
             jaro_distance = get_jaro_distance(scopus_name, ubc_name, winkler=True, scaling=0.1)
         else:
             jaro_distance = 0
-        #Check email
-        '''
-        email_names = email.split('@')[0].split('.')
-        for name in email_names:
-            email_distance = get_jaro_distance(name, ubc_name, winkler=True, scaling=0.1)
-            if (email_distance > jaro_distance):
-                jaro_distance = email_distance
-        '''
         if (jaro_distance >= max_jaro_distance):
             max_jaro_distance = jaro_distance
             matched_name = row['SCOPUS_NAME']
@@ -64,6 +64,10 @@ def SearchIdsFirstName(ubc_name, scopus_id_rows, email):
     else:
         return(True, matches)
 
+'''
+Given a list of potential matches, returns a list containing the match with the highest Jaro-Winkler distance.
+If multiple matches share the highest Jaro-Winkler Distance then they are returned in the list as well
+'''
 def PruneMatches(matches):
     pruned_matches = []
     max_jaro_distance = 0
@@ -75,6 +79,15 @@ def PruneMatches(matches):
             pruned_matches.append(match)
     return pruned_matches
 
+'''
+Compares name data present in the HR data file against the name data 
+present in the Scopus id file. Stores matches that have a Jaro-Winkler 
+distance greater than or equal to 0.95 in the matches folder as part of 
+a .csv file. Stores the matches with a Jaro-Winkler distance less than 0.95
+in te no_matches folder as part of a .csv file. Stores the matches with multiple
+associated Scopus ids in the duplicates folder as part of a .csv file.
+
+'''
 def lambda_handler(event, context):
     bucket_name = os.environ.get('S3_BUCKET_NAME')
     key = 'researcher_data/ubc_clean.csv'
