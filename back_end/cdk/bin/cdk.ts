@@ -19,5 +19,5 @@ const dataFetchStack = new DataFetchStack(app, 'DataFetchStack', databaseStack);
 dataFetchStack.addDependency(databaseStack)
 const openSearchStack = new OpensearchStack(app, "OpensearchStack", vpcStack);
 const dmsStack = new DmsStack(app, 'DmsStack', vpcStack, openSearchStack, databaseStack)
-const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseStack);
+const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseStack, dmsStack);
 const appsyncStack = new AppsyncStack(app, 'AppsyncStack', openSearchStack, vpcStack, databaseStack);

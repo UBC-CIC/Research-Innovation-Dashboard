@@ -139,6 +139,7 @@ async function handler(event) {
       let [elsevier_data] = await sql`SELECT * FROM public.elsevier_data WHERE id = ${ubc_data.scopus_id}`;
       let [orcid_data] = await sql`SELECT * FROM public.orcid_data WHERE id = ${ubc_data.scopus_id}`;
       payload = { ...ubc_data, ...elsevier_data, ...orcid_data };
+      payload.last_updated = ubc_data.last_updated;
       delete payload.id;
       break;
     case "getResearcherRankingsByDepartment":

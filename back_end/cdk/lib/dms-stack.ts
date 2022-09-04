@@ -17,6 +17,9 @@ import { DatabaseStack } from './database-stack';
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 export class DmsStack extends Stack {
+
+  public readonly replicationTask: dms.CfnReplicationTask;
+
   constructor(scope: Construct, id: string, vpcStack: VpcStack, opensearchStack: OpensearchStack, databaseStack: DatabaseStack, props?: StackProps) {
     super(scope, id, {
       env: {
@@ -109,10 +112,9 @@ export class DmsStack extends Stack {
     
     // Create a replication task to replicate the
     // reseracher_data and publication_data tables into opensearch this will happen ongoing forever.
-    const task = new dms.CfnReplicationTask(this, 'Task', {
+    this.replicationTask = new dms.CfnReplicationTask(this, 'Task', {
         replicationInstanceArn: instance.ref,
-  
-        migrationType: 'full-load-and-cdc', // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dms-replicationtask.html#cfn-dms-replicationtask-migrationtype
+        migrationType: 'full-load', // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dms-replicationtask.html#cfn-dms-replicationtask-migrationtype
         sourceEndpointArn: source.ref,
         targetEndpointArn: target.ref,
         tableMappings: JSON.stringify({

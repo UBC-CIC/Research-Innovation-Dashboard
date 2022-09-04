@@ -10,10 +10,11 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { VpcStack } from './vpc-stack';
 import { DatabaseStack } from './database-stack';
+import { DmsStack } from './dms-stack';
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 export class FargateStack extends Stack {
-  constructor(scope: Construct, id: string, vpcStack: VpcStack, databaseStack: DatabaseStack, props?: StackProps) {
+  constructor(scope: Construct, id: string, vpcStack: VpcStack, databaseStack: DatabaseStack, dmsStack: DmsStack,  props?: StackProps) {
     super(scope, id, {
       env: {
           region: 'ca-central-1'
@@ -41,12 +42,24 @@ export class FargateStack extends Stack {
       ],
     });
 
+    //Create a policy to start DMS task
+    const startDMSTaskPolicy = new iam.PolicyDocument({
+      statements: [
+        new iam.PolicyStatement({ 
+          resources: [dmsStack.replicationTask.ref],
+          actions: ['dms:StartReplicationTask'],
+          effect: iam.Effect.ALLOW,
+        }),
+      ],
+    });
+
     //Create a role and attach the secret manager policy to it
     const fargateUpdatePublicationsRole = new iam.Role(this, "fargateUpdatePublicationsRole", {
       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
       description: 'This role is used by fargate to run a container and update the databases publications',
       inlinePolicies: {
         accessSecretsManagerPolicy: accessSecretsManagerPolicy,
+        startDMSTaskPolicy: startDMSTaskPolicy,
       },
     })
 
@@ -67,7 +80,8 @@ export class FargateStack extends Stack {
       image: ecs.ContainerImage.fromAsset(path.join(__dirname, 'updatePublicationsImage')),
       logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'my-log-group', logRetention: 30 }),
       environment: {
-        "DB_CREDENTIALS_PATH": databaseStack.secretPath
+        "DB_CREDENTIALS_PATH": databaseStack.secretPath,
+        "Replication_Task_Arn": dmsStack.replicationTask.ref
       }
     });
 

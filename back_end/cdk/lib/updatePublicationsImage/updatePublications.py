@@ -10,6 +10,7 @@ print("Starting Update Publications")
 
 ssm_client = boto3.client('ssm', region_name='ca-central-1')
 sm_client = boto3.client('secretsmanager')
+dms_client = boto3.client('dms')
 
 #Will Need To Think About Where To Get Credentials From With CDK!!!!
 def getCredentials():
@@ -416,30 +417,33 @@ cursor = connection.cursor()
 NumberOfPublicationsUpdate = 0
 
 time_string = str(time.time())
-query = "UPDATE researcher_data SET last_updated = '"+time_string+"'"
+
+#Remove all publications with no ubc researcher
+removePublicationsWithNoUbcResearcher(cursor, connection)
+print("Finished Removing Publications")
+
+#Set researchers number of documents to be what we have in the database
+updateAllResearchersNumDocuments(cursor, connection)
+print("Finished Updating Num Documents")
+
+#Create a list of researchers that need to be updated
+researcherArray = createListOfResearchersToUpdate()
+print("Finished Creating List Of Researchers To Update. List of researchers is:" + str(researcherArray))
+#Using the List of Researchers Put their new publications into the database
+updateResearchers(researcherArray, instoken, apikey, connection, cursor)
+print("Finished Updating Researchers")
+#Add to the updating table
+query = "INSERT INTO update_publications_logs(date_updated, number_of_publications_updated) VALUES ('"+str(time.time())+"', '"+str(NumberOfPublicationsUpdate)+"')"
 cursor.execute(query)
 
-
-# #Remove all publications with no ubc researcher
-# removePublicationsWithNoUbcResearcher(cursor, connection)
-# print("Finished Removing Publications")
-
-# #Set researchers number of documents to be what we have in the database
-# updateAllResearchersNumDocuments(cursor, connection)
-# print("Finished Updating Num Documents")
-
-# #Create a list of researchers that need to be updated
-# researcherArray = createListOfResearchersToUpdate()
-# print("Finished Creating List Of Researchers To Update. List of researchers is:" + str(researcherArray))
-# #Using the List of Researchers Put their new publications into the database
-# updateResearchers(researcherArray, instoken, apikey, connection, cursor)
-# print("Finished Updating Researchers")
-# #Add to the updating table
-# query = "INSERT INTO update_publications_logs(date_updated, number_of_publications_updated) VALUES ('"+str(time.time())+"', '"+str(NumberOfPublicationsUpdate)+"')"
-# cursor.execute(query)
-
-# print("Number of Publications Added: "+str(NumberOfPublicationsUpdate))
+print("Number of Publications Added: "+str(NumberOfPublicationsUpdate))
 connection.commit()
 cursor.close()
 
 print("Finished Updating Publication")
+
+print(os.environ['Replication_Task_Arn'])
+
+response = dms_client.start_replication_task(
+    ReplicationTaskArn= os.environ['Replication_Task_Arn'],
+    StartReplicationTaskType='reload-target')
