@@ -7,9 +7,10 @@ import { aws_stepfunctions as sfn} from 'aws-cdk-lib';
 import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { DatabaseStack } from './database-stack';
+import { DmsStack } from './dms-stack';
 
 export class DataFetchStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, dmsStack: DmsStack, props?: cdk.StackProps) {
     super(scope, id, {
       env: {
           region: 'ca-central-1'
@@ -150,7 +151,15 @@ export class DataFetchStack extends cdk.Stack {
         `arn:aws:ssm:ca-central-1:${this.account}:parameter/service/elsevier/api/user_name/*`,
       ]
     }));
-
+    //Create a policy to start DMS task
+    dataFetchRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // Parameter Store
+        "dms:StartReplicationTask",
+      ],
+      resources: [dmsStack.replicationTask.ref]
+    }));
     /*
       Define Lambdas and add correct permissions
     */

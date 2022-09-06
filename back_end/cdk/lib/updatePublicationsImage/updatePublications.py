@@ -442,8 +442,6 @@ cursor.close()
 
 print("Finished Updating Publication")
 
-print(os.environ['Replication_Task_Arn'])
-
 response = dms_client.start_replication_task(
     ReplicationTaskArn= os.environ['Replication_Task_Arn'],
     StartReplicationTaskType='reload-target')

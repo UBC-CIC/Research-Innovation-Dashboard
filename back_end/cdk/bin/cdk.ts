@@ -15,9 +15,9 @@ const app = new cdk.App();
 
 const vpcStack = new VpcStack(app, "VpcStack");
 const databaseStack = new DatabaseStack(app, 'DatabaseStack', vpcStack);
-const dataFetchStack = new DataFetchStack(app, 'DataFetchStack', databaseStack);
-dataFetchStack.addDependency(databaseStack)
 const openSearchStack = new OpensearchStack(app, "OpensearchStack", vpcStack);
-const dmsStack = new DmsStack(app, 'DmsStack', vpcStack, openSearchStack, databaseStack)
+const dmsStack = new DmsStack(app, 'DmsStack', vpcStack, openSearchStack, databaseStack);
+const dataFetchStack = new DataFetchStack(app, 'DataFetchStack', databaseStack, dmsStack);
+dataFetchStack.addDependency(databaseStack)
 const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseStack, dmsStack);
 const appsyncStack = new AppsyncStack(app, 'AppsyncStack', openSearchStack, vpcStack, databaseStack);
