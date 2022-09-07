@@ -118,22 +118,7 @@ cdk deploy FargateStack --profile your-profile-name
 cdk deploy DataFetchStack --profile your-profile-name
 ```
 
-## Step 4: Start DMS Replication
-
-Now that the CDK has deployed all the resources you need to press a few buttons on the AWS console to start data replication.
-
-1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `DMS` in the search bar. Click on the DMS icon.
-   ![alt text](images/webApp/webapp07.png)
-2. Click `Database migration taks` on the left hand sidebar.
-   ![alt text](images/webApp/webapp08.png)
-3. Select the DMS replication task that was created by the CDK and the click Actions.
-   ![alt text](images/webApp/webapp09.png)
-4. Click `Restart/Resume`.
-   ![alt text](images/webApp/webapp10.png)
-5. If a popup prompts you to restart or resume click `restart` and then click `start task`.
-   ![alt text](images/webApp/webapp11.png)
-
-# Step 5: Upload Data to S3
+# Step 4: Upload Data to S3
 
 1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for UBC and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
    ![alt text](images/deploymentGuide/scival_download.jpg)
@@ -153,7 +138,7 @@ Now that the CDK has deployed all the resources you need to press a few buttons 
 9. Once the upload is complete click `Close`
    ![alt text](images/deploymentGuide/s3_upload_complete.jpg)
 
-# Step 6: Run the Data Pipeline
+# Step 5: Run the Data Pipeline
 
 1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Step Functions` in the search bar.
    ![alt text](images/deploymentGuide/step_function_search.jpg)
@@ -166,7 +151,7 @@ Now that the CDK has deployed all the resources you need to press a few buttons 
 5. The data pipeline will now run on its own and populate the database. This process will take ~90 minutes. If you navigate to the page you visited in part 2 of this step you can view the status of the data pipeline. Once it is finished running the step function execution status will say `Succeeded`.
    ![alt text](images/deploymentGuide/state_machine_success.jpg)
 
-# Step 7: Creating a User
+# Step 6: Creating a User
 
 To set up user accounts on the app, you will need to do the following steps
 
