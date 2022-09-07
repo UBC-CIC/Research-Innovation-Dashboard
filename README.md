@@ -84,6 +84,8 @@ N/A
 
 # Credits
 
+This application was architected and developed by Lance Holland, Matthew Stefansson, and Christy Lam with guidance from the UBC CIC technical and project management teams.
+
 # License
 
 This project is distributed under the [MIT License](LICENSE).
