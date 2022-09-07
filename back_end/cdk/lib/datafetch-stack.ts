@@ -284,6 +284,19 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
+    const startReplication = new lambda.Function(this, 'startReplication', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'startReplication.lambda_handler',
+      layers: [requests, psycopg2, pytz],
+      code: lambda.Code.fromAsset('lambda/startReplication'),
+      timeout: cdk.Duration.minutes(15),
+      role: dataFetchRole,
+      memorySize: 512,
+      environment: {
+        Replication_Task_Arn: dmsStack.replicationTask.ref
+      },
+    });
+
     /*
         Set up the step function
     */
@@ -352,6 +365,11 @@ export class DataFetchStack extends cdk.Stack {
     })
     publicationMap.iterator(publicationFetchInvoke);
 
+    const replicationStartInvoke = new tasks.LambdaInvoke(this, 'Start DMS Replication', {
+      lambdaFunction: startReplication,
+      outputPath: '$.Payload',
+    });
+
     const dataFetchDefinition = scopusCleanInvoke
       .next(ubcCleanInvoke)
       .next(compareNamesMap)
@@ -360,7 +378,8 @@ export class DataFetchStack extends cdk.Stack {
       .next(researcherFetchInvoke)
       .next(elsevierFetchInvoke)
       .next(orcidFetchInvoke)
-      .next(publicationMap);
+      .next(publicationMap)
+      .next(replicationStartInvoke);
     
     const dataFetch = new sfn.StateMachine(this, 'Data Fetch State Machine', {
       definition: dataFetchDefinition,

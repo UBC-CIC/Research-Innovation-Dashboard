@@ -54,10 +54,9 @@ def storeResearcher(researcher, scopus_id, credentials):
     prime_faculty = researcher['PRIMARY_FACULTY_AFFILIATION'].replace("'", "''")
     second_faculty = researcher['SECONDARY_FACULTY_AFFILIATION'].replace("'", "''")
     campus = researcher['PRIMARY_CAMPUS_LOCATION'].replace("'", "''")
-    if (researcher['EXTRA_IDS']):
+    extra_ids = '{}'
+    if "EXTRA_IDS" in researcher:
         extra_ids = str(researcher['EXTRA_IDS']).replace("'", '"').replace('[', '{').replace(']', '}')
-    else:
-        extra_ids = '{}'
     queryline1 = "INSERT INTO public.researcher_data(employee_id, first_name, preferred_name, last_name, email, rank, job_stream, prime_department, second_department, prime_faculty, second_faculty, campus, scopus_id, extra_ids, last_updated) "
     queryline2 = "VALUES ('" + employee_id + "', '" + first_name + "', '" + preferred_name + "', '" + last_name + "', '" + email + "', '" + rank + "', '" + job_stream + "', '" + prime_department + "', '" + second_department + "', '" + prime_faculty + "', '" + second_faculty + "', '" + campus + "', '" + scopus_id + "', '" + extra_ids + "', '" + time_string + "')"
     queryline3 = "ON CONFLICT (employee_id) DO UPDATE "
