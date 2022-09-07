@@ -8,7 +8,7 @@
 ### Back End Flow (1-15)
 ![Architecture diagram](../docs/images/architecture-diagram-back-end.png)
 
-Steps 1-9 are explored in more detail as part of the [Data Pipeline Deep Dive](/DataPipeline.md)
+Steps 1-9 are explored in more detail as part of the [Data Pipeline Deep Dive](docs/DataPipeline.md)
 
 1. Raw Scopus and UBC HR data are fetched from an Amazon S3 bucket in the form of comma separated values (CSV) files. Both datasets are cleaned which involves standardizing the names present in both datasets. The results are then stored as CSV files in a new folder within the S3 bucket.
 2. The standardized names are compared in order to match Scopus Ids to UBC HR data. This process uses a string metric called Jaro-Winkler distance in order to determine if two names are the same. The match that has the highest Jaro-Winkler distance is considered to be the closest match. If the Jaro-Winkler distance is above a certain threshold the match is considered final. If the match is below the threshold then the match requires further processing in step 3. If two or more potential matches have the same Jaro-Winkler Distance those matches are processed further in step 4.
@@ -20,7 +20,7 @@ Steps 1-9 are explored in more detail as part of the [Data Pipeline Deep Dive](/
 8. Each researcher's publication data is fetched from the Scopus API and stored in the database. This data includes each publication’s title, associated keywords, author names and Scopus ids, journal title, and the number of times the publication has been cited.
 9. The start replication lambda will start the DMS replication task to replicate data from the postgresql database to AWS opensearch to make the data searchable on the webapp.
 10. Every Saturday at midnight a python docker container hosted on AWS fargate will be run to update the publications of the researchers in the database. The container will update researcher’s h-indexes and number of publications. Update publications will also add newly published publications to the database and remove publications with no current UBC researchers.
-11. When any changes are made to the PostgreSQL database AWS Data Migration Service (DMS) will replicate the new changes from the database to OpenSearch. This makes the data searchable and keeps the searches up to date.
+11. Once per week the AWS DMS task will be run to replicate data from the PostgreSQL database to AWS opensearch. This makes the data searchable and keeps the searches up to date.
 12. When queried, the Lambda communicates with AWS OpenSearch and executes the search required.
 13. AWS Appsync triggers the OpenSearch Lambda and passes the correct variables needed to execute the query.
 14. When queried, Lambda connects to the RDS PostgreSQL database and gets the data requested by AppSync.
