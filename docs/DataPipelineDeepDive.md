@@ -97,3 +97,6 @@ Each researcher's publication data is fetched from the Scopus API and stored in 
 | doi (digital object identifier) | A persistent identifier used to uniquely identify publications. Standardized across different sources | Scopus (API) |
 | last_updated | A unix timestamp for when the table was last updated | N/A |
 
+## 9. Start Replication
+
+The start replication Lambda will start the DMS replication task to replicate data from the PostgreSQL database to AWS Opensearch cluster to make the data searchable on the webapp.

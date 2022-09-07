@@ -18,7 +18,7 @@ Steps 1-9 are explored in more detail as part of the [Data Pipeline Deep Dive](/
 6. For each Scopus Id in the database, metrics are fetched from the SciVal and Scopus APIs. Number of documents, number of citations, and ORCID Id are obtained from Scopus and a 5-year h-index is obtained from SciVal. This data is stored in the Postgres database.
 7. The number of filed patents listed on ORCID is fetched from the ORCID API and stored in the database
 8. Each researcher's publication data is fetched from the Scopus API and stored in the database. This data includes each publication’s title, associated keywords, author names and Scopus ids, journal title, and the number of times the publication has been cited.
-9. The start replication lambda will start the DMS replication task to replicate data from the postgresql database to AWS opensearch to make the data searchable on the webapp.
+9. The start replication Lambda will start the DMS replication task to replicate data from the PostgreSQL database to AWS Opensearch cluster to make the data searchable on the webapp.
 10. Every Saturday at midnight a python docker container hosted on AWS fargate will be run to update the publications of the researchers in the database. The container will update researcher’s h-indexes and number of publications. Update publications will also add newly published publications to the database and remove publications with no current UBC researchers.
 11. Once per week the AWS DMS task will be run to replicate data from the PostgreSQL database to AWS opensearch. This makes the data searchable and keeps the searches up to date.
 12. When queried, the Lambda communicates with AWS OpenSearch and executes the search required.
@@ -79,5 +79,8 @@ Check if the author which is being queried for in Scopus appears in the first 10
 
 #### The publication is in the database and has more than 100 authors:
 Check if the publication has the queried author’s ID stored. If the author is already attached to the paper, skip this publication. If the author is not attached to the paper, add the current author to the publication, update the author’s keywords and increase their number of documents by one.
+
+#### After all the researchers have been updated:
+After all the researchers have been updated the update publications code triggers the AWS DMS replication task to start to replicate data from the PostgreSQL database to the opensearch cluster to make it searchable on the webapp and to keep the data up to date.
 
 
