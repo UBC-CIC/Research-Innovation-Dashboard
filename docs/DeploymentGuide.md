@@ -125,8 +125,8 @@ cdk deploy DataFetchStack --profile your-profile-name
 2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `ubc_data.csv`
 3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
    ![alt text](images/deploymentGuide/s3_search.jpg)
-4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
-   ![alt text](images/deploymentGuide/s3_bucket_search.jpg)
+4. In the `Buckets` search bar enter `datafetchstack` and click on the name of the bucket.
+   ![alt text](images/deploymentGuide/s3_bucket_search.png)
 5. Click on `Create Folder`
    ![alt text](images/deploymentGuide/s3_bucket_page.jpg)
 6. Enter `researcher_data` as the folder name then click `Create Folder`.
