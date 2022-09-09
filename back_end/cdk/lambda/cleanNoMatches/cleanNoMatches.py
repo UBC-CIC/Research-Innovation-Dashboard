@@ -53,6 +53,7 @@ def lambda_handler(event, context):
         response = requests.get(url, headers=elsevier_headers, params=query)
 
         #Error handling for API limit hit
+        #In future add a line to add to database to show error on website
         if "error-response" in response.json():
             if "error-code" in response.json()["error-response"]:
                 if response.json()["error-response"]["error-code"] == "TOO_MANY_REQUESTS":

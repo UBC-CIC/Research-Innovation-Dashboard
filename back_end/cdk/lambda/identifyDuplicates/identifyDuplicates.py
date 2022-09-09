@@ -5,6 +5,7 @@ import csv
 import codecs
 import os
 from pyjarowinkler.distance import get_jaro_distance
+from datetime import datetime
 
 s3_client = boto3.client("s3")
 ssm_client = boto3.client('ssm')
@@ -52,6 +53,16 @@ def confirmMatches(duplicates_split):
         url = 'https://api.elsevier.com/content/author'
         query = {'author_id' : author_ids}
         response = requests.get(url, headers=elsevier_headers, params=query)
+
+        #Error handling for API limit hit
+        #In future add a line to add to database to show error on website
+        if "error-response" in response.json():
+            if "error-code" in response.json()["error-response"]:
+                if response.json()["error-response"]["error-code"] == "TOO_MANY_REQUESTS":
+                    dateTimeObject = datetime.fromtimestamp(int(response.headers['X-RateLimit-Reset']))
+                    raise Exception("API limit has been exceded! Please try the data pipeline again on " + str(dateTimeObject) + "UTC Time")
+        
+        
         if (len(author_ids) == 1):
             results = response.json()['author-retrieval-response']
         else:
