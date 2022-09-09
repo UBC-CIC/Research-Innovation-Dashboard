@@ -50,7 +50,15 @@ def lambda_handler(event, context):
         url = 'https://api.elsevier.com/content/author'
         query = {'author_id' : author_ids}
         response = requests.get(url, headers=elsevier_headers, params=query)
-        print(response.headers)
+
+        #Error handling for API limit hit
+        if "error-response" in response.json():
+            if "error-code" in response.json()["error-response"]:
+                if response.json()["error-response"]["error-code"] == "TOO_MANY_REQUESTS":
+                    dateTimeObject = datetime.fromtimestamp(int(response.headers['X-RateLimit-Reset']))
+                    raise Exception("API limit has been exceded! Please try the data pipeline again on " + str(dateTimeObject) + "UTC Time")
+        
+        
         if (len(author_ids) == 1):
             results = response.json()['author-retrieval-response']
         else:
