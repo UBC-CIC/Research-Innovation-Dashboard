@@ -360,7 +360,7 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
     const publicationMap = new sfn.Map(this, 'Publication Map', {
-      maxConcurrency: 5,
+      maxConcurrency: 1,
       itemsPath: '$'
     })
     publicationMap.iterator(publicationFetchInvoke);
