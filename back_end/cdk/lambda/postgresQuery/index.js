@@ -31,6 +31,28 @@ async function handler(event) {
   let currentYear = date.getFullYear();
   console.log(event);
     switch(event.info.fieldName) {
+    
+      case "getFlaggedIds":
+      
+      let flaggedResearchersArray = [];
+      
+      let flaggedResult = await sql`SELECT scopus_id, COUNT(scopus_id) FROM researcher_data
+                                    GROUP BY scopus_id
+                                    HAVING COUNT(scopus_id) > 1
+                                    ORDER BY COUNT(scopus_id) DESC`
+                                    
+      console.log(flaggedResult)
+      
+      for(let i = 0; i<flaggedResult.length; i++){
+        let flaggedResearchersResult = await sql`SELECT * FROM researcher_data WHERE scopus_id = ${flaggedResult[i].scopus_id}`
+        console.log(flaggedResearchersResult);
+        flaggedResearchersArray.push(flaggedResearchersResult);
+      }
+      
+      payload = flaggedResearchersArray;
+      
+      break;
+
     case "getUpdatePublicationsLogs":
       
       let updatePublicationsLogs = await sql`SELECT * FROM update_publications_logs`

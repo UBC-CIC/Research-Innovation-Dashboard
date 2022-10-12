@@ -39,7 +39,6 @@ def getResearcherNumDocuments(authorArray, instoken, apikey):
     headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
     params = {'field': 'document-count,h-index', 'author_id': authorArray}
     response = requests.get(url, headers=headers, params=params)
-    print(response)
     authorDataArray = response.json()['author-retrieval-response-list']['author-retrieval-response']
     return authorDataArray
 
@@ -73,18 +72,23 @@ def createListOfResearchersToUpdate():
             authorArray.append(author_scopus_ids[j][0])
         authorDataArray = getResearcherNumDocuments(authorArray, instoken, apikey)
         for k in range(len(authorDataArray)):
-            num_documents = authorDataArray[k]['coredata']['document-count']
-            h_index = 0
-            if(authorDataArray[k]['h-index']):
-                h_index = authorDataArray[k]['h-index']
-            #Update everyones h-index everytime updatePublications is ran
-            query = "UPDATE public.elsevier_data SET h_index="+str(h_index)+" WHERE id='"+author_scopus_ids[i+k][0]+"'"
-            #Add researcher to list if they are missing publications
-            if(int(num_documents) > author_scopus_ids[i+k][1]):
-                researchersToUpdateArray.append(author_scopus_ids[i+k][0])
-    connection.commit()
+            if authorDataArray[k]['@status'] == 'not_found':
+                #If Researcher Not Found In Scopus Add Them To Problem Researchers
+                print("Add Researcher To List Of Issue Researchers")
+            else:
+                #If Researcher is found check if they need to be updated
+                num_documents = authorDataArray[k]['coredata']['document-count']
+                h_index = 0
+                if(authorDataArray[k]['h-index']):
+                    h_index = authorDataArray[k]['h-index']
+                #Update everyones h-index everytime updatePublications is ran
+                query = "UPDATE public.elsevier_data SET h_index="+str(h_index)+" WHERE id='"+author_scopus_ids[i+k][0]+"'"
+                #Add researcher to list if they are missing publications
+                if(int(num_documents) > author_scopus_ids[i+k][1]):
+                    researchersToUpdateArray.append(author_scopus_ids[i+k][0])
     
     #Return list of researchers that need to be updated.
+    connection.commit()
     return researchersToUpdateArray
   
 def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
@@ -142,7 +146,6 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
     while(currentPage<totalNumberOfPages):
         publications = rjson['search-results']['entry']
         for publication in publications:
-            print(publication)
             keys = publication.keys()
             id = ''
             doi = ''
@@ -182,12 +185,11 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
                 if (list(keys).count('link')):
                     link = publication['link'][2]['@href']
                 if (list(keys).count('author')):
-                    print("Got in here for publication with ID: "+str(id))
                     scopus_authors = publication['author']
                     #This flag is used to see if the specfic author is added to the publication
                     flag = 0
                     for author in scopus_authors:
-                        print("printing author: "+str(author))
+
                         if(author['authid'] == author_id):
                             flag = 1
                         author_ids.append(author['authid'])
@@ -221,7 +223,6 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
                             authorIdArray = pubToAddAuthorToResult[5]
                             authorIdArray.append(author_id)
                             authorIdArray = str(authorIdArray).replace('\'', '"').replace('[', '{').replace(']', '}')
-                            print("Author ID Array is: "+ str(authorIdArray))
                             query = "UPDATE publication_data SET author_ids='"+authorIdArray+"' WHERE id='"+id+"' "
                             cursor.execute(query)
                             #Update Author Keywords
@@ -243,7 +244,6 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
 
         #Check if we got all the new publications
         if(StoredResults == totalResults):
-            print("Got all the results")
             break
         #Increment current page counter and get the next page of publications if we do not have them all yet
         currentPage += 1
@@ -252,8 +252,6 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
         next_url = rjson['search-results']['link'][2]['@href']
         response = requests.get(next_url, headers=headers)
         rjson = response.json()
-        print("Next Page: "+ str(rjson))
-    print("Missing Publications: " +str(missingPublications))
     return missingPublications
 
 def getResearcherCurrentNumDocuments(author_id, cursor):
@@ -334,8 +332,13 @@ def store_keywords(author_id, publications, cursor):
 
     keywords_string = results[0] + ", " + keywords_string
     
-    query = "UPDATE public.researcher_data SET keywords='" + keywords_string + "' WHERE scopus_id='" + author_id + "'"
-    cursor.execute(query)
+    try:
+        query = "UPDATE public.researcher_data SET keywords='" + keywords_string + "' WHERE scopus_id='" + author_id + "'"
+        cursor.execute(query)
+    except:
+        print("ERROR!")
+        print(author_id)
+        print(keywords_string)
 
 def updateResearchers(researchersToUpdateArray, instoken, apikey, connection, cursor):
     """
@@ -419,11 +422,11 @@ NumberOfPublicationsUpdate = 0
 time_string = str(time.time())
 
 #Remove all publications with no ubc researcher
-removePublicationsWithNoUbcResearcher(cursor, connection)
+#removePublicationsWithNoUbcResearcher(cursor, connection)
 print("Finished Removing Publications")
 
 #Set researchers number of documents to be what we have in the database
-updateAllResearchersNumDocuments(cursor, connection)
+#updateAllResearchersNumDocuments(cursor, connection)
 print("Finished Updating Num Documents")
 
 #Create a list of researchers that need to be updated
