@@ -25,9 +25,6 @@ export class DatabaseStack extends Stack {
       description: "Custom Parameter Group To Allow DMS Replication",
       parameters: {
         "rds.logical_replication": "1",
-        // "max_replication_slots": "1",
-        // "max_logical_replication_workers": "1",
-        // "max_worker_processes": "1",
       }
     })
 
@@ -47,7 +44,7 @@ export class DatabaseStack extends Stack {
       credentials: rds.Credentials.fromGeneratedSecret('postgres', {
         secretName: this.secretPath
       }),
-      multiAz: false,
+      multiAz: true,
       allocatedStorage: 100,
       maxAllocatedStorage: 105,
       allowMajorVersionUpgrade: false,
@@ -57,7 +54,7 @@ export class DatabaseStack extends Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       deletionProtection: true,
       databaseName: 'vpriDatabase',
-      publiclyAccessible: true,
+      publiclyAccessible: false,
       parameterGroup: parameterGroup,
     });
 
