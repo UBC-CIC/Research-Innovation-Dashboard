@@ -29,6 +29,6 @@ const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseSta
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 const appsyncStack = new AppsyncStack(app, 'AppsyncStack', openSearchStack, vpcStack, databaseStack, 
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
-const grantDataStack = new GrantDataStack(app, 'GlueStack', vpcStack, databaseStack, 
+const grantDataStack = new GrantDataStack(app, 'GrantDataStack', vpcStack, databaseStack, 
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 
