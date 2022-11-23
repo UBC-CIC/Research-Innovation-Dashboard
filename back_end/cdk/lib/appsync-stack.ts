@@ -13,11 +13,7 @@ import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
 
 export class AppsyncStack extends Stack {
   constructor(scope: Construct, id: string, opensearchStack: OpensearchStack, vpcStack: VpcStack, databaseStack: DatabaseStack, props?: StackProps) {
-    super(scope, id, {
-      env: {
-          region: 'ca-central-1'
-      },
-    });
+    super(scope, id, props);
 
     // Get the API ID from paramter Store
     // During Amplify Deployment the APIID is stored in parameter store

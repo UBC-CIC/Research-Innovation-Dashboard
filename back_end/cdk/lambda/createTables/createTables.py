@@ -40,10 +40,16 @@ def lambda_handler(event, context):
     credentials = getCredentials()
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
-    
+
+    #Add extension to create UUID Fields
+    query = 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'
+    cursor.execute(query)
+
     # Create Researcher Data Table
     columns = []
-    columns.append(createColumn('employee_id', 'character varying', 'NOT NULL PRIMARY KEY', False))
+    #Added our controlled uuid to database table creation
+    columns.append(createColumn('grant_id', 'uuid', 'DEFAULT uuid_generate_v4() PRIMARY KEY', False))
+    columns.append(createColumn('employee_id', 'character varying', 'NOT NULL', False))
     columns.append(createColumn('first_name', 'character varying', '', False))
     columns.append(createColumn('last_name', 'character varying', '', False))
     columns.append(createColumn('preferred_name', 'character varying', '', False))
@@ -110,6 +116,23 @@ def lambda_handler(event, context):
     columns.append(createColumn('date_updated', 'character varying', 'NOT NULL PRIMARY KEY', False))
     columns.append(createColumn('number_of_publications_updated', 'character varying', '', True))
     query = createQuery('update_publications_logs', columns)
+    cursor.execute(query)
+
+    # Create Grant Data Table
+    columns = []
+    columns.append(createColumn('grant_id', 'uuid', 'DEFAULT uuid_generate_v4() PRIMARY KEY', False))
+    columns.append(createColumn('assigned_id', 'character varying', 'NOT NULL', False))
+    columns.append(createColumn('name', 'character varying', '', False))
+    columns.append(createColumn('department', 'character varying', '', False))
+    columns.append(createColumn('agency', 'character varying', '', False))
+    columns.append(createColumn('grant_program', 'character varying', '', False))
+    columns.append(createColumn('amount', 'int', '', False))
+    columns.append(createColumn('project_title', 'character varying', '', False))
+    columns.append(createColumn('keywords', 'character varying', '(1000000)', False))
+    columns.append(createColumn('year', 'character varying', '', False))
+    columns.append(createColumn('start_date', 'character varying', '', False))
+    columns.append(createColumn('end_date', 'character varying', '', True))
+    query = createQuery('grant_data', columns)
     cursor.execute(query)
     
     cursor.close()

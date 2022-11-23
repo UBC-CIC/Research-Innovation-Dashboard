@@ -10,11 +10,7 @@ export class VpcStack extends Stack {
     public readonly openSearchVPCPermissions: iam.CfnServiceLinkedRole
 
     constructor(scope: Construct, id: string, props?: StackProps) {
-    super(scope, id, {
-      env: {
-          region: 'ca-central-1'
-      },
-    });
+    super(scope, id, props);
 
     // VPC for vpri application
     this.vpc = new ec2.Vpc(this, 'Vpc', {
@@ -25,18 +21,28 @@ export class VpcStack extends Stack {
           {
             name: 'public-subnet-1',
             subnetType: ec2.SubnetType.PUBLIC,
-            cidrMask: 24,
           },
           {
             name: 'isolated-subnet-1',
             subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
-            cidrMask: 28,
           }
         ],
+        gatewayEndpoints: {
+          S3: {
+            service: ec2.GatewayVpcEndpointAwsService.S3,
+          },
+        },
     });
 
     // Get default security group for VPC
     const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, this.vpc.vpcDefaultSecurityGroup);
+
+    // Add SSM endpoint to VPC
+    this.vpc.addInterfaceEndpoint("SSM Endpoint", {
+      service: ec2.InterfaceVpcEndpointAwsService.SSM,
+      securityGroups: [defaultSecurityGroup],
+      subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED},
+    });
 
     // Add secrets manager endpoint to VPC
     this.vpc.addInterfaceEndpoint("Secrets Manager Endpoint", {

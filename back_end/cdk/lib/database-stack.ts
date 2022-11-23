@@ -10,11 +10,7 @@ export class DatabaseStack extends Stack {
     public readonly secretPath: string;
 
     constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
-    super(scope, id, {
-      env: {
-          region: 'ca-central-1'
-      },
-    });
+      super(scope, id, props);
 
     this.secretPath = 'vpri/credentials/dbCredentials';
 
