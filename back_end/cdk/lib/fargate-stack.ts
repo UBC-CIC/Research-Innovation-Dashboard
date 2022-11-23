@@ -15,12 +15,8 @@ import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 export class FargateStack extends Stack {
   constructor(scope: Construct, id: string, vpcStack: VpcStack, databaseStack: DatabaseStack, dmsStack: DmsStack,  props?: StackProps) {
-    super(scope, id, {
-      env: {
-          region: 'ca-central-1'
-      },
-    });
-
+    super(scope, id, props);
+    
     // Create a cluster to run the scheduled fargate task.
     // The cluster is in the vpc defined above
     const cluster = new ecs.Cluster(this, 'updatePublicationsCluster', {

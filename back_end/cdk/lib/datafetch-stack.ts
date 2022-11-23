@@ -11,11 +11,7 @@ import { DmsStack } from './dms-stack';
 
 export class DataFetchStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, dmsStack: DmsStack, props?: cdk.StackProps) {
-    super(scope, id, {
-      env: {
-          region: 'ca-central-1'
-      },
-    });
+    super(scope, id, props);
 
     // Create the S3 Bucket
     const s3Bucket = new s3.Bucket(this, 's3-bucket', {
@@ -68,7 +64,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/createTables'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
-      vpc: databaseStack.dbInstance.vpc // add to the same vpc as rds
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
     createTables.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
@@ -97,6 +93,12 @@ export class DataFetchStack extends cdk.Stack {
       actions: [
         // Parameter Store
         "ssm:DescribeParameters",
+        //Needed to put the Lambda in a VPC
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:CreateNetworkInterface",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DescribeInstances",
+        "ec2:AttachNetworkInterface"
       ],
       resources: ["*"]
     }));
@@ -137,6 +139,12 @@ export class DataFetchStack extends cdk.Stack {
       actions: [
         // Parameter Store
         "ssm:DescribeParameters",
+        //Needed to put the Lambda in a VPC
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:CreateNetworkInterface",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DescribeInstances",
+        "ec2:AttachNetworkInterface"
       ],
       resources: ["*"]
     }));
@@ -174,6 +182,7 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
 
     const ubcClean = new lambda.Function(this, 'ubcClean', {
@@ -186,6 +195,7 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
 
     const compareNames = new lambda.Function(this, 'compareNames', {
@@ -199,6 +209,7 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
 
     const cleanNoMatches = new lambda.Function(this, 'cleanNoMatches', {
@@ -212,6 +223,7 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
 
     const identifyDuplicates = new lambda.Function(this, 'identifyDuplicates', {
@@ -227,6 +239,7 @@ export class DataFetchStack extends cdk.Stack {
         SCIVAL_MAX_AUTHORS: '100',
         SCIVAL_URL: 'https://api.elsevier.com/analytics/scival/author/metrics',
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
 
     const researcherFetch = new lambda.Function(this, 'researcherFetch', {
@@ -240,6 +253,7 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
 
     const elsevierFetch = new lambda.Function(this, 'elsevierFetch', {
@@ -256,6 +270,7 @@ export class DataFetchStack extends cdk.Stack {
         SCOPUS_MAX_AUTHORS: '25',
         SCOPUS_URL: 'https://api.elsevier.com/content/author',
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
 
     const orcidFetch = new lambda.Function(this, 'orcidFetch', {
@@ -269,6 +284,7 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         ORCID_URL: 'http://pub.orcid.org/'
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
 
     const publicationFetch = new lambda.Function(this, 'publicationFetch', {
@@ -283,6 +299,7 @@ export class DataFetchStack extends cdk.Stack {
         RESULTS_PER_PAGE: '25',
         SCOPUS_SEARCH_URL: 'https://api.elsevier.com/content/search/scopus'
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
 
     const startReplication = new lambda.Function(this, 'startReplication', {
@@ -296,6 +313,7 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         Replication_Task_Arn: dmsStack.replicationTask.ref
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
 
     /*
@@ -316,7 +334,7 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
     const compareNamesMap = new sfn.Map(this, 'Name Comparison Map', {
-      maxConcurrency: 40,
+      maxConcurrency: 8,
       itemsPath: '$'
     });
     compareNamesMap.iterator(compareNamesInvoke);

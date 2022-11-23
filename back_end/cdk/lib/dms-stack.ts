@@ -21,11 +21,7 @@ export class DmsStack extends Stack {
   public readonly replicationTask: dms.CfnReplicationTask;
 
   constructor(scope: Construct, id: string, vpcStack: VpcStack, opensearchStack: OpensearchStack, databaseStack: DatabaseStack, props?: StackProps) {
-    super(scope, id, {
-      env: {
-          region: 'ca-central-1'
-      },
-    });
+    super(scope, id, props);
 
     //Create Policy For DMS to access opensearch
     const opensearchAccessPolicy = new iam.PolicyDocument({

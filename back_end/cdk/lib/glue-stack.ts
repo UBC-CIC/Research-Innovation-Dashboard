@@ -11,18 +11,8 @@ import * as sm from "aws-cdk-lib/aws-secretsmanager"
 import { DatabaseStack } from "./database-stack";
 
 export class GlueStack extends Stack {
-  constructor(
-    scope: Construct,
-    id: string,
-    vpcStack: VpcStack,
-    databaseStack: DatabaseStack,
-    props?: StackProps
-  ) {
-    super(scope, id, {
-      env: {
-        region: "ca-central-1",
-      },
-    });
+  constructor(scope: Construct, id: string, vpcStack: VpcStack, databaseStack: DatabaseStack,props?: StackProps) {
+    super(scope, id, props);
 
     // Create new Glue  Role
     const glueRole = new iam.Role(this, "glue-s3-role", {
