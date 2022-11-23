@@ -9,7 +9,7 @@ import { DmsStack } from '../lib/dms-stack';
 import { AppsyncStack } from '../lib/appsync-stack'
 import { DatabaseStack } from '../lib/database-stack';
 import { DataFetchStack } from '../lib/datafetch-stack';
-import { GlueStack } from '../lib/glue-stack';
+import { GrantDataStack } from '../lib/grantdata-stack';
 
 
 const app = new cdk.App();
@@ -22,4 +22,4 @@ const dataFetchStack = new DataFetchStack(app, 'DataFetchStack', databaseStack, 
 dataFetchStack.addDependency(databaseStack)
 const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseStack, dmsStack);
 const appsyncStack = new AppsyncStack(app, 'AppsyncStack', openSearchStack, vpcStack, databaseStack);
-const glueStack = new GlueStack(app, 'GlueStack', vpcStack, databaseStack)
+const grantDataStack = new GrantDataStack(app, 'GrantDataStack', vpcStack, databaseStack)
