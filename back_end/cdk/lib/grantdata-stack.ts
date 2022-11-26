@@ -1,11 +1,5 @@
 import * as cdk from "aws-cdk-lib";
-import {
-  CfnDynamicReference,
-  CfnDynamicReferenceService,
-  RemovalPolicy,
-  Stack,
-  StackProps,
-} from "aws-cdk-lib";
+import { RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { VpcStack } from "./vpc-stack";
@@ -27,11 +21,7 @@ export class GrantDataStack extends Stack {
     databaseStack: DatabaseStack,
     props?: StackProps
   ) {
-    super(scope, id, {
-      env: {
-        region: "ca-central-1",
-      },
-    });
+    super(scope, id, props);
 
     // Create new Glue  Role
     const roleName = "AWSGlueServiceRole-ShellJob";
@@ -97,8 +87,8 @@ export class GrantDataStack extends Stack {
       new iam.PolicyStatement({
         effect: Effect.ALLOW,
         actions: [
-          "s3:ListAllMyBuckets",
           "s3:ListBucketVersions",
+          "s3:ListBucket",
           "s3:ListObjectsV2",
           "s3:ListMultipartUploadParts",
           "s3:ListObjectVersions",
@@ -137,6 +127,16 @@ export class GrantDataStack extends Stack {
       }
     );
 
+    // ids-assigned cihr data
+    grantDataS3Bucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED_PUT,
+      new s3n.LambdaDestination(glueTrigger),
+      {
+        prefix: "ids-assigned/cihr",
+        suffix: ".csv",
+      }
+    );
+
     // raw nserc data
     grantDataS3Bucket.addEventNotification(
       s3.EventType.OBJECT_CREATED_PUT,
@@ -153,6 +153,16 @@ export class GrantDataStack extends Stack {
       new s3n.LambdaDestination(glueTrigger),
       {
         prefix: "clean/nserc",
+        suffix: ".csv",
+      }
+    );
+
+    // ids-assigned nserc data
+    grantDataS3Bucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED_PUT,
+      new s3n.LambdaDestination(glueTrigger),
+      {
+        prefix: "ids-assigned/nserc",
         suffix: ".csv",
       }
     );
@@ -177,6 +187,16 @@ export class GrantDataStack extends Stack {
       }
     );
 
+    // ids-assigned sshrc data
+    grantDataS3Bucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED_PUT,
+      new s3n.LambdaDestination(glueTrigger),
+      {
+        prefix: "ids-assigned/sshrc",
+        suffix: ".csv",
+      }
+    );
+
     // raw cfi data
     grantDataS3Bucket.addEventNotification(
       s3.EventType.OBJECT_CREATED_PUT,
@@ -193,6 +213,16 @@ export class GrantDataStack extends Stack {
       new s3n.LambdaDestination(glueTrigger),
       {
         prefix: "clean/cfi",
+        suffix: ".csv",
+      }
+    );
+
+    // ids-assigned cfi data
+    grantDataS3Bucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED_PUT,
+      new s3n.LambdaDestination(glueTrigger),
+      {
+        prefix: "ids-assigned/cfi",
         suffix: ".csv",
       }
     );
@@ -230,7 +260,7 @@ export class GrantDataStack extends Stack {
         connectionType: "JDBC",
         connectionProperties: connectionProperties,
         physicalConnectionRequirements: {
-          availabilityZone: "ca-central-1a",
+          availabilityZone: vpcStack.availabilityZones[0],
           securityGroupIdList: [securityGroup],
           subnetId: publicSubnetId,
         },
@@ -250,6 +280,7 @@ export class GrantDataStack extends Stack {
         glueS3Bucket.bucketName +
         "/extra-python-libs/" +
         "pyjarowinkler-1.8-py2.py3-none-any.whl",
+      "library-set": "analytics",
       "--SECRET_NAME": databaseStack.secretPath,
       "--BUCKET_NAME": grantDataS3Bucket.bucketName,
     };
@@ -382,6 +413,34 @@ export class GrantDataStack extends Stack {
       defaultArguments: defaultArguments,
     });
 
+    // Glue Job: store data into table in database
+    const storeDataJobName = "store-data-pythonshell";
+    const storeDataJob = new glue.CfnJob(this, storeDataJobName, {
+      name: storeDataJobName,
+      role: glueRole.roleArn,
+      command: {
+        name: "pythonshell",
+        pythonVersion: PYTHON_VER,
+        scriptLocation:
+          "s3://" +
+          glueS3Bucket.bucketName +
+          "/scripts/" +
+          storeDataJobName +
+          ".py",
+      },
+      executionProperty: {
+        maxConcurrentRuns: MAX_CONCURRENT_RUNS,
+      },
+      connections: {
+        connections: [glueConnectionName],
+      },
+      maxRetries: MAX_RETRIES,
+      maxCapacity: MAX_CAPACITY,
+      timeout: TIMEOUT, // 120 min timeout duration
+      glueVersion: GLUE_VER,
+      defaultArguments: defaultArguments,
+    });
+
     // Deploy glue job to glue S3 bucket
     new s3deploy.BucketDeployment(this, "DeployGlueJobFiles", {
       sources: [s3deploy.Source.asset("./glue/scripts")],
@@ -394,10 +453,14 @@ export class GrantDataStack extends Stack {
     grantDataS3Bucket.grantReadWrite(glueRole);
 
     // Destroy Glue related resources when GlueStack is deleted
-    // cleanDataJob.applyRemovalPolicy(RemovalPolicy.DESTROY)
-    // assignIDJob.applyRemovalPolicy(RemovalPolicy.DESTROY)
-    // glueConnection.applyRemovalPolicy(RemovalPolicy.DESTROY)
-    // glueRole.applyRemovalPolicy(RemovalPolicy.DESTROY)
-    //
+    cleanCihrJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    cleanNsercJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    cleanSshrcJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    cleanCfiJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    assignIdsJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    storeDataJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    glueTrigger.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    glueConnection.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    glueRole.applyRemovalPolicy(RemovalPolicy.DESTROY);
   }
 }

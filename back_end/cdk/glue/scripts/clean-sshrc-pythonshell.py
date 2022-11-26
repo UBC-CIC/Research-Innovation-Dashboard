@@ -8,7 +8,8 @@ from awsglue.utils import getResolvedOptions
 
 
 # define job parameters
-args = getResolvedOptions(sys.argv, ["BUCKET_NAME", "FILENAME_RAW", "FILENAME_CLEAN", "PROGRAM_CODE_KEY"])
+args = getResolvedOptions(
+    sys.argv, ["BUCKET_NAME", "FILENAME_RAW", "FILENAME_CLEAN", "PROGRAM_CODE_KEY"])
 BUCKET_NAME = args["BUCKET_NAME"]
 FILENAME_RAW = args["FILENAME_RAW"]
 FILENAME_CLEAN = args["FILENAME_CLEAN"]
@@ -61,6 +62,7 @@ def putToS3(df, bucket, key):
         print(f"Successful S3 put_object response. Status - {status}")
     else:
         print(f"Unsuccessful S3 put_object response. Status - {status}")
+
 
 def cleanSshrc(bucket, key_raw, key_clean, key_program_codes):
 
@@ -123,6 +125,7 @@ def cleanSshrc(bucket, key_raw, key_clean, key_program_codes):
     df = df.drop(columns=redundant)
 
     putToS3(df, key=key_clean, bucket=bucket)
+
 
 # function call
 cleanSshrc(BUCKET_NAME, FILENAME_RAW, FILENAME_CLEAN, PROGRAM_CODE_KEY)

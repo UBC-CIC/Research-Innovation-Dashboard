@@ -27,26 +27,30 @@ IMPORTANT: User MUST upload the raw data in the raw folder
 
 :param event: an S3 ObjectCreated:PUT event
 """
+
+
 def lambda_handler(event, context):
-    
-    MAX_CAPACITY = 0.0625 # 1/16 DPU
-    TIMEOUT = 120 # 120 min timeout
-    
+
+    MAX_CAPACITY = 0.0625  # 1/16 DPU
+    TIMEOUT = 120  # 120 min timeout
+
     s3_client = boto3.client("s3")
     glue_client = boto3.client("glue")
-    
+
     s3_event = event["Records"][0]["s3"]
     bucketName = s3_event["bucket"]["name"]
     response = ""
-    
+    jobName = ""
+
     # when the user first upload a raw csv file into any grant folder inside the raw folder
     if "raw/" in s3_event["object"]["key"]:
-        
+
         fileKey = s3_event["object"]["key"]
-        
+
         split = fileKey.split(".csv", 1)
-        fileKey_clean = (split[0] + "-clean" + split[1] + ".csv").replace("raw/", "clean/", 1)
-        
+        fileKey_clean = (split[0] + "-clean" + split[1] +
+                         ".csv").replace("raw/", "clean/", 1)
+
         arguments = {
             "--BUCKET_NAME": bucketName,
             "--FILENAME_RAW": fileKey,
@@ -55,44 +59,53 @@ def lambda_handler(event, context):
 
         if "raw/cihr/" in fileKey:
             try:
+                jobName = "clean-cihr-pythonshell"
                 response = glue_client.start_job_run(
-                    JobName="clean-cihr-pythonshell",
+                    JobName=jobName,
                     MaxCapacity=MAX_CAPACITY,
                     Timeout=TIMEOUT,
                     Arguments=arguments
                 )
-                print("Started Glue Job to clean cihr")
+                print("Started Glue Job: " + jobName)
             except ClientError as e:
                 if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
-                    print("clean-cihr-pythonshell is at max concurrency")
-            
+                    print(jobName + " is at max concurrency")
+
         elif "raw/nserc/" in fileKey:
             try:
+                jobName = "clean-nserc-pythonshell"
                 response = glue_client.start_job_run(
-                    JobName="clean-nserc-pythonshell",
+                    JobName=jobName,
                     MaxCapacity=MAX_CAPACITY,
                     Timeout=TIMEOUT,
                     Arguments=arguments
                 )
-                print("Started Glue Job to clean nserc")
+                print("Started Glue Job: " + jobName)
             except ClientError as e:
                 if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
-                    print("clean-nserc-pythonshell is at max concurrency")
-            
+                    print(jobName + " is at max concurrency")
+
         elif "raw/sshrc/" in fileKey:
+            jobName = "clean-sshrc-pythonshell"
+
+            # s3 api call to list the objects with the specified path (folder)
             objectList = s3_client.list_objects_v2(
                 Bucket=bucketName,
                 Prefix="raw/sshrc/"
             )
-            # object count will always have one extra object, the empty folder
-            # so must - 1 to get the actual number of object there
             objectCount = len(objectList["Contents"])
-            
-            print(objectCount)
+
+            print("# of files: " + str(objectCount))
             print(objectList["Contents"])
-            
-            if (objectCount-1 == 2): # check if the raw file and the program code file is there
+
+            # glue api call to list the job runs, limited to the most recent runs
+            jobRuns = glue_client.get_job_runs(JobName=jobName, MaxResults=1)
+            latestRunState = jobRuns["JobRuns"][0]["JobRunState"]
+
+            # check if the raw file and the program code file is there
+            if objectCount == 2 and latestRunState in ("STOPPED", "SUCCEEDED", "FAILED", "TIMEOUT"):
                 try:
+
                     for file in objectList["Contents"]:
                         # using regex to match for the name of the program code csv file
                         if re.match(r"(?i).*(program).*(code).*", file["Key"]):
@@ -100,58 +113,88 @@ def lambda_handler(event, context):
                         else:
                             arguments["--FILENAME_RAW"] = file["Key"]
                     response = glue_client.start_job_run(
-                        JobName="clean-sshrc-pythonshell",
+                        JobName=jobName,
                         MaxCapacity=MAX_CAPACITY,
                         Timeout=TIMEOUT,
                         Arguments=arguments
                     )
-                    print("Started Glue Job to clean sshrc")
+                    print("Started Glue Job: " + jobName)
                 except ClientError as e:
                     if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
-                        print("clean-sshrc-pythonshell is at max concurrency")    
-            
+                        print(jobName + " is at max concurrency")
+
         elif "raw/cfi/" in fileKey:
             try:
+                jobName = "clean-cfi-pythonshell"
                 response = glue_client.start_job_run(
-                        JobName="clean-cfi-pythonshell",
-                        MaxCapacity=MAX_CAPACITY,
-                        Timeout=TIMEOUT,
-                        Arguments=arguments
+                    JobName=jobName,
+                    MaxCapacity=MAX_CAPACITY,
+                    Timeout=TIMEOUT,
+                    Arguments=arguments
                 )
-                print("Started Glue Job to clean cfi")
+                print("Started Glue Job: " + jobName)
             except ClientError as e:
                 if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
-                    print("clean-cfi-pythonshell is at max concurrency")
-    
+                    print(jobName + " is at max concurrency")
+
     # when the raw data is clean and put into the approriate clean folder
     # this part is triggered when the previous part is done, because s3 will send another
     # trigger when a clean file appears in the clean folder
-    # need MaximumConcurrentRuns = at least
+    # need MaximumConcurrentRuns = at least 4
     elif "clean/" in s3_event["object"]["key"]:
         jobName = "assign-ids-pythonshell"
-        
+
         fileKey = s3_event["object"]["key"]
-        
+
         split = fileKey.split(".csv", 1)
-        fileKey_clean = (split[0] + "-ids" + split[1] + ".csv").replace("clean/", "ids-assigned/", 1)
-        
+        fileKey_clean = (split[0] + "-ids" + split[1] +
+                         ".csv").replace("clean/", "ids-assigned/", 1)
+
         arguments = {
             "--BUCKET_NAME": bucketName,
             "--FILENAME_CLEAN": fileKey,
             "--FILENAME_ID": fileKey_clean
         }
-        
+
         try:
             response = glue_client.start_job_run(
                 JobName=jobName,
                 MaxCapacity=MAX_CAPACITY,
                 Timeout=TIMEOUT,
                 Arguments=arguments
-            ) 
-            
-            print("Started Glue Job to assign ids to " + fileKey.split("/", 2)[1])
-            
+            )
+
+            print("Started Glue Job  " + jobName +
+                  " to process " + fileKey.split("/", 2)[1])
+
         except ClientError as e:
-                if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
-                    print("assign-ids-pythonshell is at max concurrency")
-    
+            if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
+                print(jobName + " is at max concurrency")
+
+    # when the data is assigned ids and put into the approriate ids-assigned folder
+    # this will trigger a job to store the data in a table in the database
+    # need MaximumConcurrentRuns = at least 4
+    elif "ids-assigned/" in s3_event["object"]["key"]:
+        jobName = "store-data-pythonshell"
+
+        fileKey = s3_event["object"]["key"]
+
+        arguments = {
+            "--BUCKET_NAME": bucketName,
+            "--FILENAME_ID": fileKey,
+        }
+
+        try:
+            response = glue_client.start_job_run(
+                JobName=jobName,
+                MaxCapacity=MAX_CAPACITY,
+                Timeout=TIMEOUT,
+                Arguments=arguments
+            )
+
+            print("Started Glue Job  " + jobName +
+                  " to process " + fileKey.split("/", 2)[1])
+
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
+                print(jobName + " is at max concurrency")

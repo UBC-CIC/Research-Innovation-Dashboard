@@ -31,4 +31,6 @@ const appsyncStack = new AppsyncStack(app, 'AppsyncStack', openSearchStack, vpcS
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 const grantDataStack = new GrantDataStack(app, 'GrantDataStack', vpcStack, databaseStack, 
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
+grantDataStack.addDependency(vpcStack)
+grantDataStack.addDependency(databaseStack)
 

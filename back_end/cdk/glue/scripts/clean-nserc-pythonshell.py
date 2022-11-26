@@ -8,7 +8,8 @@ from awsglue.utils import getResolvedOptions
 
 
 # define job parameters
-args = getResolvedOptions(sys.argv, ["BUCKET_NAME", "FILENAME_RAW", "FILENAME_CLEAN"])
+args = getResolvedOptions(
+    sys.argv, ["BUCKET_NAME", "FILENAME_RAW", "FILENAME_CLEAN"])
 BUCKET_NAME = args["BUCKET_NAME"]
 FILENAME_RAW = args["FILENAME_RAW"]
 FILENAME_CLEAN = args["FILENAME_CLEAN"]
@@ -60,6 +61,7 @@ def putToS3(df, bucket, key):
         print(f"Successful S3 put_object response. Status - {status}")
     else:
         print(f"Unsuccessful S3 put_object response. Status - {status}")
+
 
 """
 This function will clean the NSERC data by splitting column Name into First_name and 

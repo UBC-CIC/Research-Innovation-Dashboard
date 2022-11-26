@@ -8,7 +8,8 @@ from awsglue.utils import getResolvedOptions
 
 
 # define job parameters
-args = getResolvedOptions(sys.argv, ["BUCKET_NAME", "FILENAME_RAW", "FILENAME_CLEAN"])
+args = getResolvedOptions(
+    sys.argv, ["BUCKET_NAME", "FILENAME_RAW", "FILENAME_CLEAN"])
 BUCKET_NAME = args["BUCKET_NAME"]
 FILENAME_RAW = args["FILENAME_RAW"]
 FILENAME_CLEAN = args["FILENAME_CLEAN"]
@@ -106,6 +107,7 @@ def cleanNameColumn(nameCell, firstNamesColumn, lastNamesColumn, row, cleanDataF
             cleanDataFrame.loc[len(cleanDataFrame.index)] = [firstName, lastName, row[4],
                                                              row[5], row[8], row[9], row[14], row[10], row[13], row[15], row[11], row[12]]
 
+
 """
 This function will fetch the raw CIHR data from the raw S3 bucket, clean it, and put the clean data
 into the corresponding clean S3 bucket
@@ -141,6 +143,7 @@ def cleanCihr(bucket, key_raw, key_clean):
 
     # Store CSV file to S3
     putToS3(df=df_clean, key=key_clean, bucket=bucket)
+
 
 # function call
 cleanCihr(BUCKET_NAME, FILENAME_RAW, FILENAME_CLEAN)

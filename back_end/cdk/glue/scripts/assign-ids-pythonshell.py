@@ -9,7 +9,8 @@ from awsglue.utils import getResolvedOptions
 from pyjarowinkler.distance import get_jaro_distance
 
 # get environment variable for this Glue job
-args = getResolvedOptions(sys.argv, ["BUCKET_NAME", "FILENAME_CLEAN", "FILENAME_ID", "SECRET_NAME"])
+args = getResolvedOptions(
+    sys.argv, ["BUCKET_NAME", "FILENAME_CLEAN", "FILENAME_ID", "SECRET_NAME"])
 BUCKET_NAME = args["BUCKET_NAME"]
 FILENAME_CLEAN = args["FILENAME_CLEAN"]
 FILENAME_ID = args["FILENAME_ID"]
@@ -111,6 +112,9 @@ def createResearcherList():
         rowDict = {'firstName': firstName, 'lastName': lastName, "id": Id}
         researcher_list.append(rowDict)
 
+    cursor.close()
+    connection.close()
+
     return researcher_list
 
 
@@ -186,6 +190,7 @@ def assignIdToCleanData(bucket, key_clean1, key_clean2):
             print(f"Successful S3 put_object response. Status - {status}")
         else:
             print(f"Unsuccessful S3 put_object response. Status - {status}")
+
 
 # function call
 assignIdToCleanData(BUCKET_NAME, FILENAME_CLEAN, FILENAME_ID)
