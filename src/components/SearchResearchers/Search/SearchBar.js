@@ -18,6 +18,7 @@ export default function Search_Bar(props) {
     selectedDepartments,
     selectedFaculties,
     selectedJournals,
+    selectedGrants,
     setPublicationSearchResults,
     setResearcherSearchResults,
     departmentPath,
@@ -85,6 +86,7 @@ export default function Search_Bar(props) {
       query: searchGrants,
       variables: {
         search_value: searchValue,
+        grantAgenciesToFilterBy: selectedGrants,
       },
     });
     

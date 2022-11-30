@@ -420,8 +420,14 @@ export const getResearcherGrants = /* GraphQL */ `
   }
 `;
 export const searchGrants = /* GraphQL */ `
-  query SearchGrants($search_value: String!) {
-    searchGrants(search_value: $search_value) {
+  query SearchGrants(
+    $search_value: String!
+    $grantAgenciesToFilterBy: [String]!
+  ) {
+    searchGrants(
+      search_value: $search_value
+      grantAgenciesToFilterBy: $grantAgenciesToFilterBy
+    ) {
       name
       department
       agency

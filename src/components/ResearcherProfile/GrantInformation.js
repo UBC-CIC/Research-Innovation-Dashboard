@@ -9,7 +9,7 @@ import Grant from './Grant';
 
 export default function GrantInformation(props){
 
-    const [numberOfRows, setNumberOfRows] = useState(2);
+    const [numberOfRows, setNumberOfRows] = useState(props.initialNumberOfRows);
     const [increaseRowCountBy, setIncreaseRowCountBy] = useState(25);
 
     function ShowMoreGrantsButton() {

@@ -137,6 +137,7 @@ export default function SearchComponent(props) {
                   selectedDepartments={selectedDepartments}
                   selectedFaculties={selectedFaculties}
                   selectedJournals={selectedJournals}
+                  selectedGrants={selectedGrantAgency}
                   departmentPath={departmentPath}
                   facultyPath={facultyPath}
                   journalPath={journalPath}
@@ -220,7 +221,7 @@ export default function SearchComponent(props) {
                 setSelectedGrants={setSelectedGrantAgency} />
             </Grid>
             <Grid item xs={10}>
-              <GrantInformation grantData={grantsSearchResults} tabOpened={true}/>
+              <GrantInformation grantData={grantsSearchResults} tabOpened={true} initialNumberOfRows={500}/>
             </Grid>
           </Grid>
         )}

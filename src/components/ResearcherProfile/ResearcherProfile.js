@@ -468,7 +468,7 @@ export default function Researcher_profile_overview() {
               </Grid>
               <Grid item xs={12}>
                 <Paper square={true} elevation={0} variant="outlined">
-                    <GrantInformation grantData={grantData} tabOpened={showGrants}/>
+                    <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={2}/>
                     <Box textAlign="center">
                     <Button
                       onClick={showGrantsFunction}
