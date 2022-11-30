@@ -64,7 +64,16 @@
               "userPoolId": "authvpriinnovationdashbo197a129c"
             }
           },
-          "additionalAuthenticationProviders": []
+          "additionalAuthenticationProviders": [
+            {
+              "authenticationType": "API_KEY",
+              "apiKeyConfig": {
+                "apiKeyExpirationDays": 7,
+                "apiKeyExpirationDate": "2022-11-23T23:09:05.174Z",
+                "description": ""
+              }
+            }
+          ]
         }
       }
     }
@@ -78,6 +87,7 @@
           "category": "api",
           "resourceName": "vpriinnovationdashbo",
           "attributes": [
+            "GraphQLAPIKeyOutput",
             "GraphQLAPIIdOutput",
             "GraphQLAPIEndpointOutput"
           ]

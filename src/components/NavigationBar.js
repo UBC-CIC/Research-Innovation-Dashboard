@@ -172,6 +172,13 @@ function Navbar(props) {
             >
               Publications
             </NavButton>
+            <NavButton
+              onClick={() =>
+                (window.location.href = "/Search/Grants/ / /")
+              }
+            >
+              Grants
+            </NavButton>
             <NavButton onClick={() => navigate("/Impact/")}>Impact</NavButton>
             <NavButton onClick={() => navigate("/Metrics/")}>Metrics</NavButton>
             {adminUser && (

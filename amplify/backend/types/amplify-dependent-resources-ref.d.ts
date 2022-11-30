@@ -15,6 +15,7 @@ export type AmplifyDependentResourcesAttributes = {
     },
     "api": {
         "vpriinnovationdashbo": {
+            "GraphQLAPIKeyOutput": "string",
             "GraphQLAPIIdOutput": "string",
             "GraphQLAPIEndpointOutput": "string"
         }

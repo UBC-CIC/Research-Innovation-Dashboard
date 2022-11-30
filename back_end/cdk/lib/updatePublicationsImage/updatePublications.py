@@ -107,7 +107,7 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
     #Fetch author first and last name here
 
     #This function will be run for every researcher that needs to be updated.
-    #But some reseracher might publish with other ubc reserachers.
+    #But some reseracher might publish with other reserachers at the institution.
     #To avoid duplication of publications we check the number of documents on each fetch.
     query = "SELECT num_documents FROM public.elsevier_data WHERE id='"+author_id+"'"
     cursor.execute(query)
@@ -356,15 +356,15 @@ def updateResearchers(researchersToUpdateArray, instoken, apikey, connection, cu
         #Get the front of lists missing publications
         missingPublications = fetchMissingPublications(researchersToUpdateArray.pop(0), apikey, instoken, cursor, connection)
         
-        #For each author that contributed to these publications at UBC you need to update their num_documents!
+        #For each author that contributed to these publications at the Institution you need to update their num_documents!
         for publication in missingPublications:
             NumberOfPublicationsUpdate = NumberOfPublicationsUpdate + 1
             for author_id in publication['author_ids']:
-                #Check if the author is in the UBC database
+                #Check if the author is in the database
                 query = "SELECT COUNT(*) FROM elsevier_data WHERE id='"+author_id+"'"
                 cursor.execute(query)
                 results = cursor.fetchone()
-                #If the author is part of the UBC database increase their num_documents by one
+                #If the author is part of the Institution's database increase their num_documents by one
                 #And add the publications keywords to the researcheres keywords
                 if(results[0] == 1):
                     updateResearcherInformation(author_id, str(getResearcherCurrentNumDocuments(author_id, cursor)+1), cursor)
@@ -398,12 +398,12 @@ def updateAllResearchersNumDocuments(cursor, connection):
 
     #Change the last updated value
 
-def removePublicationsWithNoUbcResearcher(cursor, connection):
+def removePublicationsWithNoInstitutionResearcher(cursor, connection):
     global NumberOfPublicationsUpdate
     query = "SELECT * FROM publication_data WHERE NOT EXISTS (SELECT * FROM researcher_data WHERE researcher_data.scopus_id = ANY(publication_data.author_ids))"
     cursor.execute(query)
     results = cursor.fetchall()
-    #Delete all publications that do not have current UBC researcher
+    #Delete all publications that do not have current researcher in the list of researchers
     for i in range(0, len(results)):
         query = "DELETE FROM publication_data WHERE id='"+str(results[i][0])+"'"
         cursor.execute(query)
@@ -421,8 +421,8 @@ NumberOfPublicationsUpdate = 0
 
 time_string = str(time.time())
 
-#Remove all publications with no ubc researcher
-#removePublicationsWithNoUbcResearcher(cursor, connection)
+#Remove all publications with no researcher in the Institution list
+#removePublicationsWithNoInstitutionResearcher(cursor, connection)
 print("Finished Removing Publications")
 
 #Set researchers number of documents to be what we have in the database

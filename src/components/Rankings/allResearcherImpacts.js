@@ -2,7 +2,7 @@ import * as React from "react";
 import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import "./Rankings.css";
+import "./Impact.css";
 import { useState } from "react";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
@@ -12,22 +12,22 @@ import { createTheme } from "@mui/material/styles";
 
 const heightMatch = { height: "100%" };
 
-const rankingsTheme = createTheme();
+const impactsTheme = createTheme();
 
-rankingsTheme.typography.h6 = {
+impactsTheme.typography.h6 = {
   fontSize: "1.0rem",
 
-  [rankingsTheme.breakpoints.up("md")]: {
+  [impactsTheme.breakpoints.up("md")]: {
     fontSize: "1.25rem",
   },
 };
 
-const OverallResearcherRankings = (props) => {
-  const [numberOfRankingsToShow, setNumberOfRankingsToShow] = useState(50);
-  const [increaseRankingsListBy, setIncreaseRankingsListBy] = useState(100);
+const OverallResearcherImpacts = (props) => {
+  const [numberOfImpactsToShow, setnumberOfImpactsToShow] = useState(50);
+  const [increaseImpactsListBy, setIncreaseImpactsListBy] = useState(100);
 
-  const rankings_element = props.allResearcherRankings
-    .filter((data, index) => index < numberOfRankingsToShow)
+  const Impacts_element = props.allResearcherImpacts
+    .filter((data, index) => index < numberOfImpactsToShow)
     .map((prof_data, index) => (
       <Grid container key={prof_data.preferred_name}>
         <Grid item xs={1}>
@@ -116,15 +116,15 @@ const OverallResearcherRankings = (props) => {
       </Grid>
     ));
 
-  function showMoreRankings() {
-    setNumberOfRankingsToShow(numberOfRankingsToShow + increaseRankingsListBy);
+  function showMoreImpacts() {
+    setnumberOfImpactsToShow(numberOfImpactsToShow + increaseImpactsListBy);
   }
 
-  function ShowMoreRankingsButton() {
-    if (numberOfRankingsToShow < props.allResearcherRankings.length) {
+  function ShowMoreImpactsButton() {
+    if (numberOfImpactsToShow < props.allResearcherImpacts.length) {
       return (
         <Button
-          onClick={showMoreRankings}
+          onClick={showMoreImpacts}
           sx={{
             m: 1,
             border: "2px solid Black",
@@ -146,7 +146,7 @@ const OverallResearcherRankings = (props) => {
           <Paper square={true} elevation={0} variant="outlined">
             <Grid container id="full_box">
               <Grid item xs={12}>
-                <Typography variant="h3">Overall Rankings</Typography>
+                <Typography variant="h3">Overall Impacts</Typography>
               </Grid>
 
               <Grid item xs={1}>
@@ -161,7 +161,7 @@ const OverallResearcherRankings = (props) => {
                   justifyContent="center"
                 >
                   <Typography align="center" variant="body1">
-                    Rank
+                    Impact
                   </Typography>
                 </Paper>
               </Grid>
@@ -245,10 +245,10 @@ const OverallResearcherRankings = (props) => {
                   </Typography>
                 </Paper>
               </Grid>
-              {rankings_element}
+              {Impacts_element}
             </Grid>
             <Box textAlign="center">
-              <ShowMoreRankingsButton />
+              <ShowMoreImpactsButton />
               <br />
             </Box>
           </Paper>
@@ -258,4 +258,4 @@ const OverallResearcherRankings = (props) => {
   );
 };
 
-export default OverallResearcherRankings;
+export default OverallResearcherImpacts;

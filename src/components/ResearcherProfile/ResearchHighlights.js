@@ -92,7 +92,7 @@ export default function Researcher_Highlights(props) {
             <Typography align="center" variant="h4">
               {props.researcher_information.funding}
             </Typography>
-            <Typography align="center">Funding (5 Years)</Typography>
+            <Typography align="center">Funding Since 2000</Typography>
           </Paper>
           <PublicationBarGraph
             width={"20%"}

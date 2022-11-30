@@ -10,7 +10,7 @@ import { useParams } from "react-router-dom";
 
 import { API } from "aws-amplify";
 
-import { searchResearcher, searchPublications } from "../../../graphql/queries";
+import { searchResearcher, searchPublications, searchGrants } from "../../../graphql/queries";
 
 export default function Search_Bar(props) {
   const {
@@ -23,6 +23,7 @@ export default function Search_Bar(props) {
     departmentPath,
     facultyPath,
     journalPath,
+    grantPath,
   } = props;
 
   let { searchValue } = useParams();
@@ -36,10 +37,6 @@ export default function Search_Bar(props) {
     search();
   }, []);
 
-  useEffect(() => {
-    routeChange();
-  }, [departmentPath, facultyPath, journalPath]);
-
   function search() {
     if (whatToSearch === "Everything") {
       searchResearchersQuery();
@@ -50,6 +47,8 @@ export default function Search_Bar(props) {
     } else if (whatToSearch === "Publications") {
       setResearcherSearchResults([]);
       searchPublicationsQuery();
+    } else if (whatToSearch === "Grants") {
+      searchGrantsQuery();
     }
   }
 
@@ -81,7 +80,19 @@ export default function Search_Bar(props) {
     );
   };
 
+  const searchGrantsQuery = async () => {
+    const searchGrantsResults = await API.graphql({
+      query: searchGrants,
+      variables: {
+        search_value: searchValue,
+      },
+    });
+    
+    props.setGrantsSearchResults(searchGrantsResults.data.searchGrants)
+  }
+
   const routeChange = () => {
+    console.log("Triggered!")
     let path = "";
     let searchPath = " ";
     if (searchBarValue !== "") {
@@ -99,7 +110,11 @@ export default function Search_Bar(props) {
         "/";
     } else if (whatToSearch === "Publications") {
       path = "/Search/Publications/".concat(journalPath, "/", searchPath, "/");
-    } else {
+    } 
+    else if (whatToSearch === "Grants") {
+      path = "/Search/Grants/"+grantPath +"/"+searchPath+"/";
+    }
+    else {
       path =
         "/" +
         departmentPath +
@@ -113,6 +128,7 @@ export default function Search_Bar(props) {
     }
 
     navigate(path);
+    window.location.reload();
     props.setResearcherSearchResultPage(1);
     props.setPublicationsSearchResultPage(1);
     search();
