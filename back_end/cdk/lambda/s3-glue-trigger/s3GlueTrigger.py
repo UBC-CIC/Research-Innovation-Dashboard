@@ -13,9 +13,14 @@ We chose to filter the event based on the folder structure and not the exact nam
 csv file so that the user can upload any filename and it will trigger the correct job, 
 as long as its in the correct raw folder (a correct path).
 
-The handler first filter out the put event in the raw folder, then divide into 4 cases
-based on the key corresponding 4 grant datasets. It will then trigger the correct cleaning
-functions. A special case is the SSHRC datasets that include a program codes csv file, so
+The handler first filter out the put event in the raw folder, then trigger the correct job.
+It can event extend to any other grant data that might be added in the future, but
+with these sepcific requirements:
++ The raw folder structure should look like similar to: raw/mygrant/mygrant_raw.csv
++ Only one raw file that needs to be cleaned per grant
++ The user must create a Glue job that cleans that specific raw data, and name it similar to clean-mygrant-pythonshell
+
+A special case is the SSHRC datasets that include a program codes csv file, so
 we make sure that the Glue job is started only when both files are there when we perform a
 S3 ListObjectsV2 api call.
 
@@ -23,7 +28,10 @@ then after each file is cleaned and put into a clean folder with their uniqe pat
 send another event and this lambda will trigger the assign ids job. This job has a max concurrency
 value of 7 to allows at least 4 simultaneous invocations.
 
-IMPORTANT: User MUST upload the raw data in the raw folder
+and finally a job will be trigger to insert the data into the database when all of them have 
+the ids assigned.
+
+IMPORTANT: User MUST upload the raw data in the raw folder and follow the folder naming requirements above
 
 :param event: an S3 ObjectCreated:PUT event
 """
@@ -46,6 +54,7 @@ def lambda_handler(event, context):
     if "raw/" in s3_event["object"]["key"]:
 
         fileKey = s3_event["object"]["key"]
+        file = fileKey.split("/", 2)[1]  # get the name of the raw file folder
 
         split = fileKey.split(".csv", 1)
         fileKey_clean = (split[0] + "-clean" + split[1] +
@@ -57,35 +66,8 @@ def lambda_handler(event, context):
             "--FILENAME_CLEAN": fileKey_clean,
         }
 
-        if "raw/cihr/" in fileKey:
-            try:
-                jobName = "clean-cihr-pythonshell"
-                response = glue_client.start_job_run(
-                    JobName=jobName,
-                    MaxCapacity=MAX_CAPACITY,
-                    Timeout=TIMEOUT,
-                    Arguments=arguments
-                )
-                print("Started Glue Job: " + jobName)
-            except ClientError as e:
-                if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
-                    print(jobName + " is at max concurrency")
-
-        elif "raw/nserc/" in fileKey:
-            try:
-                jobName = "clean-nserc-pythonshell"
-                response = glue_client.start_job_run(
-                    JobName=jobName,
-                    MaxCapacity=MAX_CAPACITY,
-                    Timeout=TIMEOUT,
-                    Arguments=arguments
-                )
-                print("Started Glue Job: " + jobName)
-            except ClientError as e:
-                if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
-                    print(jobName + " is at max concurrency")
-
-        elif "raw/sshrc/" in fileKey:
+        # sshrc is a special case because the cleaning process require two differen files
+        if "raw/sshrc/" in fileKey:
             jobName = "clean-sshrc-pythonshell"
 
             # s3 api call to list the objects with the specified path (folder)
@@ -123,9 +105,12 @@ def lambda_handler(event, context):
                     if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
                         print(jobName + " is at max concurrency")
 
-        elif "raw/cfi/" in fileKey:
+        # other than that this script will work for any grant data
+        # just make sure the folder structure is raw/mygrant/mygrant-raw.csv
+        # and the Glue job for cleaning is called clean-mygrant-pythonshell
+        else:
             try:
-                jobName = "clean-cfi-pythonshell"
+                jobName = "clean-" + file + "-pythonshell"
                 response = glue_client.start_job_run(
                     JobName=jobName,
                     MaxCapacity=MAX_CAPACITY,

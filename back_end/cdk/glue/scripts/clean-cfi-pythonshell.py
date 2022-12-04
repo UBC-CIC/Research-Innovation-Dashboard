@@ -132,11 +132,12 @@ def cleanCfi(bucket, key_raw, key_clean):
     # Keywords column
     df["Keywords"] = df[col_dict["Keywords"]]
 
-    # Year column
-    df["Year"] = ""
-
     # Start Date column
-    df["Start Date"] = df[col_dict["Start Date"]]
+    df["Start Date"] = pd.to_datetime(df[col_dict["Start Date"]])
+    df["Start Date"] = df["Start Date"].dt.strftime("%d-%b-%Y")
+    
+    # Year column
+    df["Year"] = pd.to_datetime(df["Start Date"]).dt.strftime("%Y")
 
     # End Date column
     df["End Date"] = ""

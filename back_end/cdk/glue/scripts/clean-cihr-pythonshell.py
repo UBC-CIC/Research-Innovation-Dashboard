@@ -121,7 +121,7 @@ def cleanCihr(bucket, key_raw, key_clean):
 
     # Get CSV file from S3 bucket
     raw_data = fetchFromS3(bucket=bucket, key=key_raw)
-    df = pd.read_csv(raw_data, header=0)
+    df = pd.read_csv(raw_data, skiprows=5, header=0)
 
     firstNames = []
     lastNames = []
@@ -137,7 +137,10 @@ def cleanCihr(bucket, key_raw, key_clean):
     # Modify format of Year column
     df_clean["Year"] = df_clean.apply(
         lambda x: cleanYearValue(x["Year"]), axis=1)
-
+    
+    df_clean["Start Date"] = df_clean["Start Date"].map(lambda x: x.title())
+    df_clean["End Date"] = df_clean["End Date"].map(lambda x: x.title())
+    
     # Cast the Amount column as Integer
     df_clean["Amount"] = df_clean["Amount"].astype(int)
 
