@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CircularProgress from '@mui/material/CircularProgress';
 
-const ubcBlueColor = createTheme({
+const BlueColor = createTheme({
     palette: {
       primary: {
         main: '#002145'
@@ -21,7 +21,7 @@ export default function LoadingWheel(){
             height={"50vh"}
             maxHeight={"100%"}
             width={"100vw"}>
-                <ThemeProvider theme={ubcBlueColor}>
+                <ThemeProvider theme={BlueColor}>
                     <CircularProgress size={60} /> 
                 </ThemeProvider>
         </Box>

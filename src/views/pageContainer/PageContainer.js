@@ -8,8 +8,8 @@ import ResearcherProfileOverview from "../../components/ResearcherProfile/Resear
 import { Routes, Route } from "react-router-dom";
 import SearchComponent from "../../components/SearchResearchers/Search/SearchComponent";
 import AdvancedSearchComponent from "../../components/SearchResearchers/AdvancedSearch/AdvancedSearchComponent";
-import Rankings from "../../components/Rankings/Rankings";
-import UbcMetrics from "../../components/Metrics/Metrics";
+import Rankings from "../../components/Rankings/Impact";
+import Metrics from "../../components/Metrics/Metrics";
 import AdminDashboard from "../../components/AdminDashboard/AdminDashboard";
 import { Auth } from "aws-amplify";
 
@@ -67,7 +67,7 @@ function PageContainer(props) {
             path="/Researchers/:scopusId"
             element={<ResearcherProfileOverview />}
           />
-          <Route path="/Metrics/" element={<UbcMetrics />} />
+          <Route path="/Metrics/" element={<Metrics />} />
           {adminUser && (
             <Route path="/AdminDashboard/" element={<AdminDashboard />} />
           )}
@@ -83,6 +83,10 @@ function PageContainer(props) {
           <Route
             path="/Search/Publications/:journalFilter/:searchValue/"
             element={<SearchComponent whatToSearch={"Publications"} />}
+          />
+          <Route
+            path="/Search/Grants/:grantFilter/:searchValue/"
+            element={<SearchComponent whatToSearch={"Grants"} />}
           />
           <Route
             path="/:anyDepartmentFilter/:anyFacultyFilter/:journalFilter/:searchValue/"

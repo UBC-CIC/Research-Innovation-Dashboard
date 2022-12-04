@@ -403,3 +403,46 @@ export const getFlaggedIds = /* GraphQL */ `
     }
   }
 `;
+export const getResearcherGrants = /* GraphQL */ `
+  query GetResearcherGrants($id: ID!) {
+    getResearcherGrants(id: $id) {
+      name
+      department
+      agency
+      grant_program
+      amount
+      project_title
+      keywords
+      year
+      start_date
+      end_date
+    }
+  }
+`;
+export const searchGrants = /* GraphQL */ `
+  query SearchGrants(
+    $search_value: String!
+    $grantAgenciesToFilterBy: [String]!
+  ) {
+    searchGrants(
+      search_value: $search_value
+      grantAgenciesToFilterBy: $grantAgenciesToFilterBy
+    ) {
+      name
+      department
+      agency
+      grant_program
+      amount
+      project_title
+      keywords
+      year
+      start_date
+      end_date
+    }
+  }
+`;
+export const getAllGrantAgencies = /* GraphQL */ `
+  query GetAllGrantAgencies {
+    getAllGrantAgencies
+  }
+`;

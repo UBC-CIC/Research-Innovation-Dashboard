@@ -1,6 +1,6 @@
 import * as React from "react";
-import RankingsNavigation from "./RankingsNavigation";
-import "./Rankings.css";
+import ImpactNavigation from "./ImpactNavigation";
+import "./Impact.css";
 import { useState, useEffect } from "react";
 
 import { API } from "aws-amplify";
@@ -12,12 +12,12 @@ import {
   getResearcherRankingsByFaculty,
 } from "../../graphql/queries";
 
-import RankingsByDepartment from "./RankResearcherByDepartment";
-import AllResearcherRankings from "./allResearcherRankings";
-import RankByFaculty from "./RankResearchersByFaculty";
+import ResearcherImpactByDepartment from "./ResearcherImpactByDepartment";
+import AllResearcherImpacts from "./allResearcherImpacts";
+import RankByFaculty from "./ResearcherImpactByFaculty";
 import LoadingWheel from "../LoadingWheel";
 
-export default function Rankings(props) {
+export default function Impact(props) {
   const [
     researcherRankingsByDepartment,
     setResearcherRankingsByDepartment,
@@ -133,7 +133,7 @@ export default function Rankings(props) {
       {!pageLoaded && <LoadingWheel />}
       {pageLoaded && (
         <div>
-          <RankingsNavigation
+          <ImpactNavigation
             onClickFunctions={{
               byDepartmentButton,
               byFacultyButton,
@@ -142,11 +142,11 @@ export default function Rankings(props) {
             enableOverallRankings={false}
           />
           {showByDepartment && (
-            <RankingsByDepartment
+            <ResearcherImpactByDepartment
               allDepartments={allDepartments}
-              researcherRankingsByDepartment={researcherRankingsByDepartment}
-              changeDepartmentToRank={changeDepartmentToRank}
-              departmentToRank={departmentToRank}
+              researcherImpactsByDepartment={researcherRankingsByDepartment}
+              changeDepartmentToShowImpact={changeDepartmentToRank}
+              departmentToShowImpact={departmentToRank}
             />
           )}
           {showByFaculty && (
@@ -154,11 +154,6 @@ export default function Rankings(props) {
               allFaculty={allFaculty}
               researcherRankingsByFaculty={researcherRankingsByFaculty}
               changeFacultyToRank={changeFacultyToRank}
-            />
-          )}
-          {showOverallRankings && (
-            <AllResearcherRankings
-              allResearcherRankings={allResearcherRankings}
             />
           )}
         </div>

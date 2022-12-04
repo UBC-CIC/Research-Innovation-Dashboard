@@ -15,7 +15,7 @@ const navigationBarTheme = createTheme({
   },
 });
 
-export default function Rankings_Navigation(props) {
+export default function ImpactNavigation(props) {
   function TheButtonGroup() {
     const smallScreen = useMediaQuery((theme) => theme.breakpoints.down("sm"));
     const mediumScreen = useMediaQuery((theme) => theme.breakpoints.down("md"));
@@ -40,10 +40,10 @@ export default function Rankings_Navigation(props) {
         >
           Impact By Faculty
         </Button>
-        {props.enableOverallRankings && (
+        {props.enableOverallImpacts && (
           <Button
             sx={{ fontSize: buttonFontSize }}
-            onClick={props.onClickFunctions.overallRankingsButton}
+            onClick={props.onClickFunctions.overallImpactsButton}
           >
             Overall Impact
           </Button>

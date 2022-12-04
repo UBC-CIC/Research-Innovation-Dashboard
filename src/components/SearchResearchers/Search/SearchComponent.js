@@ -10,20 +10,24 @@ import PublicationSearchResultsComponent from "../PublicationSearchResultsCompon
 import ResearcherFilters from "./ResearcherFilters";
 import PublicationFilters from "./PublicationFilters";
 import { useParams } from "react-router-dom";
+import GrantInformation from "../../ResearcherProfile/GrantInformation"
+import GrantFilters from "../Search/GrantsFilters"
 
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
   const [publicationSearchResults, setPublicationSearchResults] = useState([]);
+  const [grantsSearchResults, setGrantsSearchResults] = useState([]);
   const [researcherSearchResultPage, setResearcherSearchResultPage] =
     useState(1);
   const [publicationsSearchResultPage, setPublicationsSearchResultPage] =
     useState(1);
 
-  let { anyDepartmentFilter, anyFacultyFilter, journalFilter } = useParams();
+  let { anyDepartmentFilter, anyFacultyFilter, journalFilter, grantFilter } = useParams();
 
   let selectedDepartmentsArray = [];
   let selectedFacultyArray = [];
   let selectedJournalFilter = [];
+  let selectGrantingAgency = [];
 
   if (!anyDepartmentFilter || anyDepartmentFilter === " ") {
     selectedDepartmentsArray = [];
@@ -44,6 +48,14 @@ export default function SearchComponent(props) {
     selectedJournalFilter = journalFilter.split("&&");
   }
 
+  if (!grantFilter || grantFilter === " ") {
+    selectGrantingAgency = [];
+    grantFilter = " ";
+  } else {
+    selectGrantingAgency = grantFilter.split("&&");
+  }
+  
+
   //for researcher filters
   const [selectedDepartments, setSelectedDeparments] = useState(
     selectedDepartmentsArray
@@ -57,6 +69,9 @@ export default function SearchComponent(props) {
     selectedJournalFilter
   );
   const [journalPath, setJournalPath] = useState(journalFilter);
+
+  const [selectedGrantAgency, setSelectedGrantAgency] = useState(selectGrantingAgency)
+  const [grantPath, setGrantPath] = useState("");
 
   useEffect(() => {
     //if there are selected departments, join items in array to create 1 string (different departments separated by &&), replace all spaces with %20
@@ -91,6 +106,18 @@ export default function SearchComponent(props) {
     }
   }, [selectedJournals]);
 
+  useEffect(() => {
+    if (selectedGrantAgency.length > 0) {
+      let GrantPath = selectedGrantAgency[0];
+      for (let i = 1; i < selectedGrantAgency.length; i++) {
+        GrantPath = GrantPath + "&&" + selectedGrantAgency[i];
+      }
+      setGrantPath(GrantPath);
+    } else {
+      setGrantPath(" ");
+    }
+  }, [selectedGrantAgency])
+
   return (
     <div>
       <Grid container>
@@ -110,13 +137,14 @@ export default function SearchComponent(props) {
                   selectedDepartments={selectedDepartments}
                   selectedFaculties={selectedFaculties}
                   selectedJournals={selectedJournals}
+                  selectedGrants={selectedGrantAgency}
                   departmentPath={departmentPath}
                   facultyPath={facultyPath}
                   journalPath={journalPath}
+                  grantPath={grantPath}
                   setResearcherSearchResultPage={setResearcherSearchResultPage}
-                  setPublicationsSearchResultPage={
-                    setPublicationsSearchResultPage
-                  }
+                  setPublicationsSearchResultPage={setPublicationsSearchResultPage}
+                  setGrantsSearchResults={setGrantsSearchResults}
                 />
                 <Paper
                   square={true}
@@ -149,7 +177,7 @@ export default function SearchComponent(props) {
         {(props.whatToSearch === "Everything" ||
           props.whatToSearch === "Researchers") && (
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
-            <Grid item xs={3}>
+            <Grid item xs={2}>
               <ResearcherFilters
                 selectedDepartments={selectedDepartments}
                 setSelectedDeparments={setSelectedDeparments}
@@ -157,7 +185,7 @@ export default function SearchComponent(props) {
                 setSelectedFaculties={setSelectedFaculties}
               />
             </Grid>
-            <Grid item xs={9}>
+            <Grid item xs={10}>
               <ResearcherSearchResultsComponent
                 researchSearchResults={researchSearchResults}
                 researcherSearchResultPage={researcherSearchResultPage}
@@ -169,13 +197,13 @@ export default function SearchComponent(props) {
         {(props.whatToSearch === "Everything" ||
           props.whatToSearch === "Publications") && (
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
-            <Grid item xs={3}>
+            <Grid item xs={2}>
               <PublicationFilters
                 selectedJournals={selectedJournals}
                 setSelectedJournals={setSelectedJournals}
               />
             </Grid>
-            <Grid item xs={9}>
+            <Grid item xs={10}>
               <PublicationSearchResultsComponent
                 publicationSearchResults={publicationSearchResults}
                 publicationsSearchResultPage={publicationsSearchResultPage}
@@ -183,6 +211,17 @@ export default function SearchComponent(props) {
                   setPublicationsSearchResultPage
                 }
               />
+            </Grid>
+          </Grid>
+        )}
+        {props.whatToSearch === "Grants" && (
+          <Grid container item xs={12} sx={{ p: "1.5em" }}>
+            <Grid item xs={2}>
+              <GrantFilters selectedGrants={selectedGrantAgency}
+                setSelectedGrants={setSelectedGrantAgency} />
+            </Grid>
+            <Grid item xs={10}>
+              <GrantInformation grantData={grantsSearchResults} tabOpened={true} initialNumberOfRows={500}/>
             </Grid>
           </Grid>
         )}

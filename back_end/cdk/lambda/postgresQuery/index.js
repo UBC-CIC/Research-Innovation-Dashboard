@@ -157,12 +157,12 @@ async function handler(event) {
       break;
     case "getResearcherFull":
       console.log("Getting Researcher Profile");
-      let [ubc_data] = await sql`SELECT * FROM public.researcher_data WHERE scopus_id = ${event.arguments.id}`;
-      let [elsevier_data] = await sql`SELECT * FROM public.elsevier_data WHERE id = ${ubc_data.scopus_id}`;
-      let [orcid_data] = await sql`SELECT * FROM public.orcid_data WHERE id = ${ubc_data.scopus_id}`;
-      ubc_data.keywords = ubc_data.keywords.toLowerCase();
-      payload = { ...ubc_data, ...elsevier_data, ...orcid_data };
-      payload.last_updated = ubc_data.last_updated;
+      let [data] = await sql`SELECT * FROM public.researcher_data WHERE scopus_id = ${event.arguments.id}`;
+      let [elsevier_data] = await sql`SELECT * FROM public.elsevier_data WHERE id = ${data.scopus_id}`;
+      let [orcid_data] = await sql`SELECT * FROM public.orcid_data WHERE id = ${data.scopus_id}`;
+      data.keywords = data.keywords.toLowerCase();
+      payload = { ...data, ...elsevier_data, ...orcid_data };
+      payload.last_updated = data.last_updated;
       delete payload.id;
       break;
     case "getResearcherRankingsByDepartment":
