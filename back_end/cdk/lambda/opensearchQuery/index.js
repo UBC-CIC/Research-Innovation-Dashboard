@@ -318,6 +318,64 @@ switch(event.info.fieldName) {
     
     searchResult = await search(query, "researcher_data", 10);
     break;
+
+  case "searchGrants":
+    console.log('hi')
+    // event.arguments.search_value
+    
+    stringSplitArray = event.arguments.search_value.split(" ");
+    
+    for(let i = 0; i<stringSplitArray.length; i++){
+      let matchName = {
+        "match": {
+          "name": {
+            "query": stringSplitArray[i],
+            "boost": 4
+          }
+        }
+      }
+      let matchProjectTitle = {
+        "match": {
+          "project_title": {
+            "query": stringSplitArray[i],
+            "boost": 3
+          }
+        }
+      }
+      let matchGrantProgram = {
+        "match": {
+          "grant_program": {
+            "query": stringSplitArray[i],
+            "boost": 2
+          }
+        }
+      }
+      let matchKeywords = {
+        "match": {
+          "keywords": {
+            "query": stringSplitArray[i],
+            "boost": 1
+          }
+        }
+      }
+      queryArray.push(matchName);
+      queryArray.push(matchProjectTitle);
+      queryArray.push(matchGrantProgram);
+      queryArray.push(matchKeywords);
+      
+      query = {
+      query: {
+        bool: {
+          should: queryArray,
+          filter: filters
+        }
+      },
+    };
+
+    searchResult = await search(query, "grant_data", 200);
+    }
+    
+    break;
 }
 
 if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName == "advancedSearchPublications"){

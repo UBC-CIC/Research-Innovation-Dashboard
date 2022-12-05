@@ -159,6 +159,19 @@ export class AppsyncStack extends Stack {
         title: String!
         year_published: String
       }
+
+      type grant {
+        name: String!
+        department: String
+        agency: String!
+        grant_program: String
+        amount: Int
+        project_title: String
+        keywords: String
+        year: String
+        start_date: String
+        end_date: String
+      }
       
       type Query {
         advancedSearchPublications(
@@ -207,6 +220,9 @@ export class AppsyncStack extends Stack {
         lastUpdatedResearchersList: [lastUpdated]
         getUpdatePublicationsLogs: [updatePublicationsLogType]
         getFlaggedIds: [[Researcher]]
+        getResearcherGrants(id: ID!): [grant]
+        searchGrants(search_value: String!): [grant]
+        getAllGrantAgencies: [String]
       }
 
       type updatePublicationsLogType {
@@ -352,6 +368,14 @@ export class AppsyncStack extends Stack {
     });
     SearchPublicationsResolver.addDependsOn(opensearchDataSource);
 
+    const SearchGrantsResolver = new appsync.CfnResolver(this, 'searchGrants', {
+      apiId: APIID,
+      fieldName: 'searchGrants',
+      typeName: 'Query',
+      dataSourceName: opensearchDataSource.name,
+    });
+    SearchGrantsResolver.addDependsOn(opensearchDataSource);
+
     const SimilarResearchersResolver = new appsync.CfnResolver(this, 'similarResearchers', {
       apiId: APIID,
       fieldName: 'similarResearchers',
@@ -382,7 +406,7 @@ export class AppsyncStack extends Stack {
     "getNumberOfResearcherPubsLastFiveYears", "getPub", "getResearcher", "getResearcherElsevier", "getResearcherFull",
     "getResearcherOrcid", "getResearcherPubsByCitations", "getResearcherPubsByTitle", "getResearcherPubsByYear",
     "getResearcherRankingsByDepartment", "getResearcherRankingsByFaculty", "totalPublicationPerYear", "wordCloud",
-    "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs", "getFlaggedIds"];
+    "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs", "getFlaggedIds", "getResearcherGrants", "getAllGrantAgencies"];
 
     for(var i = 0; i<postgresqlDBQueryList.length; i++){
       const resolver = new appsync.CfnResolver(this, postgresqlDBQueryList[i], {

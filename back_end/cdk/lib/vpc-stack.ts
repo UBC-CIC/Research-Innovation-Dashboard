@@ -4,6 +4,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as iam from 'aws-cdk-lib/aws-iam'
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
+import { NatProvider } from 'aws-cdk-lib/aws-ec2';
 
 export class VpcStack extends Stack {
     public readonly vpc: ec2.Vpc;
@@ -12,10 +13,15 @@ export class VpcStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
+    ec2.NatProvider.gateway()
+
+    const natGatewayProvider = ec2.NatProvider.gateway()
+
     // VPC for vpri application
     this.vpc = new ec2.Vpc(this, 'Vpc', {
         cidr: '10.0.0.0/16',
-        natGateways: 0,
+        natGatewayProvider: natGatewayProvider,
+        natGateways: 1,
         maxAzs: 2,
         subnetConfiguration: [
           {
@@ -33,6 +39,11 @@ export class VpcStack extends Stack {
           },
         },
     });
+
+    console.log(natGatewayProvider.configuredGateways[0].gatewayId)
+    console.log(natGatewayProvider.configuredGateways)
+    console.log(natGatewayProvider)
+
 
     // Get default security group for VPC
     const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, this.vpc.vpcDefaultSecurityGroup);
@@ -71,5 +82,13 @@ export class VpcStack extends Stack {
     });
 
     role.addManagedPolicy(ManagedPolicy.fromManagedPolicyArn(this, 'DMS-VPC-Managed-Policy', 'arn:aws:iam::aws:policy/service-role/AmazonDMSVPCManagementRole'));
+
+    this.vpc.isolatedSubnets.forEach(({ routeTable: { routeTableId } }, index) => {
+      new ec2.CfnRoute(this, 'PrivateSubnetPeeringConnectionRoute' + index, {
+        destinationCidrBlock: '0.0.0.0/0',
+        routeTableId,
+        natGatewayId: natGatewayProvider.configuredGateways[0].gatewayId
+      })
+    })
   }
 }

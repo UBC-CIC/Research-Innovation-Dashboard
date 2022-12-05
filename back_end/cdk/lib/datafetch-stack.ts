@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { triggers } from 'aws-cdk-lib';
 import { aws_lambda as lambda } from 'aws-cdk-lib';
 import { aws_iam as iam} from 'aws-cdk-lib';
@@ -183,6 +184,9 @@ export class DataFetchStack extends cdk.Stack {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
       vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const ubcClean = new lambda.Function(this, 'ubcClean', {
@@ -196,6 +200,9 @@ export class DataFetchStack extends cdk.Stack {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
       vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const compareNames = new lambda.Function(this, 'compareNames', {
@@ -210,6 +217,9 @@ export class DataFetchStack extends cdk.Stack {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
       vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const cleanNoMatches = new lambda.Function(this, 'cleanNoMatches', {
@@ -224,6 +234,9 @@ export class DataFetchStack extends cdk.Stack {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
       vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const identifyDuplicates = new lambda.Function(this, 'identifyDuplicates', {
@@ -240,6 +253,9 @@ export class DataFetchStack extends cdk.Stack {
         SCIVAL_URL: 'https://api.elsevier.com/analytics/scival/author/metrics',
       },
       vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const researcherFetch = new lambda.Function(this, 'researcherFetch', {
@@ -254,6 +270,9 @@ export class DataFetchStack extends cdk.Stack {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
       vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const elsevierFetch = new lambda.Function(this, 'elsevierFetch', {
@@ -271,6 +290,9 @@ export class DataFetchStack extends cdk.Stack {
         SCOPUS_URL: 'https://api.elsevier.com/content/author',
       },
       vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const orcidFetch = new lambda.Function(this, 'orcidFetch', {
@@ -285,6 +307,9 @@ export class DataFetchStack extends cdk.Stack {
         ORCID_URL: 'http://pub.orcid.org/'
       },
       vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const publicationFetch = new lambda.Function(this, 'publicationFetch', {
@@ -300,6 +325,9 @@ export class DataFetchStack extends cdk.Stack {
         SCOPUS_SEARCH_URL: 'https://api.elsevier.com/content/search/scopus'
       },
       vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const startReplication = new lambda.Function(this, 'startReplication', {
@@ -314,6 +342,9 @@ export class DataFetchStack extends cdk.Stack {
         Replication_Task_Arn: dmsStack.replicationTask.ref
       },
       vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     /*

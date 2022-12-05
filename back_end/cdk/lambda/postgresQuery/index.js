@@ -347,6 +347,32 @@ async function handler(event) {
                           ORDER BY SUM(num_publications) DESC`;
                           
       break;
+
+    case "getResearcherGrants":
+      //Get our owned id of the researcher in researcher data table
+      // Currently the column is mis named it has been fixed.
+      let researcher_id = await sql`SELECT grant_id FROM researcher_data WHERE scopus_id=${event.arguments.id}`
+      console.log(researcher_id[0].grant_id)
+      
+      let grantResults = await sql`SELECT * from grant_data WHERE assigned_id=${researcher_id[0].grant_id}`
+      
+      console.log(grantResults)
+      
+      payload = grantResults
+      
+      break;
+    
+    case "getAllGrantAgencies":
+      let agencies = await sql`SELECT DISTINCT agency FROM grant_data`
+      
+      console.log(agencies);
+      
+      payload = [];
+      
+      for(let i = 0; i<agencies.length; i++) {
+        payload.push(agencies[i].agency);
+      }
+      break;
   }
 
   await sql.end({ timeout: 0 });
