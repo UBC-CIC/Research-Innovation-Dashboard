@@ -303,7 +303,7 @@ export default function Researcher_profile_overview() {
   useEffect(() => {
     let funding = 0
     for(let i = 0; i<grantData.length; i++){
-      funding += grantData[0].amount;
+      funding += grantData[i].amount;
     }
     set_funding((funding.toLocaleString()))
     // console.log(funding);
@@ -537,7 +537,7 @@ export default function Researcher_profile_overview() {
             />
           )}
           {showGrants && (
-            <GrantInformation grantData={grantData} tabOpened={showGrants}/>
+            <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={25}/>
           )}
         </Grid>
       )}

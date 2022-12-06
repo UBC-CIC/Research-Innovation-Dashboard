@@ -59,7 +59,9 @@ def storeResearcher(researcher, scopus_id, credentials):
         extra_ids = str(researcher['EXTRA_IDS']).replace("'", '"').replace('[', '{').replace(']', '}')
     queryline1 = "INSERT INTO public.researcher_data(employee_id, first_name, preferred_name, last_name, email, rank, job_stream, prime_department, second_department, prime_faculty, second_faculty, campus, scopus_id, extra_ids, last_updated) "
     queryline2 = "VALUES ('" + employee_id + "', '" + first_name + "', '" + preferred_name + "', '" + last_name + "', '" + email + "', '" + rank + "', '" + job_stream + "', '" + prime_department + "', '" + second_department + "', '" + prime_faculty + "', '" + second_faculty + "', '" + campus + "', '" + scopus_id + "', '" + extra_ids + "', '" + time_string + "')"
-    cursor.execute(queryline1 + queryline2)
+    queryline3 = "ON CONFLICT (employee_id) DO UPDATE "
+    queryline4 = "SET first_name='" + first_name + "', preferred_name='" + preferred_name + "', last_name='" + last_name + "', email='" + email + "', rank='" + rank + "', job_stream='" + job_stream + "', prime_department='" + prime_department + "', second_department='" + second_department + "', prime_faculty='" + prime_faculty + "', second_faculty='" + second_faculty + "', campus='" + campus + "', scopus_id='" + scopus_id + "', last_updated='" + time_string + "'"
+    cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
     cursor.close()
     connection.commit()
 
