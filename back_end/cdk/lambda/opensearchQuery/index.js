@@ -398,11 +398,8 @@ switch(event.info.fieldName) {
     break;
 }
 
-if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName == "advancedSearchPublications"){
-  let table = "researcher_data";
-  if(event.info.fieldName == "advancedSearchPublications") {
-    table = "publication_data"
-  }
+if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName == "advancedSearchPublications" || event.info.fieldName == "advancedSearchGrants"){
+  let table = event.arguments.table
   let mustContainWords = event.arguments.includeAllTheseWords;
     
     while(mustContainWords.charAt(0) == " " && mustContainWords.length != 0) {
@@ -498,6 +495,9 @@ if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName =
     if(event.arguments.table == "publication_data") {
       fields =  ["title", "journal", "author_names", "keywords"];
     }
+    if(event.arguments.table == "grant_data") {
+      fields = ["name", "project_title", "grant_program", "keywords"]
+    }
     
     let filters = []
     
@@ -539,6 +539,11 @@ if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName =
       if(event.arguments.prime_faculty != "All Faculties"){
         filters.push(faculty);
       }
+    }
+    
+    //Add filters for grants
+    if(event.info.fieldName == "advancedSearchGrants") {
+
     }
     
     query = {

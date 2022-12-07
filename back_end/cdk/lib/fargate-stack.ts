@@ -78,7 +78,8 @@ export class FargateStack extends Stack {
       environment: {
         "DB_CREDENTIALS_PATH": databaseStack.secretPath,
         "Replication_Task_Arn": dmsStack.replicationTask.ref
-      }
+      },
+      readonlyRootFilesystem: true,
     });
 
     //Create a scheduled fargate task that runs at 8:00 UTC on the first of every month
