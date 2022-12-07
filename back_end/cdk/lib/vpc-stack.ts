@@ -40,11 +40,6 @@ export class VpcStack extends Stack {
         },
     });
 
-    console.log(natGatewayProvider.configuredGateways[0].gatewayId)
-    console.log(natGatewayProvider.configuredGateways)
-    console.log(natGatewayProvider)
-
-
     // Get default security group for VPC
     const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, this.vpc.vpcDefaultSecurityGroup);
 

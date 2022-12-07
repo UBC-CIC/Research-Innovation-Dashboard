@@ -54,6 +54,7 @@ export class GrantDataStack extends Stack {
       autoDeleteObjects: true,
       versioned: false,
       publicReadAccess: false,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
     });
 
@@ -63,6 +64,7 @@ export class GrantDataStack extends Stack {
       autoDeleteObjects: true,
       versioned: false,
       publicReadAccess: false,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
     });
 
