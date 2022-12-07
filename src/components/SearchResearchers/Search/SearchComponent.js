@@ -47,7 +47,6 @@ export default function SearchComponent(props) {
   } else {
     selectedJournalFilter = journalFilter.split("&&");
   }
-
   if (!grantFilter || grantFilter === " ") {
     selectGrantingAgency = [];
     grantFilter = " ";
@@ -55,6 +54,7 @@ export default function SearchComponent(props) {
     selectGrantingAgency = grantFilter.split("&&");
   }
   
+  console.log(props.whatToSearch)
 
   //for researcher filters
   const [selectedDepartments, setSelectedDeparments] = useState(
@@ -214,14 +214,15 @@ export default function SearchComponent(props) {
             </Grid>
           </Grid>
         )}
-        {props.whatToSearch === "Grants" && (
+        {(props.whatToSearch === "Everything" ||
+         props.whatToSearch === "Grants") && (
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
             <Grid item xs={2}>
               <GrantFilters selectedGrants={selectedGrantAgency}
                 setSelectedGrants={setSelectedGrantAgency} />
             </Grid>
             <Grid item xs={10}>
-              <GrantInformation grantData={grantsSearchResults} tabOpened={true} initialNumberOfRows={500}/>
+              <GrantInformation grantData={grantsSearchResults} tabOpened={false} initialNumberOfRows={50}/>
             </Grid>
           </Grid>
         )}

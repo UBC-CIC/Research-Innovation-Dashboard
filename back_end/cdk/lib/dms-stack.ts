@@ -72,6 +72,8 @@ export class DmsStack extends Stack {
         // Attach the subnet group to the replication instance
         replicationSubnetGroupIdentifier: subnet.ref,
 
+        publiclyAccessible: false,
+
         // Attach the default VPC security group to the replication instance
         vpcSecurityGroupIds: [ vpcStack.vpc.vpcDefaultSecurityGroup ],
     });

@@ -89,7 +89,7 @@ function PageContainer(props) {
             element={<SearchComponent whatToSearch={"Grants"} />}
           />
           <Route
-            path="/:anyDepartmentFilter/:anyFacultyFilter/:journalFilter/:searchValue/"
+            path="/:anyDepartmentFilter/:anyFacultyFilter/:journalFilter/:grantFilter/:searchValue/"
             element={<SearchComponent whatToSearch={"Everything"} />}
           />
           <Route

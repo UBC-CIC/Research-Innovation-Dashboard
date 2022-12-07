@@ -86,6 +86,7 @@ const GrantsFilters = ({
         selectedGrant={selectedGrants}
         handleCheckGrant={handleCheckGrant}
       />
+      
     </Box>
   );
 };

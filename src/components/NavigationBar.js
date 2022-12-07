@@ -154,7 +154,7 @@ function Navbar(props) {
           >
             <NavButton
               sx={{ paddingLeft: "0%" }}
-              onClick={() => (window.location.href = "/ / / / /")}
+              onClick={() => (window.location.href = "/ / / / / /")}
             >
               Home
             </NavButton>

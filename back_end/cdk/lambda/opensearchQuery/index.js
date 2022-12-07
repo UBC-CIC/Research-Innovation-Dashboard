@@ -132,6 +132,7 @@ switch(event.info.fieldName) {
       query: {
         bool: {
           should: queryArray,
+          minimum_should_match: 1,
           filter: filters
         }
       },
@@ -247,6 +248,7 @@ switch(event.info.fieldName) {
       query: {
         bool: {
           should: queryArray,
+          minimum_should_match: 1,
           filter: filters
         }
       },
@@ -298,13 +300,12 @@ switch(event.info.fieldName) {
       queryArray.push(keywordPhraseMatch);
       j++;
     }
-    
-    console.log(queryArray);
 
     query = {
       query: {
         bool: {
           should: queryArray,
+          minimum_should_match: 1,
           must_not: [
             {
               match: {
@@ -320,9 +321,6 @@ switch(event.info.fieldName) {
     break;
 
   case "searchGrants":
-    console.log('hi')
-    // event.arguments.search_value
-    
     stringSplitArray = event.arguments.search_value.split(" ");
     
     for(let i = 0; i<stringSplitArray.length; i++){
@@ -362,18 +360,40 @@ switch(event.info.fieldName) {
       queryArray.push(matchProjectTitle);
       queryArray.push(matchGrantProgram);
       queryArray.push(matchKeywords);
-      
-      query = {
+    }
+    
+    //Create Publication Filters
+    let grantsToInclude = event.arguments.grantAgenciesToFilterBy;
+    
+    if(grantsToInclude.length != 0){
+      let queryString = '"' + grantsToInclude[0] + '"';
+      for(let i = 1; i<grantsToInclude.length; i++){
+        queryString += ' | "' +  grantsToInclude[i] + '"';
+      }
+      let grantsFilter = {
+        simple_query_string: {
+          "query": queryString,
+          "fields": ["agency"]
+        }
+      }
+      filters.push(grantsFilter);
+    }
+    
+    if(event.arguments.search_value.length == 0){
+      queryArray = [{match_all: {}}]
+    }
+
+    query = {
       query: {
         bool: {
           should: queryArray,
+          minimum_should_match: 1,
           filter: filters
         }
       },
     };
 
     searchResult = await search(query, "grant_data", 200);
-    }
     
     break;
 }

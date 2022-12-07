@@ -8,8 +8,6 @@ import './ResearcherProfile.css'
 
 export default function Grant(props){
 
-    console.log(props)
-
     return(
                 <Grid container>
                     <Grid item xs={2}>

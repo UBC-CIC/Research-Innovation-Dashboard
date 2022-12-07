@@ -42,6 +42,7 @@ export default function Search_Bar(props) {
     if (whatToSearch === "Everything") {
       searchResearchersQuery();
       searchPublicationsQuery();
+      searchGrantsQuery();
     } else if (whatToSearch === "Researchers") {
       searchResearchersQuery();
       setPublicationSearchResults([]);
@@ -82,6 +83,7 @@ export default function Search_Bar(props) {
   };
 
   const searchGrantsQuery = async () => {
+    console.log(selectedGrants)
     const searchGrantsResults = await API.graphql({
       query: searchGrants,
       variables: {
@@ -124,6 +126,8 @@ export default function Search_Bar(props) {
         facultyPath +
         "/" +
         journalPath +
+        "/" +
+        grantPath +
         "/" +
         searchPath +
         "/";
