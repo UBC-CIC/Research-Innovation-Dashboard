@@ -269,6 +269,17 @@ export class GrantDataStack extends Stack {
       },
     });
 
+    // a parameter at deployment time for the institution name filter of CFI grant data
+    const cfiInstitutionName = new cdk.CfnParameter(
+      this,
+      "cfiInstitutionName",
+      {
+        type: "String",
+        description:
+          "The name of the Institution that you want to filter for the CFI grant data.",
+      }
+    );
+
     // define a Glue Python Shell Job to clean the raw grant data
     const PYTHON_VER = "3.9";
     const GLUE_VER = "3.0";
@@ -285,6 +296,7 @@ export class GrantDataStack extends Stack {
       "library-set": "analytics",
       "--SECRET_NAME": databaseStack.secretPath,
       "--BUCKET_NAME": grantDataS3Bucket.bucketName,
+      "--CFI_INSTITUTION_NAME": cfiInstitutionName.valueAsString
     };
 
     // Glue Job: clean cihr data

@@ -9,10 +9,11 @@ from awsglue.utils import getResolvedOptions
 
 # define job parameters
 args = getResolvedOptions(
-    sys.argv, ["BUCKET_NAME", "FILENAME_RAW", "FILENAME_CLEAN"])
+    sys.argv, ["BUCKET_NAME", "FILENAME_RAW", "FILENAME_CLEAN", "CFI_INSTITUTION_NAME"])
 BUCKET_NAME = args["BUCKET_NAME"]
 FILENAME_RAW = args["FILENAME_RAW"]
 FILENAME_CLEAN = args["FILENAME_CLEAN"]
+CFI_INSTITUTION_NAME = args["CFI_INSTITUTION_NAME"]
 
 """
 Fetch the raw csv data from s3
@@ -102,9 +103,9 @@ def cleanCfi(bucket, key_raw, key_clean):
     orig_colnames = list(col_dict.values())
 
     # retain only the neccesary columns
-    # filter for University of British Columbia only
-    df = df[df[col_dict["Institution"]] ==
-            "The University of British Columbia"]
+    # filter for the correct institution only
+    # since CFI is bulk data so it contains different institutions
+    df = df[df[col_dict["Institution"]] == CFI_INSTITUTION_NAME]
     df = df[orig_colnames]
 
     # split Name into First/Last

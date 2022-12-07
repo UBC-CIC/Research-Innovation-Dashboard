@@ -37,7 +37,7 @@ Then you take the smaller list of acceptable last name matches and match against
 Go in order so the best matched last name is accepted when its first name has a jaro distance greater than equal to 0.95.
 
 If there is a matching name the function returns a dictonary with the success key as True and the 
-firstName, lastName and scopusId as keys
+firstName, lastName and Id as keys
 
 If there is no matching name the function returns a dictonary with the success as False
 
@@ -73,7 +73,7 @@ def findMatch(firstNameToMatch, lastNameToMatch, listOfNamesToMatchAgainst):
 
 
 """
-This function will fetch all data entries (rows) from the UBC researcher database
+This function will fetch all data entries (rows) from the researcher database
 and generate a list of dictionary in the format: {'firstName': Tien, 'lastName': Nguyen, "id": "ID-string"}
 
 :return list of dictionary
@@ -99,7 +99,7 @@ def createResearcherList():
         dbname=secret["dbname"]
     )
 
-    # fetch all data from UBC database
+    # fetch all data from database
     cursor = connection.cursor()
     query = "SELECT first_name, last_name, id FROM public.researcher_data"
     cursor.execute(query)
@@ -159,12 +159,12 @@ def assignIdToCleanData(bucket, key_clean1, key_clean2):
 
     df_clean = pd.read_csv(io.StringIO(response["Body"].read().decode(
         "utf-8")), header=0, keep_default_na=False)
-    # df_clean = df_clean[df_clean["First Name"] == "Tor"]
-    # df_clean["Assigned ID"] = df_clean.apply(lambda x: assignId(x["First Name"], x["Last Name"], researcherList), axis=1)
 
     # select only the First / Last Name columns
     # drop all duplicates First/Last Name,
     # the resulting data will contain only unique First/Last Name pairs
+    # duplicate are drops, by default only first occurrence is retained,
+    # thus this implied that the order of occurrence is preserved
     df_distinct = df_clean[["First Name", "Last Name"]].drop_duplicates()
 
     df_distinct["Assigned ID"] = df_distinct.apply(
