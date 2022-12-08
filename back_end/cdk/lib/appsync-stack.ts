@@ -407,6 +407,14 @@ export class AppsyncStack extends Stack {
     });
     AdvancedSearchPublicationsResolver.addDependsOn(opensearchDataSource);
 
+    const AdvancedSearchGrantsResolver = new appsync.CfnResolver(this, 'advancedSearchGrants', {
+      apiId: APIID,
+      fieldName: 'advancedSearchGrants',
+      typeName: 'Query',
+      dataSourceName: opensearchDataSource.name,
+    });
+    AdvancedSearchPublicationsResolver.addDependsOn(opensearchDataSource);
+
     //Create all the PostgreSQL resolvers
     let postgresqlDBQueryList = ["allPublicationsPerFacultyQuery", "facultyMetrics", "getAllDepartments",
     "getAllDistinctJournals", "getAllFaculty", "getAllResearchersRankings", "getNumberOfResearcherPubsAllYears",

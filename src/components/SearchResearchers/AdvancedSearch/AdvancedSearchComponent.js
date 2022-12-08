@@ -23,6 +23,7 @@ import {
   getAllDistinctJournals,
   getAllDepartments,
   getAllFaculty,
+  advancedSearchGrants,
 } from "../../../graphql/queries";
 
 export default function Advanced_Search(props) {
@@ -235,6 +236,23 @@ export default function Advanced_Search(props) {
     );
   };
 
+  const searchGrantsQuery = async () => {
+    const grantsSearchResult = await API.graphql({
+      query: advancedSearchGrants,
+      variables: {
+        includeAllTheseWords: AllWords,
+        includeTheseExactWordsOrPhrases: ExactPhrase,
+        includeAnyOfTheseWords: AnyWords,
+        noneOfTheseWords: NoneOfTheseWords,
+        table: "grant_data",
+      },
+    });
+    console.log(grantsSearchResult)
+    setGrantsSearchResults(
+      grantsSearchResult.data.advancedSearchGrants
+    );
+  };
+
   function scrollToResults() {
     titleRef.current.scrollIntoView({ behavior: "smooth" });
   }
@@ -242,7 +260,7 @@ export default function Advanced_Search(props) {
   async function search() {
     await searchResearchersQuery();
     await searchPublicationsQuery();
-    
+    await searchGrantsQuery();
     scrollToResults();
   }
 
@@ -541,7 +559,7 @@ export default function Advanced_Search(props) {
         />
       )}
       {(SearchForWhat === "Everything" || SearchForWhat === "Grants") && (
-        <GrantInformation grantData={grantsSearchResults} tabOpened={false} initialNumberOfRows={50}/>
+        <GrantInformation grantData={[]} tabOpened={false} initialNumberOfRows={50}/>
       )}
     </div>
   );
