@@ -193,6 +193,13 @@ export class AppsyncStack extends Stack {
           prime_faculty: String!,
           table: String!
         ): [ResearcherOpenSearch]
+        advancedSearchGrants(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          noneOfTheseWords: String!,
+          table: String!
+        ): [grant]
         allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
         facultyMetrics(faculty: String!): [facultyMetric]
         getAllDepartments: [String]
@@ -395,6 +402,14 @@ export class AppsyncStack extends Stack {
     const AdvancedSearchPublicationsResolver = new appsync.CfnResolver(this, 'advancedSearchPublications', {
       apiId: APIID,
       fieldName: 'advancedSearchPublications',
+      typeName: 'Query',
+      dataSourceName: opensearchDataSource.name,
+    });
+    AdvancedSearchPublicationsResolver.addDependsOn(opensearchDataSource);
+
+    const AdvancedSearchGrantsResolver = new appsync.CfnResolver(this, 'advancedSearchGrants', {
+      apiId: APIID,
+      fieldName: 'advancedSearchGrants',
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });

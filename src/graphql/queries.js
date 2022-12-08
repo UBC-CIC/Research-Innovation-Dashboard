@@ -69,6 +69,34 @@ export const advancedSearchResearchers = /* GraphQL */ `
     }
   }
 `;
+export const advancedSearchGrants = /* GraphQL */ `
+  query AdvancedSearchGrants(
+    $includeAllTheseWords: String!
+    $includeAnyOfTheseWords: String!
+    $includeTheseExactWordsOrPhrases: String!
+    $noneOfTheseWords: String!
+    $table: String!
+  ) {
+    advancedSearchGrants(
+      includeAllTheseWords: $includeAllTheseWords
+      includeAnyOfTheseWords: $includeAnyOfTheseWords
+      includeTheseExactWordsOrPhrases: $includeTheseExactWordsOrPhrases
+      noneOfTheseWords: $noneOfTheseWords
+      table: $table
+    ) {
+      name
+      department
+      agency
+      grant_program
+      amount
+      project_title
+      keywords
+      year
+      start_date
+      end_date
+    }
+  }
+`;
 export const allPublicationsPerFacultyQuery = /* GraphQL */ `
   query AllPublicationsPerFacultyQuery {
     allPublicationsPerFacultyQuery {
@@ -420,14 +448,8 @@ export const getResearcherGrants = /* GraphQL */ `
   }
 `;
 export const searchGrants = /* GraphQL */ `
-  query SearchGrants(
-    $search_value: String!
-    $grantAgenciesToFilterBy: [String]!
-  ) {
-    searchGrants(
-      search_value: $search_value
-      grantAgenciesToFilterBy: $grantAgenciesToFilterBy
-    ) {
+  query SearchGrants($search_value: String!) {
+    searchGrants(search_value: $search_value) {
       name
       department
       agency
