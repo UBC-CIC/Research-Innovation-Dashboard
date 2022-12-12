@@ -492,7 +492,7 @@ export default function Advanced_Search(props) {
           value={contentToSearchForValue}
           setValue={setContentToSearchForValue}
           title={"Type Of Content To Search For"}
-          DropDownArray={["Everything", "Researchers", "Publications"]}
+          DropDownArray={["Everything", "Researchers", "Publications", "Grants"]}
         />
         <Paper
           square={true}
@@ -559,7 +559,7 @@ export default function Advanced_Search(props) {
         />
       )}
       {(SearchForWhat === "Everything" || SearchForWhat === "Grants") && (
-        <GrantInformation grantData={[]} tabOpened={false} initialNumberOfRows={50}/>
+        <GrantInformation grantData={grantsSearchResults} tabOpened={false} initialNumberOfRows={50}/>
       )}
     </div>
   );

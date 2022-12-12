@@ -228,7 +228,7 @@ export class AppsyncStack extends Stack {
         getUpdatePublicationsLogs: [updatePublicationsLogType]
         getFlaggedIds: [[Researcher]]
         getResearcherGrants(id: ID!): [grant]
-        searchGrants(search_value: String!): [grant]
+        searchGrants(search_value: String!, grantAgenciesToFilterBy: String!): [grant]
         getAllGrantAgencies: [String]
       }
 

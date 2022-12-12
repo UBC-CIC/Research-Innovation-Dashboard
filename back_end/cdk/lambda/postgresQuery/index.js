@@ -351,12 +351,9 @@ async function handler(event) {
     case "getResearcherGrants":
       //Get our owned id of the researcher in researcher data table
       // Currently the column is mis named it has been fixed.
-      let researcher_id = await sql`SELECT grant_id FROM researcher_data WHERE scopus_id=${event.arguments.id}`
-      console.log(researcher_id[0].grant_id)
+      let researcher_id = await sql`SELECT researcher_id FROM researcher_data WHERE scopus_id=${event.arguments.id}`
       
-      let grantResults = await sql`SELECT * from grant_data WHERE assigned_id=${researcher_id[0].grant_id}`
-      
-      console.log(grantResults)
+      let grantResults = await sql`SELECT * from grant_data WHERE assigned_id=${researcher_id[0].researcher_id}`
       
       payload = grantResults
       
