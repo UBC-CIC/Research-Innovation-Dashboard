@@ -398,7 +398,10 @@ switch(event.info.fieldName) {
     break;
 }
 
+console.log("HERE2")
+
 if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName == "advancedSearchPublications" || event.info.fieldName == "advancedSearchGrants"){
+  console.log("HERE")
   let table = event.arguments.table
   let mustContainWords = event.arguments.includeAllTheseWords;
     
@@ -585,7 +588,7 @@ if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName =
     };
     }
     
-    searchResult = await search(query, table, 200);
+    searchResult = await search(query, table, 50);
     console.log('SEARCH RESULTS');
     console.log(searchResult);
 }

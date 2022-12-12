@@ -73,9 +73,13 @@ def confirmMatches(duplicates_split):
             # There is a bug in elseviers responses where for certain ids they'll
             # return no subject areas
             subject_areas = []
+            
             if "subject-areas" in result:
-                if "subject-areas" in result['subject-areas']:
-                    subject_areas = result['subject-areas']['subject-area']
+                if (result['subject-areas'] == None):
+                    subject_areas = []
+                else:
+                    if "subject-areas" in result['subject-areas']:
+                        subject_areas = result['subject-areas']['subject-area']
                     
             for author in author_subset:
                 if author['SCOPUS_ID'] in data['dc:identifier']:

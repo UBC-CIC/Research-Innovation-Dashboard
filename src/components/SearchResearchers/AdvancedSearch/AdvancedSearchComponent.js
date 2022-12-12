@@ -559,7 +559,7 @@ export default function Advanced_Search(props) {
         />
       )}
       {(SearchForWhat === "Everything" || SearchForWhat === "Grants") && (
-        <GrantInformation grantData={[]} tabOpened={false} initialNumberOfRows={50}/>
+        <GrantInformation grantData={grantsSearchResults} tabOpened={false} initialNumberOfRows={50}/>
       )}
     </div>
   );
