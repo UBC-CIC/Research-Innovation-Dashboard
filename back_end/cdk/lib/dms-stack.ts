@@ -135,6 +135,16 @@ export class DmsStack extends Stack {
               "table-name": "publication_data"
             },
             "rule-action": "include"
+          },
+          {
+            "rule-type": "selection",
+            "rule-id": "3",
+            "rule-name": "import grant data",
+            "object-locator": {
+              "schema-name": "public",
+              "table-name": "grant_data"
+            },
+            "rule-action": "include"
           }]
         })
     })

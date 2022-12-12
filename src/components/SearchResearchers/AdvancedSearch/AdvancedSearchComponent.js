@@ -492,7 +492,7 @@ export default function Advanced_Search(props) {
           value={contentToSearchForValue}
           setValue={setContentToSearchForValue}
           title={"Type Of Content To Search For"}
-          DropDownArray={["Everything", "Researchers", "Publications"]}
+          DropDownArray={["Everything", "Researchers", "Publications", "Grants"]}
         />
         <Paper
           square={true}
