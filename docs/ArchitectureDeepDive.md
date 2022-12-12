@@ -6,12 +6,12 @@
 
 ## Description
 ### Back End Flow (1-15)
-![Architecture diagram](../docs/images/architecture-diagram-back-end.png)
+![Architecture diagram](../docs/images/VPRI_Architecture_Back_End_Phase_II.drawio.png?raw=true)
 
-Steps 1-9 are explored in more detail as part of the [Data Pipeline Deep Dive](/docs/DataPipelineDeepDive.md)
+#### Steps 1-9 are explored in more detail as part of the [Data Pipeline Deep Dive](/docs/DataPipelineDeepDive.md)
 
 1. Raw Scopus and UBC HR data are fetched from an Amazon S3 bucket in the form of comma separated values (CSV) files. Both datasets are cleaned which involves standardizing the names present in both datasets. The results are then stored as CSV files in a new folder within the S3 bucket.
-2. The standardized names are compared in order to match Scopus Ids to UBC HR data. This process uses a string metric called Jaro-Winkler distance in order to determine if two names are the same. The match that has the highest Jaro-Winkler distance is considered to be the closest match. If the Jaro-Winkler distance is above a certain threshold the match is considered final. If the match is below the threshold then the match requires further processing in step 3. If two or more potential matches have the same Jaro-Winkler Distance those matches are processed further in step 4.
+2. The standardized names are compared in order to match Scopus Ids to UBC HR data. This process uses a string metric called <a href="https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance" target="_blank">Jaro-Winkler distance</a> in order to determine if two names are the same. The match that has the highest Jaro-Winkler distance is considered to be the closest match. If the Jaro-Winkler distance is above a certain threshold the match is considered final. If the match is below the threshold then the match requires further processing in step 3. If two or more potential matches have the same Jaro-Winkler Distance those matches are processed further in step 4.
 3. The matches that failed to meet the Jaro-Winkler distance threshold are further processed by comparing data obtained from Scopus to the UBC HR data. First there is a comparison between the researchers department and subject area data from Scopus. Next there is a comparison between the researchers name and name variants present on Scopus.
 4. The researchers that have been matched to more than one Scopus Id are processed further by comparing Scopus subject area and name variant data against UBC department and faculty data.
 5. Researchers whose Scopus Id’s were identified in steps 2-4 have their data stored in the Postgres database.
@@ -25,6 +25,15 @@ Steps 1-9 are explored in more detail as part of the [Data Pipeline Deep Dive](/
 13. AWS Appsync triggers the OpenSearch Lambda and passes the correct variables needed to execute the query.
 14. When queried, Lambda connects to the RDS PostgreSQL database and gets the data requested by AppSync.
 15. AWS AppSync triggers the PostgreSQL Lambda and passes the correct variables needed to get the required data.
+
+#### Step A-D are explored in more detail as part of the [Grant Data Pipeline Deep Dive](/docs/GrantDataPipelineDeepDive.md)
+
+<ol type="A">
+  <li>When files are uploaded to the S3 bucket, an Object upload event notification will be sent out to the Lambda function. The Function will filter the event received and in turns will invoke the correct Glue job. Some Glue jobs (clean-...-pythonshell, assign-ids-pythonshell) will create temporary subfolders and files in the same bucket, and the bucket will in turns create corresponding event notification to the Lambda function again, and again to invoke Glue jobs downstream of the pipeline, until the grant data is put in the PostgreSQL database.</li>
+  <li>Raw grant data (currently CIHR, NSERC, SSHRC, CFI) are fetched from an Amazon S3 bucket in the form of comma separated values (CSV) files. The datasets are cleaned which involves standardizing the researcher names, modifying date encoding format, remove special characters. The researcher names are separated into First Name and Last Name for name matching in the next step. The results are stored in a temporary folder called <strong>clean</strong> in the same S3 bucket. A bucket event notification will be issued to the handling Lambda function to invoke the <strong>assign-ids-pythonshell</strong> job</li>
+  <li>The standardized names are then compare with the researcher names that are already in the database. The name strings are compared using a string metric called <a href="https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance" target="_blank">Jaro-Winkler distance</a> to see if the two names are similar enough to be considered belonging to the same person (see <a href="https://en.wikipedia.org/wiki/Approximate_string_matching" target="_blank">fuzzy string matching</a>). If the Jaro-Winkler distance is above a certain threshold then it is a complete match, otherwise the name is ignored (not processed). For each complete match, it also include the researcher_id from our database associated with that person. The results are stored again in a temporary folder called <strong>ids-assigned</strong> in the same S3 bucket. A bucket event notification will be issued to the handling Lambda function to invoke the <strong>store-data-pythonshell</strong></li>
+  <li>This job will filtered out only the grant entries with an associated researcher id from earlier, and put the data into the PostgreSQL database. The pipeline is thus completed.</li>
+</ol>
 
 ### Front End Flow (16-19)
 ![Architecture diagram](../docs/images/architecture-diagram-front-end.png)

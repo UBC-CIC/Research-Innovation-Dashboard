@@ -8,7 +8,7 @@ Before you deploy, you must have the following installed on your device:
 - [AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/cli.html)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-Once you have downloaded docker desktop launch and setup the application. Once the application is setup leave it running.
+**Once you have downloaded docker desktop launch and setup the application. Once the application is setup leave it running.**
 
 If you are on a Windows device, it is recommended to install the [Windows Subsystem For Linux](https://docs.microsoft.com/en-us/windows/wsl/install), which lets you run a Linux terminal on your Windows computer natively. Some of the steps will require its use. [Windows Terminal](https://apps.microsoft.com/store/detail/windows-terminal/9N0DX20HK701) is also recommended for using WSL.
 
@@ -102,23 +102,47 @@ Deploy the CDK stacks (this will take 30-45 minutes):
 
 If you run into any issues while deploying, refer to [Troubleshooting](#troubleshooting) for solutions.
 
-```
-cdk deploy --all --profile your-profile-name
-```
-
-You may also deploy the stacks individually (it is important to deploy the stack listed in the order below):
+You must also deploy the stacks individually (it is important to deploy the stack listed in the order below):
 
 ```
 cdk deploy VpcStack  --profile your-profile-name
+```
+
+```
 cdk deploy DatabaseStack  --profile your-profile-name
+```
+
+```
 cdk deploy OpensearchStack --profile your-profile-name
+```
+
+```
 cdk deploy DmsStack --profile your-profile-name
+```
+
+```
 cdk deploy AppsyncStack --profile your-profile-name
+```
+
+```
 cdk deploy FargateStack --profile your-profile-name
+```
+
+```
 cdk deploy DataFetchStack --profile your-profile-name
 ```
 
-# Step 4: Upload Data to S3
+```
+cdk deploy GrantDataStack --parameters GrantDataStack:cfiInstitutionName="Your Institution Name" --profile your-profile-name
+```
+
+**Note for deploying the GrantDataStack**: when you obtain the CSV file for the **CFI** grant data, you must make a note of the name of your institution that appears under the `Institution / Établissement` column. For example: if your institution name is *The University of British Columbia*,
+then you would do:
+```
+cdk deploy GrantDataStack --parameters GrantDataStack:cfiInstitutionName="The University of British Columbia" --profile your-profile-name
+```
+
+# Step 4: Upload Data to S3 for the DataPipeline
 
 1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for UBC and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
    ![alt text](images/deploymentGuide/scival_download.jpg)
@@ -151,7 +175,43 @@ cdk deploy DataFetchStack --profile your-profile-name
 5. The data pipeline will now run on its own and populate the database. This process will take ~90 minutes. If you navigate to the page you visited in part 2 of this step you can view the status of the data pipeline. Once it is finished running the step function execution status will say `Succeeded`.
    ![alt text](images/deploymentGuide/state_machine_success.jpg)
 
-# Step 6: Creating a User
+6. **ONLY NOW can You move to** [Step 6](#step-6-upload-data-to-s3-for-the-grant-data-pipeline) below for the Grant Data Pipeline.
+
+# Step 6: Upload data to S3 for the Grant Data Pipeline
+
+1. Refer to the `User Guide to Grant Downloads` for instructions on how to obtain the grant data for your institution.
+2. Create a folder called `raw`, this will be the folder that contain the different files to be upload.
+3. Inside the `raw` folder, create 4 subfolders: `cihr`, `nserc`, `sshrc`, `cfi`. The folder names are **case sensitive**, please follow the exact naming.
+4. Inside each of the subfolder, put the corresponding CSV file for that grant there. For SSHRC, please also remember to include the `sshrc_program_codes.csv` file along with the SSHRC grant data CSV file. The resulting folder structure should look like this:
+   ![alt text](images/deploymentGuide/grant-data-folder-structure.png)
+5. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
+6. Search for a bucket whose name contains `grantdatastack-grantdatas3bucket`. The full name will be slightly different, but it should begin with that identifier. Use the search function to help you find it if necessary.
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket.png)
+7. Click Upload
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-upload-button.png)
+8. Click Add folder
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-add-folder.png)
+9. Select the **raw** folder that you prepared earlier and click Upload
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-select-upload.png)
+10. Review the files that appear on the upload window. **If this is an initial upload then there should be 5 files**. Note how **SSHRC** has two files in the same **sshrc** folder as mentioned earlier. If you notice that there are extra files that get uploaded unintentionally, simply select the box next to them and hit Remove (for example, macOS tends to have hidden files call .DS_Store that could be accidentally uploaded). Otherwise, hit Upload.
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-upload-all.png)
+11. The upload should now be initiated and you will be directed to a screen that show the uploads status
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-upload-done.png)
+
+**NOTE**: if you found out that you there was a mistake in the uploading process, either you put the wrong files in the wrong folders, or there were extra files uploaded accidentally, then you should **delete the folder that contains the wrong file on S3** then ****wait for 20 minutes and redo the uploading process**. You can individual upload the subfolders (cihr, nserc, sshrc, or cfi), but make sure to upload the folder(s) inside the **raw** folder, and make sure the folder naming convention is maintained.
+
+12. If the uploading process was performed correctly, the Grant Data Pipeline will automatically be invoked and the new data will show up in the RDS PostgreSQL database after around 20 min or so.
+
+13. After around 20 minutes, navigate to the S3 bucket that you uploaded the grant earlier. If you're still having that page open, simply refresh the page. If this Grant Data Pipeline has successfully executed, you should see another 2 folders being added (**clean** and **ids-assigned**) in addition to your **raw** folder.
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-done.png)
+
+14. By going into those 2 new folders, you should see that they have a **similar subfolder structure to raw**. You dont have to do anything further.
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-clean.png)
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-ids-assigned.png)
+
+15. If you see that a folder(s) is missing. Please wait for another 10 or so minutes because this could be a latency issue. If you came back and check and that missing folder still has not show up, then it is possible that a wrong file was uploaded in **raw** folder. Please double check your **raw** folder and follow the instructions above to reupload accordingly.
+
+# Step 7: Creating a User
 
 To set up user accounts on the app, you will need to do the following steps
 

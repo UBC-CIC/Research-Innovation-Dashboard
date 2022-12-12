@@ -15,6 +15,7 @@
 | [Metrics](#Metrics)                          | Top 100 research keywords word cloud                  |
 | [Admin Dashboard](#Admin-Dashboard)          | Update logs, Changing Scopus IDs, Viewing Flagged IDs |
 | [Updating Researchers](#Updating-Researchers)| Process for Updating Researcher Data                  |
+| [Updating Grant Data](#updating-grant-data)  | Process for Updating Grant Data
 
 **Note:** The screenshots contained in this User Guide show some information as redacted to obscure data that is not fully up to date.
 <br>
@@ -206,3 +207,38 @@ Below that, flagged researcher entries are grouped into tables with the columns 
 5. The data pipeline will now run on its own and populate the database. This process will take ~90 minutes. If you navigate to the page you visited in part 2 of this step you can view the status of the data pipeline. Once it is finished running the step function execution status will say `Succeeded`.
    ![alt text](images/deploymentGuide/state_machine_success.jpg)
 
+## Updating Grant Data
+
+**NOTE**: grant data should be updated every 6 months or so. We have include a pricing estimate for each services involved in this Grant Data Pipeline.
+
+1. Refer to the `User Guide to Grant Downloads` for instructions on how to obtain the grant data for your institution.
+2. Create a folder called `raw`, this will be the folder that contain the different files to be upload.
+3. Inside the `raw` folder, create 4 subfolders: `cihr`, `nserc`, `sshrc`, `cfi`. The folder names are **case sensitive**, please follow the exact naming.
+4. Inside each of the subfolder, put the corresponding CSV file for that grant there. For SSHRC, please also remember to include the `sshrc_program_codes.csv` file along with the SSHRC grant data CSV file. The resulting folder structure should look like this:
+   ![alt text](images/deploymentGuide/grant-data-folder-structure.png)
+5. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
+6. Search for a bucket whose name contains `grantdatastack-grantdatas3bucket`. The full name will be slightly different, but it should begin with that identifier. Use the search function to help you find it if necessary.
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket.png)
+7. Click Upload
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-upload-button.png)
+8. Click Add folder
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-add-folder.png)
+9. Select the **raw** folder that you prepared earlier and click Upload
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-select-upload.png)
+10. Review the files that appear on the upload window. **If this is an initial upload then there should be 5 files**. Note how **SSHRC** has two files in the same **sshrc** folder as mentioned earlier. If you notice that there are extra files that get uploaded unintentionally, simply select the box next to them and hit Remove (for example, macOS tends to have hidden files call .DS_Store that could be accidentally uploaded). Otherwise, hit Upload.
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-upload-all.png)
+11. The upload should now be initiated and you will be directed to a screen that show the uploads status
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-upload-done.png)
+
+**NOTE**: if you found out that you there was a mistake in the uploading process, either you put the wrong files in the wrong folders, or there were extra files uploaded accidentally, then you should **delete the folder that contains the wrong file on S3** then ****wait for 20 minutes and redo the uploading process**. You can individual upload the subfolders (cihr, nserc, sshrc, or cfi), but make sure to upload the folder(s) inside the **raw** folder, and make sure the folder naming convention is maintained.
+
+12. If the uploading process was performed correctly, the Grant Data Pipeline will automatically be invoked and the new data will show up in the RDS PostgreSQL database after around 20-30 minutes or so.
+
+13. After around 20 minutes, navigate to the S3 bucket that you uploaded the grant earlier. If you're still having that page open, simply refresh the page. If this Grant Data Pipeline has successfully executed, you should see another 2 folders being added (**clean** and **ids-assigned**) in addition to your **raw** folder.
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-done.png)
+
+14. By going into those 2 new folders, you should see that they have a **similar subfolder structure to raw**. You dont have to do anything further.
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-clean.png)
+   ![alt text](images/deploymentGuide/grant-data-s3-bucket-ids-assigned.png)
+
+15. If you see that a folder(s) is missing. Please wait for another 10 or so minutes because this could be a latency issue. If you came back and check and that missing folder still has not show up, then it is possible that a wrong file was uploaded in **raw** folder. Please double check your **raw** folder, follow the instructions above to reupload accordingly.
