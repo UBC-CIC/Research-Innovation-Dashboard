@@ -101,7 +101,7 @@ def createResearcherList():
 
     # fetch all data from database
     cursor = connection.cursor()
-    query = "SELECT first_name, last_name, id FROM public.researcher_data"
+    query = "SELECT first_name, last_name, researcher_id FROM public.researcher_data"
     cursor.execute(query)
     results = cursor.fetchall()
 

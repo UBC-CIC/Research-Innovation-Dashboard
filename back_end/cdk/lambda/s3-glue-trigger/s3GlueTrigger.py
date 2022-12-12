@@ -82,28 +82,50 @@ def lambda_handler(event, context):
 
             # glue api call to list the job runs, limited to the most recent runs
             jobRuns = glue_client.get_job_runs(JobName=jobName, MaxResults=1)
-            latestRunState = jobRuns["JobRuns"][0]["JobRunState"]
 
             # check if the raw file and the program code file is there
-            if objectCount == 2 and latestRunState in ("STOPPED", "SUCCEEDED", "FAILED", "TIMEOUT"):
-                try:
+            if objectCount == 2:
+                if not jobRuns["JobRuns"]:
+                    try:
 
-                    for file in objectList["Contents"]:
-                        # using regex to match for the name of the program code csv file
-                        if re.match(r"(?i).*(program).*(code).*", file["Key"]):
-                            arguments["--PROGRAM_CODE_KEY"] = file["Key"]
-                        else:
-                            arguments["--FILENAME_RAW"] = file["Key"]
-                    response = glue_client.start_job_run(
-                        JobName=jobName,
-                        MaxCapacity=MAX_CAPACITY,
-                        Timeout=TIMEOUT,
-                        Arguments=arguments
-                    )
-                    print("Started Glue Job: " + jobName)
-                except ClientError as e:
-                    if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
-                        print(jobName + " is at max concurrency")
+                        for file in objectList["Contents"]:
+                            # using regex to match for the name of the program code csv file
+                            if re.match(r"(?i).*(program).*(code).*", file["Key"]):
+                                arguments["--PROGRAM_CODE_KEY"] = file["Key"]
+                            else:
+                                arguments["--FILENAME_RAW"] = file["Key"]
+                        response = glue_client.start_job_run(
+                            JobName=jobName,
+                            MaxCapacity=MAX_CAPACITY,
+                            Timeout=TIMEOUT,
+                            Arguments=arguments
+                        )
+                        print("Started Glue Job: " + jobName)
+                    except ClientError as e:
+                        if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
+                            print(jobName + " is at max concurrency")
+
+                else:
+                    latestRunState = jobRuns["JobRuns"][0]["JobRunState"]
+                    if latestRunState in ("STOPPED", "SUCCEEDED", "FAILED", "TIMEOUT"):
+                        try:
+
+                            for file in objectList["Contents"]:
+                                # using regex to match for the name of the program code csv file
+                                if re.match(r"(?i).*(program).*(code).*", file["Key"]):
+                                    arguments["--PROGRAM_CODE_KEY"] = file["Key"]
+                                else:
+                                    arguments["--FILENAME_RAW"] = file["Key"]
+                            response = glue_client.start_job_run(
+                                JobName=jobName,
+                                MaxCapacity=MAX_CAPACITY,
+                                Timeout=TIMEOUT,
+                                Arguments=arguments
+                            )
+                            print("Started Glue Job: " + jobName)
+                        except ClientError as e:
+                            if e.response['Error']['Code'] == 'ConcurrentRunsExceededException':
+                                print(jobName + " is at max concurrency")
 
         # other than that this script will work for any grant data
         # just make sure the folder structure is raw/mygrant/mygrant-raw.csv

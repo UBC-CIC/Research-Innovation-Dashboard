@@ -413,7 +413,7 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    AdvancedSearchPublicationsResolver.addDependsOn(opensearchDataSource);
+    AdvancedSearchGrantsResolver.addDependsOn(opensearchDataSource);
 
     //Create all the PostgreSQL resolvers
     let postgresqlDBQueryList = ["allPublicationsPerFacultyQuery", "facultyMetrics", "getAllDepartments",
