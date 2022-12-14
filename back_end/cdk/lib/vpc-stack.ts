@@ -64,6 +64,13 @@ export class VpcStack extends Stack {
       subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED},
     });
 
+    // Add Glue endpoint to VPC
+    this.vpc.addInterfaceEndpoint("Glue Endpoint", {
+      service: ec2.InterfaceVpcEndpointAwsService.GLUE,
+      securityGroups: [defaultSecurityGroup],
+      subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED}
+    });
+
     // create opensearch service linked role. Without this role you cannot attach a vpc to opensearch
     this.openSearchVPCPermissions = new iam.CfnServiceLinkedRole(this, 'OpenSearchSLR', {
         awsServiceName: 'opensearchservice.amazonaws.com'

@@ -76,6 +76,10 @@ export class GrantDataStack extends Stack {
       code: lambda.Code.fromAsset("lambda/create-grant-folders"),
       timeout: cdk.Duration.minutes(1),
       memorySize: 512,
+      vpc: vpcStack.vpc,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED
+      },
       environment: {
         "BUCKET_NAME": grantDataS3Bucket.bucketName
       },
@@ -95,7 +99,11 @@ export class GrantDataStack extends Stack {
       handler: "s3GlueTrigger.lambda_handler",
       code: lambda.Code.fromAsset("lambda/s3-glue-trigger"),
       timeout: cdk.Duration.minutes(1),
-      memorySize: 512,
+      memorySize: 512, 
+      vpc: vpcStack.vpc,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED
+      }
     });
 
     glueTrigger.addToRolePolicy(
@@ -494,6 +502,7 @@ export class GrantDataStack extends Stack {
     cleanCfiJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     assignIdsJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     storeDataJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    createFolders.applyRemovalPolicy(RemovalPolicy.DESTROY);
     glueTrigger.applyRemovalPolicy(RemovalPolicy.DESTROY);
     glueConnection.applyRemovalPolicy(RemovalPolicy.DESTROY);
     glueRole.applyRemovalPolicy(RemovalPolicy.DESTROY);
