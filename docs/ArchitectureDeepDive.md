@@ -2,7 +2,7 @@
 
 ## Architecture
 
-![Architecture diagram](../docs/images/architecture-diagram.png)
+![Architecture diagram](../docs/images/VPRI_Architechture_Phase_II.drawio.png?raw=true)
 
 ## Description
 ### Back End Flow (1-15)

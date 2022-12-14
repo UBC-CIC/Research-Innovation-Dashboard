@@ -179,7 +179,7 @@ cdk deploy GrantDataStack --parameters GrantDataStack:cfiInstitutionName="The Un
 
 # Step 6: Upload data to S3 for the Grant Data Pipeline
 
-1. Refer to the `User Guide to Grant Downloads` for instructions on how to obtain the grant data for your institution.
+1. Refer to the [User Guide to Grant Downloads](/User%20Guide%20to%20Grant%20Downloads.pdf) for instructions on how to obtain the grant data for your institution.
 2. Create a folder called `raw`, this will be the folder that contain the different files to be upload.
 3. Inside the `raw` folder, create 4 subfolders: `cihr`, `nserc`, `sshrc`, `cfi`. The folder names are **case sensitive**, please follow the exact naming.
 4. Inside each of the subfolder, put the corresponding CSV file for that grant there. For SSHRC, please also remember to include the `sshrc_program_codes.csv` file along with the SSHRC grant data CSV file. The resulting folder structure should look like this:
