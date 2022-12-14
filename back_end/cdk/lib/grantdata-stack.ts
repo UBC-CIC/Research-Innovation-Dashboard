@@ -10,6 +10,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as glue from "aws-cdk-lib/aws-glue";
 import * as sm from "aws-cdk-lib/aws-secretsmanager";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import { triggers } from "aws-cdk-lib";
 import { DatabaseStack } from "./database-stack";
 import { Effect, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 
@@ -67,6 +68,26 @@ export class GrantDataStack extends Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
     });
+
+    // create folder structure for the user to upload grant CSV files
+    const createFolders = new triggers.TriggerFunction(this, "createFolders", {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: "createGrantFolders.lambda_handler",
+      code: lambda.Code.fromAsset("lambda/create-grant-folders"),
+      timeout: cdk.Duration.minutes(1),
+      memorySize: 512,
+      environment: {
+        "BUCKET_NAME": grantDataS3Bucket.bucketName
+      },
+    });
+    createFolders.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+        resources: [`arn:aws:s3:::${grantDataS3Bucket.bucketName}/*`],
+      })
+    );
+    createFolders.executeAfter(grantDataS3Bucket)
 
     // Lambda function to trigger Glue jobs
     const glueTrigger = new lambda.Function(this, "s3-glue-trigger", {
@@ -296,7 +317,7 @@ export class GrantDataStack extends Stack {
       "library-set": "analytics",
       "--SECRET_NAME": databaseStack.secretPath,
       "--BUCKET_NAME": grantDataS3Bucket.bucketName,
-      "--CFI_INSTITUTION_NAME": cfiInstitutionName.valueAsString
+      "--CFI_INSTITUTION_NAME": cfiInstitutionName.valueAsString,
     };
 
     // Glue Job: clean cihr data
