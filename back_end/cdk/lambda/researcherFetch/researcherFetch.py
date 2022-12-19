@@ -42,7 +42,7 @@ def storeResearcher(researcher, scopus_id, credentials):
     cursor = connection.cursor()
     
     time_string = str(time.time())
-    employee_id = researcher['UBC_EMPLOYEE_ID']
+    employee_id = researcher['INSTITUTION_EMPLOYEE_ID']
     first_name = researcher['PREFERRED_FIRST_NAME'].replace("'", "''")
     preferred_name = researcher['PREFERRED_FULL_NAME'].replace("'", "''")
     last_name = researcher['PREFERRED_LAST_NAME'].replace("'", "''")

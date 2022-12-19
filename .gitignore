@@ -23,7 +23,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-ubc_data.csv
+institution_data.csv
 
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend

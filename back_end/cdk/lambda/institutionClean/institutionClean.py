@@ -31,18 +31,18 @@ def lambda_handler(event, context):
     for i in range (len(ranks)):
         ranks[i] = ranks[i].replace(' ', '')
     bucket_name = os.environ.get('S3_BUCKET_NAME')
-    key = 'researcher_data/ubc_data.csv'
+    key = 'researcher_data/institution_data.csv' 
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
-    ubc_rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
+    table_rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
     clean_rows_count = 0
-    
-    with open('/tmp/ubc_clean.csv', mode='w', newline='', encoding='utf-8-sig') as ubc_clean:
-        writer = csv.writer(ubc_clean, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        file_headers = list(ubc_rows[0].keys())[1:]
+
+    with open('/tmp/institution_clean.csv', mode='w', newline='', encoding='utf-8-sig') as institution_clean:
+        writer = csv.writer(institution_clean, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        file_headers = list(table_rows[0].keys())[1:]
         file_headers.append('CLEANED_FIRST_NAME')
         file_headers.append('CLEANED_LAST_NAME')
         writer.writerow(file_headers)
-        for row in ubc_rows:
+        for row in table_rows:
             rank = row['PRIMARY_ACADEMIC_RANK'].replace(' ', '')
             if rank in ranks:
                 del row['SNAPSHOT_DATE']
@@ -64,8 +64,8 @@ def lambda_handler(event, context):
     #upload the data into s3
     s3 = boto3.resource('s3')
     bucket = s3.Bucket(bucket_name)
-    key = 'researcher_data/ubc_clean.csv'
-    bucket.upload_file('/tmp/ubc_clean.csv', key)
+    key = 'researcher_data/institution_clean.csv'
+    bucket.upload_file('/tmp/institution_clean.csv', key)
     
     #Prepare the input of the next state in the step function
     nextStateInput = []
