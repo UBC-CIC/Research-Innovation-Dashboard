@@ -144,9 +144,9 @@ cdk deploy GrantDataStack --parameters GrantDataStack:cfiInstitutionName="The Un
 
 # Step 4: Upload Data to S3 for the DataPipeline
 
-1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for UBC and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
+1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for your Institution and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
    ![alt text](images/deploymentGuide/scival_download.jpg)
-2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `ubc_data.csv`
+2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `institution_data.csv`
 3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
    ![alt text](images/deploymentGuide/s3_search.jpg)
 4. In the `Buckets` search bar enter `datafetchstack` and click on the name of the bucket.
@@ -157,7 +157,7 @@ cdk deploy GrantDataStack --parameters GrantDataStack:cfiInstitutionName="The Un
    ![alt text](images/deploymentGuide/s3_create_folder.jpg)
 7. Click on the `researcher_data` folder then click `Upload`.
    ![alt text](images/deploymentGuide/s3_opened_folder.jpg)
-8. Click `Add Files` and select the `scopus_ids.csv` file and the `ubc_data.csv` file (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: [Example Matches File](example_data/manual_matches(example).csv)) then click `Upload`.
+8. Click `Add Files` and select the `scopus_ids.csv` file and the `institution_data.csv` file (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: [Example Matches File](example_data/manual_matches(example).csv)) then click `Upload`.
    ![alt text](images/deploymentGuide/s3_upload.jpg)
 9. Once the upload is complete click `Close`
    ![alt text](images/deploymentGuide/s3_upload_complete.jpg)

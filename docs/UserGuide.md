@@ -27,6 +27,8 @@ The Home page is a combination of both the [Researchers Search Component](#Resea
 ![alt text](images/userGuide/home01.png)
 ![alt text](images/userGuide/home02.png)
 
+#### NOTE: "Institution" in this document refers to the institution that deploys this solution.
+
 ## Researchers Search
 
 The search bar on this page returns researcher results that match the user inputted search term. Researchers that are adjunct professors will have a `*` character beside their name. Filters for researchers can be found on the left hand sidebar. There are 2 categories to filter by (Department, Faculty).
@@ -131,7 +133,7 @@ The Impact tab displays a table with all researchers sorted by their H index for
 
 ## Metrics
 
-The Metrics tab displays a word cloud containing the top 100 keywords in UBC research during a user selected date range. The font size of each word in the word cloud corresponds to the frequency that that word has appeared in publication titles during the selected date range. The earliest available year is 1908, and the latest available year is the current year.
+The Metrics tab displays a word cloud containing the top 100 keywords in the Institution's research during a user selected date range. The font size of each word in the word cloud corresponds to the frequency that that word has appeared in publication titles during the selected date range. The earliest available year is 1908, and the latest available year is the current year.
 ![alt text](images/userGuide/metrics01.png)
 
 The selected date range can be changed by moving either one of the date range slider buttons. A new word cloud will then be formed with the words for the updated date range.
@@ -174,22 +176,22 @@ Below that, flagged researcher entries are grouped into tables with the columns 
 
 ### Step 1: Upload Data to S3
 
-1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for UBC and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
+1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for your Institution and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
    ![alt text](images/deploymentGuide/scival_download.jpg)
-2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `ubc_data.csv`
+2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `institution_data.csv`
 3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
    ![alt text](images/deploymentGuide/s3_search.jpg)
 4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
    ![alt text](images/deploymentGuide/s3_bucket_search.jpg)
 5. Click on the `researcher_data` folder.
    ![alt text](images/userGuide/folder_select.jpg)
-6. Select the `ubc_data.csv` and `scopus_ids.csv` files (also select the `manual_matches.csv` file if it is present) and click `Delete`
+6. Select the `institution_data.csv` and `scopus_ids.csv` files (also select the `manual_matches.csv` file if it is present) and click `Delete`
    ![alt text](images/userGuide/file_select.jpg)
 7. Type `permanently delete` in the text input field then click `Delete objects`.
    ![alt text](images/userGuide/file_deletion.jpg)
 8. Click `Close` once the deletion is finished.
    ![alt text](images/userGuide/deletion_close.jpg)
-9. Click `Add Files` and select the `scopus_ids.csv` file from part 1 and the `ubc_data.csv` file from part 2 (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: [Example Matches File](example_data/manual_matches(example).csv)) then click `Upload`.
+9. Click `Add Files` and select the `scopus_ids.csv` file from part 1 and the `institution_data.csv` file from part 2 (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: [Example Matches File](example_data/manual_matches(example).csv)) then click `Upload`.
    ![alt text](images/deploymentGuide/s3_upload.jpg)
 10. Once the upload is complete click `Close`
    ![alt text](images/deploymentGuide/s3_upload_complete.jpg)
