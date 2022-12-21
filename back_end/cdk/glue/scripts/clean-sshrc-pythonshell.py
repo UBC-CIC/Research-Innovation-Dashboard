@@ -72,10 +72,6 @@ def cleanSshrc(bucket, key_raw, key_clean, key_program_codes):
     # read raw data into a pandas DataFrame
     df = pd.read_csv(raw_data, skiprows=2, skipfooter=2, header=0)
 
-    # filter for University of British Columbia
-    df = df[df["Administrating Organization"]
-            == "University of British Columbia"]
-
     # split Name into fname and lname, then drop original column
     df["First Name"] = df["Applicant"].str.split(",", expand=True)[1]
     df["First Name"] = df["First Name"].str.replace(" ", "", 1)
