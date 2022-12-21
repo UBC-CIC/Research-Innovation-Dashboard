@@ -175,7 +175,7 @@ export const getPub = /* GraphQL */ `
 export const getResearcher = /* GraphQL */ `
   query GetResearcher($id: ID!) {
     getResearcher(id: $id) {
-      employee_id
+      institution_user_id
       areas_of_interest
       campus
       email
@@ -413,7 +413,7 @@ export const getUpdatePublicationsLogs = /* GraphQL */ `
 export const getFlaggedIds = /* GraphQL */ `
   query GetFlaggedIds {
     getFlaggedIds {
-      employee_id
+      institution_user_id
       areas_of_interest
       campus
       email

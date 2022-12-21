@@ -39,6 +39,8 @@ def lambda_handler(event, context):
     with open('/tmp/institution_clean.csv', mode='w', newline='', encoding='utf-8-sig') as institution_clean:
         writer = csv.writer(institution_clean, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         file_headers = list(table_rows[0].keys())[1:]
+        # change the column name to INSTITUTION_USER_ID
+        file_headers[3] = "INSTITUTION_USER_ID"
         file_headers.append('CLEANED_FIRST_NAME')
         file_headers.append('CLEANED_LAST_NAME')
         writer.writerow(file_headers)

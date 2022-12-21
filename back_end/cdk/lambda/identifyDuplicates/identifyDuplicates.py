@@ -148,7 +148,7 @@ def lambda_handler(event, context):
     while(i < len(rows)):
         duplicates = []
         for row in rows:
-            if (row['INSTITUTION_EMPLOYEE_ID'] == rows[i]['INSTITUTION_EMPLOYEE_ID']):
+            if (row['INSTITUTION_USER_ID'] == rows[i]['INSTITUTION_USER_ID']):
                 duplicates.append(row)
         matches.append(duplicates)
         i += len(duplicates)
@@ -165,14 +165,14 @@ def lambda_handler(event, context):
     
     with open('/tmp/solved_duplicates.csv', mode='w', newline='', encoding='utf-8-sig') as solved_duplicates_file:
         writer = csv.writer(solved_duplicates_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'INSTITUTION_EMPLOYEE_ID', 
+        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'INSTITUTION_USER_ID', 
                     'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
                     'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
                     'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'EXTRA_IDS', 'JARO_DISTANCE', 'CLOSEST_MATCH_NAME']
         writer.writerow(file_headers)
         for match in solved_duplicates:
             writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], 
-                             match['INSTITUTION_EMPLOYEE_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
+                             match['INSTITUTION_USER_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
                              match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
                              match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
                              match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['SCOPUS_ID'], [], 
@@ -207,14 +207,14 @@ def lambda_handler(event, context):
     # Write the unsolved duplicates to a csv file
     with open('/tmp/unsolved_duplicates.csv', mode='w', newline='', encoding='utf-8-sig') as unsolved_duplicates_file:
         writer = csv.writer(unsolved_duplicates_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'INSTITUTION_EMPLOYEE_ID', 
+        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'INSTITUTION_USER_ID', 
                     'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
                     'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
                     'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'JARO_DISTANCE', 'EXTRA_IDS']
         writer.writerow(file_headers)
         for match in extra_id_authors:
             writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], 
-                             match['INSTITUTION_EMPLOYEE_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
+                             match['INSTITUTION_USER_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
                              match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
                              match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
                              match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['SCOPUS_ID'], 

@@ -42,7 +42,7 @@ def storeResearcher(researcher, scopus_id, credentials):
     cursor = connection.cursor()
     
     time_string = str(time.time())
-    employee_id = researcher['INSTITUTION_EMPLOYEE_ID']
+    institution_user_id = researcher['INSTITUTION_USER_ID']
     first_name = researcher['PREFERRED_FIRST_NAME'].replace("'", "''")
     preferred_name = researcher['PREFERRED_FULL_NAME'].replace("'", "''")
     last_name = researcher['PREFERRED_LAST_NAME'].replace("'", "''")
@@ -57,9 +57,9 @@ def storeResearcher(researcher, scopus_id, credentials):
     extra_ids = '{}'
     if "EXTRA_IDS" in researcher:
         extra_ids = str(researcher['EXTRA_IDS']).replace("'", '"').replace('[', '{').replace(']', '}')
-    queryline1 = "INSERT INTO public.researcher_data(employee_id, first_name, preferred_name, last_name, email, rank, job_stream, prime_department, second_department, prime_faculty, second_faculty, campus, scopus_id, extra_ids, last_updated) "
-    queryline2 = "VALUES ('" + employee_id + "', '" + first_name + "', '" + preferred_name + "', '" + last_name + "', '" + email + "', '" + rank + "', '" + job_stream + "', '" + prime_department + "', '" + second_department + "', '" + prime_faculty + "', '" + second_faculty + "', '" + campus + "', '" + scopus_id + "', '" + extra_ids + "', '" + time_string + "')"
-    queryline3 = "ON CONFLICT (employee_id) DO UPDATE "
+    queryline1 = "INSERT INTO public.researcher_data(institution_user_id, first_name, preferred_name, last_name, email, rank, job_stream, prime_department, second_department, prime_faculty, second_faculty, campus, scopus_id, extra_ids, last_updated) "
+    queryline2 = "VALUES ('" + institution_user_id + "', '" + first_name + "', '" + preferred_name + "', '" + last_name + "', '" + email + "', '" + rank + "', '" + job_stream + "', '" + prime_department + "', '" + second_department + "', '" + prime_faculty + "', '" + second_faculty + "', '" + campus + "', '" + scopus_id + "', '" + extra_ids + "', '" + time_string + "')"
+    queryline3 = "ON CONFLICT (institution_user_id) DO UPDATE "
     queryline4 = "SET first_name='" + first_name + "', preferred_name='" + preferred_name + "', last_name='" + last_name + "', email='" + email + "', rank='" + rank + "', job_stream='" + job_stream + "', prime_department='" + prime_department + "', second_department='" + second_department + "', prime_faculty='" + prime_faculty + "', second_faculty='" + second_faculty + "', campus='" + campus + "', scopus_id='" + scopus_id + "', last_updated='" + time_string + "'"
     cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
     cursor.close()

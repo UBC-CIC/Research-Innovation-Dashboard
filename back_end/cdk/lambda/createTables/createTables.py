@@ -49,7 +49,7 @@ def lambda_handler(event, context):
     columns = []
     #Added our controlled uuid to database table creation
     columns.append(createColumn('researcher_id', 'uuid', 'DEFAULT uuid_generate_v4() PRIMARY KEY', False))
-    columns.append(createColumn('employee_id', 'character varying', 'NOT NULL UNIQUE', False))
+    columns.append(createColumn('institution_user_id', 'character varying', 'NOT NULL UNIQUE', False))
     columns.append(createColumn('first_name', 'character varying', '', False))
     columns.append(createColumn('last_name', 'character varying', '', False))
     columns.append(createColumn('preferred_name', 'character varying', '', False))
