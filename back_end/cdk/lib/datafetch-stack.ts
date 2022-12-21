@@ -190,10 +190,10 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
-    const ubcClean = new lambda.Function(this, 'ubcClean', {
+    const institutionClean = new lambda.Function(this, 'institutionClean', {
       runtime: lambda.Runtime.PYTHON_3_9,
-      handler: 'ubcClean.lambda_handler',
-      code: lambda.Code.fromAsset('lambda/ubcClean'),
+      handler: 'institutionClean.lambda_handler',
+      code: lambda.Code.fromAsset('lambda/institutionClean'),
       timeout: cdk.Duration.minutes(15),
       role: nameMatchRole,
       memorySize: 512,
@@ -356,8 +356,8 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
 
-    const ubcCleanInvoke = new tasks.LambdaInvoke(this, 'Clean UBC Data', {
-      lambdaFunction: ubcClean,
+    const institutionCleanInvoke = new tasks.LambdaInvoke(this, 'Clean Institution Data', {
+      lambdaFunction: institutionClean,
       outputPath: '$.Payload',
     });
 
@@ -422,7 +422,7 @@ export class DataFetchStack extends cdk.Stack {
     });
 
     const dataFetchDefinition = scopusCleanInvoke
-      .next(ubcCleanInvoke)
+      .next(institutionCleanInvoke)
       .next(compareNamesMap)
       .next(cleanNoMatchesMap)
       .next(identifyDuplicatesMap)
@@ -438,7 +438,7 @@ export class DataFetchStack extends cdk.Stack {
 
     // Give the lambdas permission to access the S3 Bucket
     s3Bucket.grantReadWrite(scopusClean);
-    s3Bucket.grantReadWrite(ubcClean);
+    s3Bucket.grantReadWrite(institutionClean);
     s3Bucket.grantReadWrite(compareNames);
     s3Bucket.grantReadWrite(cleanNoMatches);
     s3Bucket.grantReadWrite(identifyDuplicates);

@@ -8,16 +8,16 @@ import os
 s3_client = boto3.client("s3")
 
 '''
-Compares the given ubc_name to the last name in each scopus_id_row. Returns all matches that have
+Compares the given institution_name to the last name in each scopus_id_row. Returns all matches that have
 a Jaro-Winkler distance greater than or equal to 0.95
 '''
-def SearchIdsLastName(ubc_name, scopus_id_rows):
+def SearchIdsLastName(institution_name, scopus_id_rows):
     matches = []
     max_jaro_distance = 0
     matched_name = ''
     for row in scopus_id_rows:
         scopus_name = row['CLEANED_LAST_NAME']
-        jaro_distance = get_jaro_distance(scopus_name, ubc_name, winkler=True, scaling=0.1)
+        jaro_distance = get_jaro_distance(scopus_name, institution_name, winkler=True, scaling=0.1)
         if (jaro_distance >= max_jaro_distance):
             max_jaro_distance = jaro_distance
             matched_name = row['NAME']
@@ -35,17 +35,17 @@ def SearchIdsLastName(ubc_name, scopus_id_rows):
         return(True, matches)
 
 '''
-Compares the given ubc_name to the first name in each scopus_id_row. Returns all matches that have
+Compares the given institution_name to the first name in each scopus_id_row. Returns all matches that have
 a Jaro-Winkler distance greater than or equal to 0.95
 '''
-def SearchIdsFirstName(ubc_name, scopus_id_rows, email):
+def SearchIdsFirstName(institution_name, scopus_id_rows, email):
     matches = []
     max_jaro_distance = 0
     matched_name = ''
     for row in scopus_id_rows:
         scopus_name = row['SCOPUS_CLEANED_FIRST_NAME']
         if (scopus_name):
-            jaro_distance = get_jaro_distance(scopus_name, ubc_name, winkler=True, scaling=0.1)
+            jaro_distance = get_jaro_distance(scopus_name, institution_name, winkler=True, scaling=0.1)
         else:
             jaro_distance = 0
         if (jaro_distance >= max_jaro_distance):
@@ -90,9 +90,9 @@ associated Scopus ids in the duplicates folder as part of a .csv file.
 '''
 def lambda_handler(event, context):
     bucket_name = os.environ.get('S3_BUCKET_NAME')
-    key = 'researcher_data/ubc_clean.csv'
+    key = 'researcher_data/institution_clean.csv'
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
-    ubc_rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
+    table_rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
     key = 'researcher_data/scopus_clean.csv'
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
     scopus_id_rows = list(csv.DictReader(codecs.getreader("utf-8-sig")(data["Body"])))
@@ -100,7 +100,7 @@ def lambda_handler(event, context):
     no_matches = []
     duplicates = []
     for i in range(event['startIndex'], event['endIndex']):
-        row = ubc_rows[i]
+        row = table_rows[i]
         first_name = row['CLEANED_FIRST_NAME']
         last_name = row['CLEANED_LAST_NAME']
         results = SearchIdsLastName(last_name, scopus_id_rows)
@@ -122,15 +122,15 @@ def lambda_handler(event, context):
     
     # Write matches to csv file
     with open('/tmp/matches.csv', mode='w', newline='', encoding='utf-8-sig') as matches_file:
-        writer = csv.writer(matches_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'UBC_EMPLOYEE_ID', 
+        writer = csv.writer(matches_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
+        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'INSTITUTION_USER_ID', 
                     'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
                     'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
                     'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'EXTRA_IDS', 'JARO_DISTANCE', 'CLOSEST_MATCH_NAME']
         writer.writerow(file_headers)
         for match in found_matches:
             writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], 
-                             match['UBC_EMPLOYEE_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
+                             match['INSTITUTION_USER_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
                              match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
                              match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
                              match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['SCOPUS_ID'], [],
@@ -145,14 +145,14 @@ def lambda_handler(event, context):
     # Write the duplicates to a csv file
     with open('/tmp/duplicates.csv', mode='w', newline='', encoding='utf-8-sig') as duplicates_file:
         writer = csv.writer(duplicates_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'UBC_EMPLOYEE_ID', 
+        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'INSTITUTION_USER_ID', 
                     'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
                     'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
                     'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'JARO_DISTANCE', 'CLOSEST_MATCH_NAME']
         writer.writerow(file_headers)
         for match in duplicates:
             writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], 
-                             match['UBC_EMPLOYEE_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
+                             match['INSTITUTION_USER_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
                              match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
                              match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
                              match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['SCOPUS_ID'], 
@@ -165,7 +165,7 @@ def lambda_handler(event, context):
     # Write missing matches to csv file
     with open('/tmp/no_matches.csv', mode='w', newline='', encoding='utf-8-sig') as no_matches_file:
         writer = csv.writer(no_matches_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'CLEANED_NAME', 'UBC_EMPLOYEE_ID', 
+        file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'CLEANED_NAME', 'INSTITUTION_USER_ID', 
                     'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
                     'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
                     'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'JARO_DISTANCE', 
@@ -173,7 +173,7 @@ def lambda_handler(event, context):
         writer.writerow(file_headers)
         for match in no_matches:
             writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], '',
-                             match['UBC_EMPLOYEE_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
+                             match['INSTITUTION_USER_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
                              match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
                              match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
                              match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['JARO_DISTANCE'],

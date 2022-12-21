@@ -27,6 +27,8 @@ The Home page is a combination of both the [Researchers Search Component](#Resea
 ![alt text](images/userGuide/home01.png)
 ![alt text](images/userGuide/home02.png)
 
+#### NOTE: "Institution" in this document refers to the institution that deploys this solution.
+
 ## Researchers Search
 
 The search bar on this page returns researcher results that match the user inputted search term. Researchers that are adjunct professors will have a `*` character beside their name. Filters for researchers can be found on the left hand sidebar. There are 2 categories to filter by (Department, Faculty).
@@ -131,7 +133,7 @@ The Impact tab displays a table with all researchers sorted by their H index for
 
 ## Metrics
 
-The Metrics tab displays a word cloud containing the top 100 keywords in UBC research during a user selected date range. The font size of each word in the word cloud corresponds to the frequency that that word has appeared in publication titles during the selected date range. The earliest available year is 1908, and the latest available year is the current year.
+The Metrics tab displays a word cloud containing the top 100 keywords in the Institution's research during a user selected date range. The font size of each word in the word cloud corresponds to the frequency that that word has appeared in publication titles during the selected date range. The earliest available year is 1908, and the latest available year is the current year.
 ![alt text](images/userGuide/metrics01.png)
 
 The selected date range can be changed by moving either one of the date range slider buttons. A new word cloud will then be formed with the words for the updated date range.
@@ -174,22 +176,22 @@ Below that, flagged researcher entries are grouped into tables with the columns 
 
 ### Step 1: Upload Data to S3
 
-1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for UBC and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
+1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for your Institution and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
    ![alt text](images/deploymentGuide/scival_download.jpg)
-2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `ubc_data.csv`
+2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `institution_data.csv`. Note that the `INSTITUTION_USER_ID` column could represents any types of **unique ids** (employee id from institution's HR data, uuid from the institution's external database, etc), and each ids must be associated with one person(researcher) only.
 3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
    ![alt text](images/deploymentGuide/s3_search.jpg)
 4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
    ![alt text](images/deploymentGuide/s3_bucket_search.jpg)
 5. Click on the `researcher_data` folder.
    ![alt text](images/userGuide/folder_select.jpg)
-6. Select the `ubc_data.csv` and `scopus_ids.csv` files (also select the `manual_matches.csv` file if it is present) and click `Delete`
+6. Select the `institution_data.csv` and `scopus_ids.csv` files (also select the `manual_matches.csv` file if it is present) and click `Delete`
    ![alt text](images/userGuide/file_select.jpg)
 7. Type `permanently delete` in the text input field then click `Delete objects`.
    ![alt text](images/userGuide/file_deletion.jpg)
 8. Click `Close` once the deletion is finished.
    ![alt text](images/userGuide/deletion_close.jpg)
-9. Click `Add Files` and select the `scopus_ids.csv` file from part 1 and the `ubc_data.csv` file from part 2 (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: [Example Matches File](example_data/manual_matches(example).csv)) then click `Upload`.
+9. Click `Add Files` and select the `scopus_ids.csv` file from part 1 and the `institution_data.csv` file from part 2 (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: [Example Matches File](example_data/manual_matches(example).csv)) then click `Upload`.
    ![alt text](images/deploymentGuide/s3_upload.jpg)
 10. Once the upload is complete click `Close`
    ![alt text](images/deploymentGuide/s3_upload_complete.jpg)
@@ -211,14 +213,14 @@ Below that, flagged researcher entries are grouped into tables with the columns 
 
 **NOTE**: grant data should be updated every 6 months or so.
 
-1. Refer to the [User Guide to Grant Downloads](/User%20Guide%20to%20Grant%20Downloads.pdf) for instructions on how to obtain the grant data for your institution.
+1. Refer to the [User Guide to Grant Downloads](User%20Guide%20to%20Grant%20Downloads.pdf) for instructions on how to obtain the grant data for your institution.
 2. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar. Find the bucket whose name starts with `grantdatastack-grantdatas3bucket` (the full name will have some random alpha-numeric letter after that initial identifier).
 3. There are a folder called `raw` already created for you at deployment, and it contains 4 subfolders (`cihr`, `cfi`, `nserc`, `sshrc`). Inside each of the subfolder, put the corresponding CSV file for that grant there. For SSHRC, please also remember to include the `sshrc_program_codes.csv` file along with the SSHRC grant data CSV file. The resulting folder structure should look like this:
    ![alt text](images/deploymentGuide/grant-data-folder-structure.png)
 
 **NOTE**:
 
-+ If you found out that you there was a mistake in the uploading process, either you put the wrong files in the wrong folders, or there were extra files uploaded accidentally, then you should **delete the wrong file** then ****wait for 20 minutes and redo the uploading process**. 
++ If you found out that you there was a mistake in the uploading process, either you put the wrong files in the wrong folders, or there were extra files uploaded accidentally, then you should **delete the wrong file** then **wait for 20 minutes and redo the uploading process**. 
 + In the extremely unlikely situation that you do not see the `raw` folder and its 4 subfolders automatically created during **first-time deployment**, you can also manually create the `raw` folder first, then the 4 subfolders inside.
 
 4. If the uploading process was performed correctly, the Grant Data Pipeline will automatically be invoked and the new data will show up in the RDS PostgreSQL database after around 20 min or so.

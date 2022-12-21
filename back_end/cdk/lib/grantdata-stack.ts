@@ -78,10 +78,10 @@ export class GrantDataStack extends Stack {
       memorySize: 512,
       vpc: vpcStack.vpc,
       vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
       },
       environment: {
-        "BUCKET_NAME": grantDataS3Bucket.bucketName
+        BUCKET_NAME: grantDataS3Bucket.bucketName,
       },
     });
     createFolders.addToRolePolicy(
@@ -91,7 +91,7 @@ export class GrantDataStack extends Stack {
         resources: [`arn:aws:s3:::${grantDataS3Bucket.bucketName}/*`],
       })
     );
-    createFolders.executeAfter(grantDataS3Bucket)
+    createFolders.executeAfter(grantDataS3Bucket);
 
     // Lambda function to trigger Glue jobs
     const glueTrigger = new lambda.Function(this, "s3-glue-trigger", {
@@ -99,11 +99,11 @@ export class GrantDataStack extends Stack {
       handler: "s3GlueTrigger.lambda_handler",
       code: lambda.Code.fromAsset("lambda/s3-glue-trigger"),
       timeout: cdk.Duration.minutes(1),
-      memorySize: 512, 
+      memorySize: 512,
       vpc: vpcStack.vpc,
       vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED
-      }
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     glueTrigger.addToRolePolicy(
@@ -260,7 +260,11 @@ export class GrantDataStack extends Stack {
 
     // Put pyjarowinkler whl file to glue S3 bucket
     new s3deploy.BucketDeployment(this, "DeployGlueJobExtraLibs", {
-      sources: [s3deploy.Source.asset("./glue/extra-python-lib")],
+      sources: [
+        s3deploy.Source.asset("./glue/extra-python-lib/downloaded_modules"),
+        s3deploy.Source.asset("./glue/extra-python-lib/custom_modules/dist"),
+      ],
+      exclude: [".DS_Store"],
       destinationBucket: glueS3Bucket,
       destinationKeyPrefix: "extra-python-libs",
     });
@@ -316,12 +320,8 @@ export class GrantDataStack extends Stack {
     const MAX_CAPACITY = 0.0625; // 1/16 of a DPU, lowest setting
     const MAX_CONCURRENT_RUNS = 7; // 4 concurrent runs of the same job simultaneously
     const TIMEOUT = 120; // 120 min timeout duration
-    const defaultArguments: { [key: string]: string } = {
-      "--extra-py-files":
-        "s3://" +
-        glueS3Bucket.bucketName +
-        "/extra-python-libs/" +
-        "pyjarowinkler-1.8-py2.py3-none-any.whl",
+    const defaultArguments = {
+      "--extra-py-files": `s3://${glueS3Bucket.bucketName}/extra-python-libs/pyjarowinkler-1.8-py2.py3-none-any.whl,s3://${glueS3Bucket.bucketName}/extra-python-libs/custom_utils-0.1-py3-none-any.whl`,
       "library-set": "analytics",
       "--SECRET_NAME": databaseStack.secretPath,
       "--BUCKET_NAME": grantDataS3Bucket.bucketName,

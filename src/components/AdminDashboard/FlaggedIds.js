@@ -80,7 +80,7 @@ const FlaggedIds = () => {
                         overflow: "wrap",
                       }}
                     >
-                      {researcher.employee_id}
+                      {researcher.institution_user_id}
                     </Box>
                   </TableCell>
                   <TableCell>
