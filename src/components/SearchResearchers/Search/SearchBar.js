@@ -91,6 +91,8 @@ export default function Search_Bar(props) {
         grantAgenciesToFilterBy: selectedGrants,
       },
     });
+
+    console.log(searchGrantsResults.data.searchGrants)
     
     props.setGrantsSearchResults(searchGrantsResults.data.searchGrants)
   }
