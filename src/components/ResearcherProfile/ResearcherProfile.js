@@ -317,6 +317,7 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowSimilarResearchers(false);
     setShowGrants(false);
+    setShowFullGraph(false);
   }
 
   function showAreasOfInterestFunc() {
@@ -327,6 +328,7 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowSimilarResearchers(false);
     setShowGrants(false);
+    setShowFullGraph(false);
   }
 
   function showPublicationsFunc() {
@@ -335,6 +337,7 @@ export default function Researcher_profile_overview() {
     setShowPublications(true);
     setShowSimilarResearchers(false);
     setShowGrants(false);
+    setShowFullGraph(false);
   }
 
   function showSimilarResearchersFunc() {
@@ -345,6 +348,7 @@ export default function Researcher_profile_overview() {
     setShowGrants(false);
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
+    setShowFullGraph(false);
   }
 
   function showGrantsFunction() {
@@ -355,6 +359,7 @@ export default function Researcher_profile_overview() {
     setShowGrants(true);
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
+    setShowFullGraph(false);
   }
 
   return (
