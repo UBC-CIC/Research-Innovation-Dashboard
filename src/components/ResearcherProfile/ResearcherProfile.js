@@ -261,13 +261,16 @@ export default function Researcher_profile_overview() {
 
     let sortedKeywordHashmap = [...keywordHashmap].sort((a, b) => b[1] - a[1]);
 
+    console.log(sortedKeywordHashmap);
+
     let sortedAreas = [];
+    let areaWeight = [];
 
     for (let i = 0; i < sortedKeywordHashmap.length; i++) {
       sortedAreas.push(sortedKeywordHashmap[i][0]);
     }
     // save weighted list of keywords to state variable
-    setSortedAreasOfInterest(sortedAreas);
+    setSortedAreasOfInterest(sortedKeywordHashmap);
   };
   const getResearcherBarGraphData = async () => {
     const bar_graph_data_response = await API.graphql({
