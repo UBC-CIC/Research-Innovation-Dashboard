@@ -205,7 +205,7 @@ export class AppsyncStack extends Stack {
         getAllDepartments: [String]
         getAllDistinctJournals: [String]
         getAllFaculty: [String]
-        getAllResearchersRankings: [Ranking]
+        getAllResearchersImpacts: [Impact]
         getNumberOfResearcherPubsAllYears(id: ID!): graphDataAllYears
         getNumberOfResearcherPubsLastFiveYears(id: ID!): graphData
         getPub(id: ID!): Publication
@@ -216,8 +216,8 @@ export class AppsyncStack extends Stack {
         getResearcherPubsByCitations(id: ID!): [Publication]
         getResearcherPubsByTitle(id: ID!): [Publication]
         getResearcherPubsByYear(id: ID!): [Publication]
-        getResearcherRankingsByDepartment(prime_department: String!): [Ranking]
-        getResearcherRankingsByFaculty(prime_faculty: String!): [Ranking]
+        getResearcherImpactsByDepartment(prime_department: String!): [Impact]
+        getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
         searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
         searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]
         similarResearchers(scopus_id: String!): [ResearcherOpenSearch]
@@ -242,7 +242,7 @@ export class AppsyncStack extends Stack {
         last_updated: String
       }
       
-      type Ranking {
+      type Impact {
         h_index: Float
         num_citations: Int
         preferred_name: String
@@ -417,10 +417,10 @@ export class AppsyncStack extends Stack {
 
     //Create all the PostgreSQL resolvers
     let postgresqlDBQueryList = ["allPublicationsPerFacultyQuery", "facultyMetrics", "getAllDepartments",
-    "getAllDistinctJournals", "getAllFaculty", "getAllResearchersRankings", "getNumberOfResearcherPubsAllYears",
+    "getAllDistinctJournals", "getAllFaculty", "getAllResearchersImpacts", "getNumberOfResearcherPubsAllYears",
     "getNumberOfResearcherPubsLastFiveYears", "getPub", "getResearcher", "getResearcherElsevier", "getResearcherFull",
     "getResearcherOrcid", "getResearcherPubsByCitations", "getResearcherPubsByTitle", "getResearcherPubsByYear",
-    "getResearcherRankingsByDepartment", "getResearcherRankingsByFaculty", "totalPublicationPerYear", "wordCloud",
+    "getResearcherImpactsByDepartment", "getResearcherImpactsByFaculty", "totalPublicationPerYear", "wordCloud",
     "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs", "getFlaggedIds", "getResearcherGrants", "getAllGrantAgencies"];
 
     for(var i = 0; i<postgresqlDBQueryList.length; i++){

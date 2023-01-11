@@ -8,7 +8,7 @@ import ResearcherProfileOverview from "../../components/ResearcherProfile/Resear
 import { Routes, Route } from "react-router-dom";
 import SearchComponent from "../../components/SearchResearchers/Search/SearchComponent";
 import AdvancedSearchComponent from "../../components/SearchResearchers/AdvancedSearch/AdvancedSearchComponent";
-import Rankings from "../../components/Rankings/Impact";
+import Impacts from "../../components/Impacts/Impact";
 import Metrics from "../../components/Metrics/Metrics";
 import AdminDashboard from "../../components/AdminDashboard/AdminDashboard";
 import { Auth } from "aws-amplify";
@@ -71,7 +71,7 @@ function PageContainer(props) {
           {adminUser && (
             <Route path="/AdminDashboard/" element={<AdminDashboard />} />
           )}
-          <Route path="/Impact/" element={<Rankings />} />
+          <Route path="/Impact/" element={<Impacts />} />
           <Route
             path="/AdvancedSearch/:SearchForWhat/:AllWords/:ExactPhrase/:AnyWords/:NoneOfTheseWords/:Department/:Faculty/:yearFrom/:yearTo/:Journal"
             element={<AdvancedSearchComponent />}

@@ -16,29 +16,29 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const heightMatch = { height: "100%" };
 
-const rankingsTheme = createTheme();
+const impactsTheme = createTheme();
 
-rankingsTheme.typography.body1 = {
+impactsTheme.typography.body1 = {
   fontSize: "1.0rem",
 
-  [rankingsTheme.breakpoints.down("md")]: {
+  [impactsTheme.breakpoints.down("md")]: {
     fontSize: "0.75rem",
   },
 
-  [rankingsTheme.breakpoints.down("sm")]: {
+  [impactsTheme.breakpoints.down("sm")]: {
     fontSize: "0.5rem",
   },
 };
 
-rankingsTheme.typography.h3 = {
+impactsTheme.typography.h3 = {
   fontWeight: "normal",
   fontSize: "3.0rem",
 
-  [rankingsTheme.breakpoints.down("md")]: {
+  [impactsTheme.breakpoints.down("md")]: {
     fontSize: "2.25rem",
   },
 
-  [rankingsTheme.breakpoints.down("sm")]: {
+  [impactsTheme.breakpoints.down("sm")]: {
     fontSize: "1.5rem",
   },
 };
@@ -64,9 +64,9 @@ const BootstrapInput = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function RankByFaculty(props) {
-  const [numberOfRankingsToShow, setNumberOfRankingsToShow] = useState(50);
-  const [increaseRankingsListBy, setIncreaseRankingsListBy] = useState(100);
+export default function ImpactByFaculty(props) {
+  const [numberOfImpactsToShow, setNumberOfImpactsToShow] = useState(50);
+  const [increaseImpactsListBy, setIncreaseImpactsListBy] = useState(100);
 
   const facultyDropDownItems = props.allFaculty.map((faculty) => (
     <option value={faculty} key={faculty}>
@@ -74,8 +74,8 @@ export default function RankByFaculty(props) {
     </option>
   ));
 
-  const rankings_element = props.researcherRankingsByFaculty
-    .filter((data, index) => index < numberOfRankingsToShow)
+  const impacts_element = props.researcherImpactsByFaculty
+    .filter((data, index) => index < numberOfImpactsToShow)
     .map((prof_data, index) => (
       <Grid container key={prof_data.preferred_name}>
         <Grid item xs={1}>
@@ -164,15 +164,15 @@ export default function RankByFaculty(props) {
       </Grid>
     ));
 
-  function showMoreRankings() {
-    setNumberOfRankingsToShow(numberOfRankingsToShow + increaseRankingsListBy);
+  function showMoreImpacts() {
+    setNumberOfImpactsToShow(numberOfImpactsToShow + increaseImpactsListBy);
   }
 
-  function ShowMoreRankingsButton() {
-    if (numberOfRankingsToShow < props.researcherRankingsByFaculty.length) {
+  function ShowMoreImpactsButton() {
+    if (numberOfImpactsToShow < props.researcherImpactsByFaculty.length) {
       return (
         <Button
-          onClick={showMoreRankings}
+          onClick={showMoreImpacts}
           sx={{
             m: 1,
             border: "2px solid Black",
@@ -188,7 +188,7 @@ export default function RankByFaculty(props) {
   }
 
   return (
-    <ThemeProvider theme={rankingsTheme}>
+    <ThemeProvider theme={impactsTheme}>
       <div>
         <Grid container justifyContent="flex-end">
           <Grid item xs={12}>
@@ -208,8 +208,8 @@ export default function RankByFaculty(props) {
                     <FormControl sx={{ m: 1, mr: 0 }} variant="standard">
                       <NativeSelect
                         id="demo-customized-select-native"
-                        value={props.departmentToRank}
-                        onChange={props.changeFacultyToRank}
+                        value={props.departmentToImpact}
+                        onChange={props.changeFacultyToImpact}
                         input={<BootstrapInput />}
                       >
                         {facultyDropDownItems}
@@ -295,10 +295,10 @@ export default function RankByFaculty(props) {
                     </Typography>
                   </Paper>
                 </Grid>
-                {rankings_element}
+                {impacts_element}
               </Grid>
               <Box textAlign="center">
-                <ShowMoreRankingsButton />
+                <ShowMoreImpactsButton />
                 <br />
               </Box>
             </Paper>

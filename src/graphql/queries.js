@@ -129,9 +129,9 @@ export const getAllFaculty = /* GraphQL */ `
     getAllFaculty
   }
 `;
-export const getAllResearchersRankings = /* GraphQL */ `
-  query GetAllResearchersRankings {
-    getAllResearchersRankings {
+export const getAllResearchersImpacts = /* GraphQL */ `
+  query GetAllResearchersImpacts {
+    getAllResearchersImpacts {
       h_index
       num_citations
       preferred_name
@@ -175,7 +175,7 @@ export const getPub = /* GraphQL */ `
 export const getResearcher = /* GraphQL */ `
   query GetResearcher($id: ID!) {
     getResearcher(id: $id) {
-      institution_user_id
+      employee_id
       areas_of_interest
       campus
       email
@@ -282,9 +282,9 @@ export const getResearcherPubsByYear = /* GraphQL */ `
     }
   }
 `;
-export const getResearcherRankingsByDepartment = /* GraphQL */ `
-  query GetResearcherRankingsByDepartment($prime_department: String!) {
-    getResearcherRankingsByDepartment(prime_department: $prime_department) {
+export const getResearcherImpactsByDepartment = /* GraphQL */ `
+  query GetResearcherImpactsByDepartment($prime_department: String!) {
+    getResearcherImpactsByDepartment(prime_department: $prime_department) {
       h_index
       num_citations
       preferred_name
@@ -294,9 +294,9 @@ export const getResearcherRankingsByDepartment = /* GraphQL */ `
     }
   }
 `;
-export const getResearcherRankingsByFaculty = /* GraphQL */ `
-  query GetResearcherRankingsByFaculty($prime_faculty: String!) {
-    getResearcherRankingsByFaculty(prime_faculty: $prime_faculty) {
+export const getResearcherImpactsByFaculty = /* GraphQL */ `
+  query GetResearcherImpactsByFaculty($prime_faculty: String!) {
+    getResearcherImpactsByFaculty(prime_faculty: $prime_faculty) {
       h_index
       num_citations
       preferred_name
@@ -413,7 +413,7 @@ export const getUpdatePublicationsLogs = /* GraphQL */ `
 export const getFlaggedIds = /* GraphQL */ `
   query GetFlaggedIds {
     getFlaggedIds {
-      institution_user_id
+      employee_id
       areas_of_interest
       campus
       email
