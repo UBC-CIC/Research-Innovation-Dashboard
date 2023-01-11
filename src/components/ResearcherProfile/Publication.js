@@ -3,6 +3,9 @@ import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Grid";
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import 'katex/dist/katex.min.css'
+import Latex from 'react-latex-next'
 
 const gridStyling = {
   height: "100%",
@@ -20,6 +23,9 @@ export default function PUBLICATION({ publication_data }) {
     }
   }
 
+  publication_data.title = publication_data.title.replaceAll("<inf>", "<sub>");
+  publication_data.title = publication_data.title.replaceAll("</inf>", "</sub>");
+
   return (
     <Grid
       key={publication_data.id}
@@ -35,7 +41,7 @@ export default function PUBLICATION({ publication_data }) {
           sx={{ textAlign: "left" }}
         >
           <Typography variant="h5">
-            <a href={publication_data.link}>{publication_data.title}</a>
+            <a href={publication_data.link} target="_blank" rel="noopener noreferrer">   <Latex>{publication_data.title}</Latex> <OpenInNewIcon fontSize="small" /></a>
           </Typography>
           <Typography>{authorNamesString}</Typography>
           <Typography>Journal Of {publication_data.journal}</Typography>
