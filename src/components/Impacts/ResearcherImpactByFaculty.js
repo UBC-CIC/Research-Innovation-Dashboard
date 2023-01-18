@@ -209,7 +209,7 @@ export default function ImpactByFaculty(props) {
                       <NativeSelect
                         id="demo-customized-select-native"
                         value={props.departmentToImpact}
-                        onChange={props.changeFacultyToImpact}
+                        onChange={props.changeFacultyToShowImpact}
                         input={<BootstrapInput />}
                       >
                         {facultyDropDownItems}

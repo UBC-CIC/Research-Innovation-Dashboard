@@ -107,7 +107,7 @@ function Navbar(props) {
               variant="h3"
               color="#002145"
             >
-              UBC Research
+              Expertise Dashboard
             </Typography>
           </Toolbar>
         </AppBar>

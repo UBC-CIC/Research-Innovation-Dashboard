@@ -6,7 +6,7 @@ import { allPublicationsPerFacultyQuery } from "../../graphql/queries";
 import PublicationGraph from "./PublicationGraph";
 import WordCloud from "./WordCloud";
 
-export default function UbcMetrics() {
+export default function Metrics() {
   const [facultyList, setFacultyList] = useState([]);
   const [facultyPublicationsOverall, setFacultyPublicationsOverall] = useState(
     []
