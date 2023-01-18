@@ -132,6 +132,7 @@ switch(event.info.fieldName) {
       query: {
         bool: {
           should: queryArray,
+          minimum_should_match: 1,
           filter: filters
         }
       },
@@ -247,6 +248,7 @@ switch(event.info.fieldName) {
       query: {
         bool: {
           should: queryArray,
+          minimum_should_match: 1,
           filter: filters
         }
       },
@@ -298,13 +300,12 @@ switch(event.info.fieldName) {
       queryArray.push(keywordPhraseMatch);
       j++;
     }
-    
-    console.log(queryArray);
 
     query = {
       query: {
         bool: {
           should: queryArray,
+          minimum_should_match: 1,
           must_not: [
             {
               match: {
@@ -318,13 +319,90 @@ switch(event.info.fieldName) {
     
     searchResult = await search(query, "researcher_data", 10);
     break;
+
+  case "searchGrants":
+    stringSplitArray = event.arguments.search_value.split(" ");
+    
+    for(let i = 0; i<stringSplitArray.length; i++){
+      let matchName = {
+        "match": {
+          "name": {
+            "query": stringSplitArray[i],
+            "boost": 4
+          }
+        }
+      }
+      let matchProjectTitle = {
+        "match": {
+          "project_title": {
+            "query": stringSplitArray[i],
+            "boost": 3
+          }
+        }
+      }
+      let matchGrantProgram = {
+        "match": {
+          "grant_program": {
+            "query": stringSplitArray[i],
+            "boost": 2
+          }
+        }
+      }
+      let matchKeywords = {
+        "match": {
+          "keywords": {
+            "query": stringSplitArray[i],
+            "boost": 1
+          }
+        }
+      }
+      queryArray.push(matchName);
+      queryArray.push(matchProjectTitle);
+      queryArray.push(matchGrantProgram);
+      queryArray.push(matchKeywords);
+    }
+    
+    //Create Publication Filters
+    let grantsToInclude = event.arguments.grantAgenciesToFilterBy;
+    
+    if(grantsToInclude.length != 0){
+      let queryString = '"' + grantsToInclude[0] + '"';
+      for(let i = 1; i<grantsToInclude.length; i++){
+        queryString += ' | "' +  grantsToInclude[i] + '"';
+      }
+      let grantsFilter = {
+        simple_query_string: {
+          "query": queryString,
+          "fields": ["agency"]
+        }
+      }
+      filters.push(grantsFilter);
+    }
+    
+    if(event.arguments.search_value.length == 0){
+      queryArray = [{match_all: {}}]
+    }
+
+    query = {
+      query: {
+        bool: {
+          should: queryArray,
+          minimum_should_match: 1,
+          filter: filters
+        }
+      },
+    };
+
+    searchResult = await search(query, "grant_data", 200);
+    
+    break;
 }
 
-if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName == "advancedSearchPublications"){
-  let table = "researcher_data";
-  if(event.info.fieldName == "advancedSearchPublications") {
-    table = "publication_data"
-  }
+console.log("HERE2")
+
+if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName == "advancedSearchPublications" || event.info.fieldName == "advancedSearchGrants"){
+  console.log("HERE")
+  let table = event.arguments.table
   let mustContainWords = event.arguments.includeAllTheseWords;
     
     while(mustContainWords.charAt(0) == " " && mustContainWords.length != 0) {
@@ -420,6 +498,9 @@ if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName =
     if(event.arguments.table == "publication_data") {
       fields =  ["title", "journal", "author_names", "keywords"];
     }
+    if(event.arguments.table == "grant_data") {
+      fields = ["name", "project_title", "grant_program", "keywords"]
+    }
     
     let filters = []
     
@@ -463,6 +544,11 @@ if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName =
       }
     }
     
+    //Add filters for grants
+    if(event.info.fieldName == "advancedSearchGrants") {
+
+    }
+    
     query = {
       query: {
         bool: {
@@ -502,7 +588,7 @@ if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName =
     };
     }
     
-    searchResult = await search(query, table, 200);
+    searchResult = await search(query, table, 50);
     console.log('SEARCH RESULTS');
     console.log(searchResult);
 }

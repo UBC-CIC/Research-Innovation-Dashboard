@@ -28,6 +28,7 @@ export default function Research_Profile_Navigation(props) {
                         <Button onClick={props.onClickFunctions.showOverviewFunc}>Overview</Button>
                         <Button onClick={props.onClickFunctions.showAreasOfInterestFunc}>Areas Of Interest</Button>
                         <Button onClick={props.onClickFunctions.showPublicationsFunc}>Publications</Button>
+                        <Button onClick={props.onClickFunctions.showGrantsFunction}>Grants</Button>
                     </ButtonGroup>
                     </ThemeProvider>
             </Box>

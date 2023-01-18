@@ -13,11 +13,7 @@ import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
 
 export class AppsyncStack extends Stack {
   constructor(scope: Construct, id: string, opensearchStack: OpensearchStack, vpcStack: VpcStack, databaseStack: DatabaseStack, props?: StackProps) {
-    super(scope, id, {
-      env: {
-          region: 'ca-central-1'
-      },
-    });
+    super(scope, id, props);
 
     // Get the API ID from paramter Store
     // During Amplify Deployment the APIID is stored in parameter store
@@ -163,6 +159,19 @@ export class AppsyncStack extends Stack {
         title: String!
         year_published: String
       }
+
+      type grant {
+        name: String!
+        department: String
+        agency: String!
+        grant_program: String
+        amount: Int
+        project_title: String
+        keywords: String
+        year: String
+        start_date: String
+        end_date: String
+      }
       
       type Query {
         advancedSearchPublications(
@@ -184,12 +193,19 @@ export class AppsyncStack extends Stack {
           prime_faculty: String!,
           table: String!
         ): [ResearcherOpenSearch]
+        advancedSearchGrants(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          noneOfTheseWords: String!,
+          table: String!
+        ): [grant]
         allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
         facultyMetrics(faculty: String!): [facultyMetric]
         getAllDepartments: [String]
         getAllDistinctJournals: [String]
         getAllFaculty: [String]
-        getAllResearchersRankings: [Ranking]
+        getAllResearchersImpacts: [Impact]
         getNumberOfResearcherPubsAllYears(id: ID!): graphDataAllYears
         getNumberOfResearcherPubsLastFiveYears(id: ID!): graphData
         getPub(id: ID!): Publication
@@ -200,8 +216,8 @@ export class AppsyncStack extends Stack {
         getResearcherPubsByCitations(id: ID!): [Publication]
         getResearcherPubsByTitle(id: ID!): [Publication]
         getResearcherPubsByYear(id: ID!): [Publication]
-        getResearcherRankingsByDepartment(prime_department: String!): [Ranking]
-        getResearcherRankingsByFaculty(prime_faculty: String!): [Ranking]
+        getResearcherImpactsByDepartment(prime_department: String!): [Impact]
+        getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
         searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
         searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]
         similarResearchers(scopus_id: String!): [ResearcherOpenSearch]
@@ -211,6 +227,9 @@ export class AppsyncStack extends Stack {
         lastUpdatedResearchersList: [lastUpdated]
         getUpdatePublicationsLogs: [updatePublicationsLogType]
         getFlaggedIds: [[Researcher]]
+        getResearcherGrants(id: ID!): [grant]
+        searchGrants(search_value: String!, grantAgenciesToFilterBy: String!): [grant]
+        getAllGrantAgencies: [String]
       }
 
       type updatePublicationsLogType {
@@ -223,7 +242,7 @@ export class AppsyncStack extends Stack {
         last_updated: String
       }
       
-      type Ranking {
+      type Impact {
         h_index: Float
         num_citations: Int
         preferred_name: String
@@ -233,7 +252,7 @@ export class AppsyncStack extends Stack {
       }
       
       type Researcher {
-        employee_id: String
+        institution_user_id: String
         areas_of_interest: String
         campus: String
         email: String
@@ -356,6 +375,14 @@ export class AppsyncStack extends Stack {
     });
     SearchPublicationsResolver.addDependsOn(opensearchDataSource);
 
+    const SearchGrantsResolver = new appsync.CfnResolver(this, 'searchGrants', {
+      apiId: APIID,
+      fieldName: 'searchGrants',
+      typeName: 'Query',
+      dataSourceName: opensearchDataSource.name,
+    });
+    SearchGrantsResolver.addDependsOn(opensearchDataSource);
+
     const SimilarResearchersResolver = new appsync.CfnResolver(this, 'similarResearchers', {
       apiId: APIID,
       fieldName: 'similarResearchers',
@@ -380,13 +407,21 @@ export class AppsyncStack extends Stack {
     });
     AdvancedSearchPublicationsResolver.addDependsOn(opensearchDataSource);
 
+    const AdvancedSearchGrantsResolver = new appsync.CfnResolver(this, 'advancedSearchGrants', {
+      apiId: APIID,
+      fieldName: 'advancedSearchGrants',
+      typeName: 'Query',
+      dataSourceName: opensearchDataSource.name,
+    });
+    AdvancedSearchGrantsResolver.addDependsOn(opensearchDataSource);
+
     //Create all the PostgreSQL resolvers
     let postgresqlDBQueryList = ["allPublicationsPerFacultyQuery", "facultyMetrics", "getAllDepartments",
-    "getAllDistinctJournals", "getAllFaculty", "getAllResearchersRankings", "getNumberOfResearcherPubsAllYears",
+    "getAllDistinctJournals", "getAllFaculty", "getAllResearchersImpacts", "getNumberOfResearcherPubsAllYears",
     "getNumberOfResearcherPubsLastFiveYears", "getPub", "getResearcher", "getResearcherElsevier", "getResearcherFull",
     "getResearcherOrcid", "getResearcherPubsByCitations", "getResearcherPubsByTitle", "getResearcherPubsByYear",
-    "getResearcherRankingsByDepartment", "getResearcherRankingsByFaculty", "totalPublicationPerYear", "wordCloud",
-    "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs", "getFlaggedIds"];
+    "getResearcherImpactsByDepartment", "getResearcherImpactsByFaculty", "totalPublicationPerYear", "wordCloud",
+    "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs", "getFlaggedIds", "getResearcherGrants", "getAllGrantAgencies"];
 
     for(var i = 0; i<postgresqlDBQueryList.length; i++){
       const resolver = new appsync.CfnResolver(this, postgresqlDBQueryList[i], {

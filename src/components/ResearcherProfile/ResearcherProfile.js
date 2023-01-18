@@ -19,6 +19,7 @@ import PublicationBarGraph from "./PublicationBarGraph";
 import Amplify from "@aws-amplify/core";
 import { Auth } from "@aws-amplify/auth";
 import awsmobile from "../../aws-exports";
+import GrantInformation from "./GrantInformation";
 
 import { API } from "aws-amplify";
 import {
@@ -29,6 +30,7 @@ import {
   getNumberOfResearcherPubsLastFiveYears,
   getNumberOfResearcherPubsAllYears,
   similarResearchers,
+  getResearcherGrants,
 } from "../../graphql/queries";
 
 Amplify.configure(awsmobile);
@@ -57,6 +59,8 @@ export default function Researcher_profile_overview() {
   const [similarResearchersArray, setSimilarResearchersArray] = useState([]);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(0)
   const [rank, setRank] = useState("")
+  const [grantData, setGrantData] = useState([]);
+  const [showGrants, setShowGrants] = useState(false);
 
   const [numberOfPublicationsToShow, setNumberOfPublicationsToShow] =
     useState(2);
@@ -188,6 +192,7 @@ export default function Researcher_profile_overview() {
         scopus_id: scopusId,
       },
     });
+
     setDescendingPublicationListByCitation(descendingPublicationsCitation);
     setAscendingPublicationListByCitation(ascendingPublicationsCitation);
 
@@ -196,6 +201,18 @@ export default function Researcher_profile_overview() {
 
     setDescendingPublicationListByTitle(descendingPublicationsTitle);
     setAscendingPublicationListByTitle(ascendingPublicationsTitle);
+
+    const grantResult = await API.graphql({
+      query: getResearcherGrants,
+      variables: {
+        id: scopusId,
+      },
+    });
+
+
+
+    console.log(grantResult.data.getResearcherGrants)
+    setGrantData(grantResult.data.getResearcherGrants);
     setPageLoaded(true);
   };
 
@@ -215,7 +232,6 @@ export default function Researcher_profile_overview() {
     set_office("");
     set_num_publications(researcher_data.num_documents);
     set_h_index(researcher_data.h_index);
-    set_funding("");
     set_num_patents_filed(researcher_data.num_patents_filed);
     setLastUpdatedAt(researcher_data.last_updated);
     setRank(researcher_data.rank);
@@ -245,13 +261,16 @@ export default function Researcher_profile_overview() {
 
     let sortedKeywordHashmap = [...keywordHashmap].sort((a, b) => b[1] - a[1]);
 
+    console.log(sortedKeywordHashmap);
+
     let sortedAreas = [];
+    let areaWeight = [];
 
     for (let i = 0; i < sortedKeywordHashmap.length; i++) {
       sortedAreas.push(sortedKeywordHashmap[i][0]);
     }
     // save weighted list of keywords to state variable
-    setSortedAreasOfInterest(sortedAreas);
+    setSortedAreasOfInterest(sortedKeywordHashmap);
   };
   const getResearcherBarGraphData = async () => {
     const bar_graph_data_response = await API.graphql({
@@ -284,6 +303,15 @@ export default function Researcher_profile_overview() {
     });
   }, []);
 
+  useEffect(() => {
+    let funding = 0
+    for(let i = 0; i<grantData.length; i++){
+      funding += grantData[i].amount;
+    }
+    set_funding((funding.toLocaleString()))
+    // console.log(funding);
+  }, [grantData]);
+
   function showOverviewFunc() {
     setShowOverview(true);
     setShowAreasOfInterest(false);
@@ -291,6 +319,8 @@ export default function Researcher_profile_overview() {
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
     setShowSimilarResearchers(false);
+    setShowGrants(false);
+    setShowFullGraph(false);
   }
 
   function showAreasOfInterestFunc() {
@@ -300,6 +330,8 @@ export default function Researcher_profile_overview() {
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
     setShowSimilarResearchers(false);
+    setShowGrants(false);
+    setShowFullGraph(false);
   }
 
   function showPublicationsFunc() {
@@ -307,6 +339,8 @@ export default function Researcher_profile_overview() {
     setShowAreasOfInterest(false);
     setShowPublications(true);
     setShowSimilarResearchers(false);
+    setShowGrants(false);
+    setShowFullGraph(false);
   }
 
   function showSimilarResearchersFunc() {
@@ -314,8 +348,21 @@ export default function Researcher_profile_overview() {
     setShowAreasOfInterest(false);
     setShowPublications(false);
     setShowSimilarResearchers(true);
+    setShowGrants(false);
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
+    setShowFullGraph(false);
+  }
+
+  function showGrantsFunction() {
+    setShowOverview(false);
+    setShowAreasOfInterest(false);
+    setShowPublications(false);
+    setShowSimilarResearchers(false);
+    setShowGrants(true);
+    setNumberOfPublicationsToShow(2);
+    setincreasePublicationListBy(5);
+    setShowFullGraph(false);
   }
 
   return (
@@ -369,6 +416,7 @@ export default function Researcher_profile_overview() {
               showOverviewFunc,
               showAreasOfInterestFunc,
               showPublicationsFunc,
+              showGrantsFunction,
             }}
           />
           {showOverview && (
@@ -428,6 +476,24 @@ export default function Researcher_profile_overview() {
               </Grid>
               <Grid item xs={12}>
                 <Paper square={true} elevation={0} variant="outlined">
+                    <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={2}/>
+                    <Box textAlign="center">
+                    <Button
+                      onClick={showGrantsFunction}
+                      sx={{
+                        m: 1,
+                        border: "2px solid Black",
+                        color: "black",
+                        backgroundColor: "white",
+                      }}
+                    >
+                      View All Grants
+                    </Button>
+                  </Box>
+                </Paper>
+              </Grid>
+              <Grid item xs={12}>
+                <Paper square={true} elevation={0} variant="outlined">
                   <IntellectualProperty
                     researcher_information={{
                       num_patents_filed,
@@ -477,6 +543,9 @@ export default function Researcher_profile_overview() {
             <SimilarResearchers
               researchSearchResults={similarResearchersArray}
             />
+          )}
+          {showGrants && (
+            <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={25}/>
           )}
         </Grid>
       )}

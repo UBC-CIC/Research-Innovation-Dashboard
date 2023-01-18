@@ -14,7 +14,7 @@
 
 The following architecture diagram illustrates the various AWS components utliized to deliver the solution. For an in-depth explanation of the frontend and backend stacks, refer to the [Architecture Deep Dive](docs/ArchitectureDeepDive.md).
 
-![Alt text](./docs/images/architecture-diagram.png?raw=true "Architecture")
+![Alt text](./docs/images/VPRI_Architechture_Phase_II.drawio.png?raw=true "Architecture")
 
 # Deployment Guide
 
@@ -84,7 +84,7 @@ N/A
 
 # Credits
 
-This application was architected and developed by Lance Holland, Matthew Stefansson, and Christy Lam with guidance from the UBC CIC technical and project management teams.
+This application was architected and developed by Lance Holland, Matthew Stefansson, Christy Lam, and Tien Nguyen with guidance from the UBC CIC technical and project management teams.
 
 # License
 

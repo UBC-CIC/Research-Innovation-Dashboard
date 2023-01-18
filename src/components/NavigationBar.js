@@ -107,7 +107,7 @@ function Navbar(props) {
               variant="h3"
               color="#002145"
             >
-              UBC Research
+              Expertise Dashboard
             </Typography>
           </Toolbar>
         </AppBar>
@@ -154,7 +154,7 @@ function Navbar(props) {
           >
             <NavButton
               sx={{ paddingLeft: "0%" }}
-              onClick={() => (window.location.href = "/ / / / /")}
+              onClick={() => (window.location.href = "/ / / / / /")}
             >
               Home
             </NavButton>
@@ -171,6 +171,13 @@ function Navbar(props) {
               }
             >
               Publications
+            </NavButton>
+            <NavButton
+              onClick={() =>
+                (window.location.href = "/Search/Grants/ / /")
+              }
+            >
+              Grants
             </NavButton>
             <NavButton onClick={() => navigate("/Impact/")}>Impact</NavButton>
             <NavButton onClick={() => navigate("/Metrics/")}>Metrics</NavButton>

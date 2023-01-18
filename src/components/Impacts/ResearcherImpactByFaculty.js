@@ -2,7 +2,7 @@ import * as React from "react";
 import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import "./Rankings.css";
+import "./Impact.css";
 import { useState } from "react";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
@@ -13,33 +13,32 @@ import InputBase from "@mui/material/InputBase";
 import { styled } from "@mui/material/styles";
 import { Link } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import useMediaQuery from "@mui/material/useMediaQuery";
 
 const heightMatch = { height: "100%" };
 
-const rankingsTheme = createTheme();
+const impactsTheme = createTheme();
 
-rankingsTheme.typography.body1 = {
+impactsTheme.typography.body1 = {
   fontSize: "1.0rem",
 
-  [rankingsTheme.breakpoints.down("md")]: {
+  [impactsTheme.breakpoints.down("md")]: {
     fontSize: "0.75rem",
   },
 
-  [rankingsTheme.breakpoints.down("sm")]: {
+  [impactsTheme.breakpoints.down("sm")]: {
     fontSize: "0.5rem",
   },
 };
 
-rankingsTheme.typography.h3 = {
+impactsTheme.typography.h3 = {
   fontWeight: "normal",
   fontSize: "3.0rem",
 
-  [rankingsTheme.breakpoints.down("md")]: {
+  [impactsTheme.breakpoints.down("md")]: {
     fontSize: "2.25rem",
   },
 
-  [rankingsTheme.breakpoints.down("sm")]: {
+  [impactsTheme.breakpoints.down("sm")]: {
     fontSize: "1.5rem",
   },
 };
@@ -65,18 +64,18 @@ const BootstrapInput = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function RankingsByDepartment(props) {
-  const [numberOfRankingsToShow, setNumberOfRankingsToShow] = useState(50);
-  const [increaseRankingsListBy, setIncreaseRankingsListBy] = useState(100);
+export default function ImpactByFaculty(props) {
+  const [numberOfImpactsToShow, setNumberOfImpactsToShow] = useState(50);
+  const [increaseImpactsListBy, setIncreaseImpactsListBy] = useState(100);
 
-  const departmentDropDownItems = props.allDepartments.map((department) => (
-    <option value={department} key={department}>
-      {department}
+  const facultyDropDownItems = props.allFaculty.map((faculty) => (
+    <option value={faculty} key={faculty}>
+      {faculty}
     </option>
   ));
 
-  const rankings_element = props.researcherRankingsByDepartment
-    .filter((data, index) => index < numberOfRankingsToShow)
+  const impacts_element = props.researcherImpactsByFaculty
+    .filter((data, index) => index < numberOfImpactsToShow)
     .map((prof_data, index) => (
       <Grid container key={prof_data.preferred_name}>
         <Grid item xs={1}>
@@ -87,12 +86,12 @@ export default function RankingsByDepartment(props) {
             variant="outlined"
             sx={{ textAlign: "center" }}
           >
-            <Typography variant="body1" align="center">
+            <Typography align="center" variant="body1">
               {index + 1}
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={3}>
           <Paper
             style={heightMatch}
             square={true}
@@ -101,16 +100,16 @@ export default function RankingsByDepartment(props) {
             sx={{ textAlign: "center" }}
           >
             <Typography
-              variant="body1"
               component={Link}
               to={"/Researchers/" + prof_data.scopus_id + "/"}
               align="center"
+              variant="body1"
             >
               {prof_data.preferred_name}
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={3}>
           <Paper
             style={heightMatch}
             square={true}
@@ -118,12 +117,25 @@ export default function RankingsByDepartment(props) {
             variant="outlined"
             sx={{ textAlign: "center" }}
           >
-            <Typography variant="body1" align="center">
+            <Typography align="center" variant="body1">
+              {prof_data.prime_faculty}
+            </Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={3}>
+          <Paper
+            style={heightMatch}
+            square={true}
+            elevation={0}
+            variant="outlined"
+            sx={{ textAlign: "center" }}
+          >
+            <Typography align="center" variant="body1">
               {prof_data.prime_department}
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={1}>
           <Paper
             style={heightMatch}
             square={true}
@@ -131,7 +143,7 @@ export default function RankingsByDepartment(props) {
             variant="outlined"
             sx={{ textAlign: "center" }}
           >
-            <Typography variant="body1" align="center">
+            <Typography align="center" variant="body1">
               {prof_data.h_index}
             </Typography>
           </Paper>
@@ -144,7 +156,7 @@ export default function RankingsByDepartment(props) {
             variant="outlined"
             sx={{ textAlign: "center" }}
           >
-            <Typography variant="body1" align="center">
+            <Typography align="center" variant="body1">
               {}
             </Typography>
           </Paper>
@@ -152,30 +164,20 @@ export default function RankingsByDepartment(props) {
       </Grid>
     ));
 
-  function showMoreRankings() {
-    setNumberOfRankingsToShow(numberOfRankingsToShow + increaseRankingsListBy);
-    setIncreaseRankingsListBy(increaseRankingsListBy * 2);
+  function showMoreImpacts() {
+    setNumberOfImpactsToShow(numberOfImpactsToShow + increaseImpactsListBy);
   }
 
-  function ShowMoreRankingsButton() {
-    const smallScreen = useMediaQuery((theme) => theme.breakpoints.down("sm"));
-    const mediumScreen = useMediaQuery((theme) => theme.breakpoints.down("md"));
-    if (numberOfRankingsToShow < props.researcherRankingsByDepartment.length) {
-      let buttonFontSize = "0.75rem";
-      if (smallScreen) {
-        buttonFontSize = "0.375rem";
-      } else if (mediumScreen) {
-        buttonFontSize = "0.5rem";
-      }
+  function ShowMoreImpactsButton() {
+    if (numberOfImpactsToShow < props.researcherImpactsByFaculty.length) {
       return (
         <Button
-          onClick={showMoreRankings}
+          onClick={showMoreImpacts}
           sx={{
             m: 1,
             border: "2px solid Black",
             color: "black",
             backgroundColor: "white",
-            fontSize: buttonFontSize,
           }}
         >
           Show More Researchers
@@ -186,7 +188,7 @@ export default function RankingsByDepartment(props) {
   }
 
   return (
-    <ThemeProvider theme={rankingsTheme}>
+    <ThemeProvider theme={impactsTheme}>
       <div>
         <Grid container justifyContent="flex-end">
           <Grid item xs={12}>
@@ -198,7 +200,7 @@ export default function RankingsByDepartment(props) {
                     variant="h3"
                     justifyContent={"center"}
                   >
-                    Impact By Department
+                    Impact By Faculty
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
@@ -206,11 +208,11 @@ export default function RankingsByDepartment(props) {
                     <FormControl sx={{ m: 1, mr: 0 }} variant="standard">
                       <NativeSelect
                         id="demo-customized-select-native"
-                        value={props.departmentToRank}
-                        onChange={props.changeDepartmentToRank}
+                        value={props.departmentToImpact}
+                        onChange={props.changeFacultyToShowImpact}
                         input={<BootstrapInput />}
                       >
-                        {departmentDropDownItems}
+                        {facultyDropDownItems}
                       </NativeSelect>
                     </FormControl>
                   </Stack>
@@ -223,12 +225,12 @@ export default function RankingsByDepartment(props) {
                     variant="outlined"
                     sx={{ textAlign: "center" }}
                   >
-                    <Typography variant="body1" align="center">
+                    <Typography align="center" variant="body1">
                       Impact
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                   <Paper
                     style={heightMatch}
                     square={true}
@@ -236,12 +238,12 @@ export default function RankingsByDepartment(props) {
                     variant="outlined"
                     sx={{ textAlign: "center" }}
                   >
-                    <Typography variant="body1" align="center">
+                    <Typography align="center" variant="body1">
                       Name
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                   <Paper
                     style={heightMatch}
                     square={true}
@@ -249,12 +251,25 @@ export default function RankingsByDepartment(props) {
                     variant="outlined"
                     sx={{ textAlign: "center" }}
                   >
-                    <Typography variant="body1" align="center">
+                    <Typography align="center" variant="body1">
+                      Faculty
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={3}>
+                  <Paper
+                    style={heightMatch}
+                    square={true}
+                    elevation={0}
+                    variant="outlined"
+                    sx={{ textAlign: "center" }}
+                  >
+                    <Typography align="center" variant="body1">
                       Department
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item xs={1}>
                   <Paper
                     style={heightMatch}
                     square={true}
@@ -262,7 +277,7 @@ export default function RankingsByDepartment(props) {
                     variant="outlined"
                     sx={{ textAlign: "center" }}
                   >
-                    <Typography variant="body1" align="center">
+                    <Typography align="center" variant="body1">
                       H Index (5 Years)
                     </Typography>
                   </Paper>
@@ -275,15 +290,15 @@ export default function RankingsByDepartment(props) {
                     variant="outlined"
                     sx={{ textAlign: "center" }}
                   >
-                    <Typography variant="body1" align="center">
+                    <Typography align="center" variant="body1">
                       Funding
                     </Typography>
                   </Paper>
                 </Grid>
-                {rankings_element}
+                {impacts_element}
               </Grid>
               <Box textAlign="center">
-                <ShowMoreRankingsButton />
+                <ShowMoreImpactsButton />
                 <br />
               </Box>
             </Paper>

@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { triggers } from 'aws-cdk-lib';
 import { aws_lambda as lambda } from 'aws-cdk-lib';
 import { aws_iam as iam} from 'aws-cdk-lib';
@@ -11,11 +12,7 @@ import { DmsStack } from './dms-stack';
 
 export class DataFetchStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, dmsStack: DmsStack, props?: cdk.StackProps) {
-    super(scope, id, {
-      env: {
-          region: 'ca-central-1'
-      },
-    });
+    super(scope, id, props);
 
     // Create the S3 Bucket
     const s3Bucket = new s3.Bucket(this, 's3-bucket', {
@@ -23,6 +20,7 @@ export class DataFetchStack extends cdk.Stack {
       autoDeleteObjects: true,
       versioned: false,
       publicReadAccess: false,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
     });
 
@@ -68,6 +66,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/createTables'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
     });
     createTables.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
@@ -96,6 +95,12 @@ export class DataFetchStack extends cdk.Stack {
       actions: [
         // Parameter Store
         "ssm:DescribeParameters",
+        //Needed to put the Lambda in a VPC
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:CreateNetworkInterface",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DescribeInstances",
+        "ec2:AttachNetworkInterface"
       ],
       resources: ["*"]
     }));
@@ -136,6 +141,12 @@ export class DataFetchStack extends cdk.Stack {
       actions: [
         // Parameter Store
         "ssm:DescribeParameters",
+        //Needed to put the Lambda in a VPC
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:CreateNetworkInterface",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DescribeInstances",
+        "ec2:AttachNetworkInterface"
       ],
       resources: ["*"]
     }));
@@ -173,17 +184,25 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
-    const ubcClean = new lambda.Function(this, 'ubcClean', {
+    const institutionClean = new lambda.Function(this, 'institutionClean', {
       runtime: lambda.Runtime.PYTHON_3_9,
-      handler: 'ubcClean.lambda_handler',
-      code: lambda.Code.fromAsset('lambda/ubcClean'),
+      handler: 'institutionClean.lambda_handler',
+      code: lambda.Code.fromAsset('lambda/institutionClean'),
       timeout: cdk.Duration.minutes(15),
       role: nameMatchRole,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
+      },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
       },
     });
 
@@ -198,6 +217,10 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const cleanNoMatches = new lambda.Function(this, 'cleanNoMatches', {
@@ -210,6 +233,10 @@ export class DataFetchStack extends cdk.Stack {
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
+      },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
       },
     });
 
@@ -226,6 +253,10 @@ export class DataFetchStack extends cdk.Stack {
         SCIVAL_MAX_AUTHORS: '100',
         SCIVAL_URL: 'https://api.elsevier.com/analytics/scival/author/metrics',
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const researcherFetch = new lambda.Function(this, 'researcherFetch', {
@@ -238,6 +269,10 @@ export class DataFetchStack extends cdk.Stack {
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
+      },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
       },
     });
 
@@ -255,6 +290,10 @@ export class DataFetchStack extends cdk.Stack {
         SCOPUS_MAX_AUTHORS: '25',
         SCOPUS_URL: 'https://api.elsevier.com/content/author',
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const orcidFetch = new lambda.Function(this, 'orcidFetch', {
@@ -267,6 +306,10 @@ export class DataFetchStack extends cdk.Stack {
       memorySize: 512,
       environment: {
         ORCID_URL: 'http://pub.orcid.org/'
+      },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
       },
     });
 
@@ -282,6 +325,10 @@ export class DataFetchStack extends cdk.Stack {
         RESULTS_PER_PAGE: '25',
         SCOPUS_SEARCH_URL: 'https://api.elsevier.com/content/search/scopus'
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     const startReplication = new lambda.Function(this, 'startReplication', {
@@ -295,6 +342,10 @@ export class DataFetchStack extends cdk.Stack {
       environment: {
         Replication_Task_Arn: dmsStack.replicationTask.ref
       },
+      vpc: databaseStack.dbInstance.vpc, // add to the same vpc as rds
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
     });
 
     /*
@@ -305,8 +356,8 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
 
-    const ubcCleanInvoke = new tasks.LambdaInvoke(this, 'Clean UBC Data', {
-      lambdaFunction: ubcClean,
+    const institutionCleanInvoke = new tasks.LambdaInvoke(this, 'Clean Institution Data', {
+      lambdaFunction: institutionClean,
       outputPath: '$.Payload',
     });
 
@@ -315,7 +366,7 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
     const compareNamesMap = new sfn.Map(this, 'Name Comparison Map', {
-      maxConcurrency: 40,
+      maxConcurrency: 8,
       itemsPath: '$'
     });
     compareNamesMap.iterator(compareNamesInvoke);
@@ -371,7 +422,7 @@ export class DataFetchStack extends cdk.Stack {
     });
 
     const dataFetchDefinition = scopusCleanInvoke
-      .next(ubcCleanInvoke)
+      .next(institutionCleanInvoke)
       .next(compareNamesMap)
       .next(cleanNoMatchesMap)
       .next(identifyDuplicatesMap)
@@ -387,7 +438,7 @@ export class DataFetchStack extends cdk.Stack {
 
     // Give the lambdas permission to access the S3 Bucket
     s3Bucket.grantReadWrite(scopusClean);
-    s3Bucket.grantReadWrite(ubcClean);
+    s3Bucket.grantReadWrite(institutionClean);
     s3Bucket.grantReadWrite(compareNames);
     s3Bucket.grantReadWrite(cleanNoMatches);
     s3Bucket.grantReadWrite(identifyDuplicates);

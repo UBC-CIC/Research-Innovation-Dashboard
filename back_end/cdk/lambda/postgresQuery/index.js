@@ -157,15 +157,15 @@ async function handler(event) {
       break;
     case "getResearcherFull":
       console.log("Getting Researcher Profile");
-      let [ubc_data] = await sql`SELECT * FROM public.researcher_data WHERE scopus_id = ${event.arguments.id}`;
-      let [elsevier_data] = await sql`SELECT * FROM public.elsevier_data WHERE id = ${ubc_data.scopus_id}`;
-      let [orcid_data] = await sql`SELECT * FROM public.orcid_data WHERE id = ${ubc_data.scopus_id}`;
-      ubc_data.keywords = ubc_data.keywords.toLowerCase();
-      payload = { ...ubc_data, ...elsevier_data, ...orcid_data };
-      payload.last_updated = ubc_data.last_updated;
+      let [data] = await sql`SELECT * FROM public.researcher_data WHERE scopus_id = ${event.arguments.id}`;
+      let [elsevier_data] = await sql`SELECT * FROM public.elsevier_data WHERE id = ${data.scopus_id}`;
+      let [orcid_data] = await sql`SELECT * FROM public.orcid_data WHERE id = ${data.scopus_id}`;
+      data.keywords = data.keywords.toLowerCase();
+      payload = { ...data, ...elsevier_data, ...orcid_data };
+      payload.last_updated = data.last_updated;
       delete payload.id;
       break;
-    case "getResearcherRankingsByDepartment":
+    case "getResearcherImpactsByDepartment":
       console.log("Getting Rankings");
       let query_rankings = await sql`SELECT scopus_id, researcher_data.preferred_name, researcher_data.prime_department, elsevier_data.h_index, elsevier_data.num_citations
       FROM researcher_data FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id 
@@ -176,16 +176,16 @@ async function handler(event) {
       }
       payload = rankings
       break;
-    case "getResearcherRankingsByFaculty":
+    case "getResearcherImpactsByFaculty":
       console.log("Getting Rankings");
       let faculty_rankings = await sql`SELECT scopus_id, researcher_data.preferred_name, researcher_data.prime_faculty, elsevier_data.h_index, elsevier_data.num_citations, researcher_data.prime_department
       FROM researcher_data FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id 
       WHERE researcher_data.prime_faculty=${event.arguments.prime_faculty} ORDER BY h_index DESC`;
-      let fRankings = [];
+      let Rankings = [];
       for(let i = 0; i<Object.keys(faculty_rankings).length; i++){
-        fRankings[i] = faculty_rankings[i.toString()];
+        Rankings[i] = faculty_rankings[i.toString()];
       }
-      payload = fRankings
+      payload = Rankings
       break;
     case "getNumberOfResearcherPubsLastFiveYears":
       let lastFiveYears = [(currentYear-4).toString(),(currentYear-3).toString(),(currentYear-2).toString(),(currentYear-1).toString(),(currentYear).toString()];
@@ -245,7 +245,7 @@ async function handler(event) {
       }
       payload = facultyArray;
       break;
-    case "getAllResearchersRankings":
+    case "getAllResearchersImpacts":
       let allResearchers = await sql `SELECT DISTINCT scopus_id, researcher_data.preferred_name, researcher_data.prime_faculty, researcher_data.prime_department, elsevier_data.h_index, elsevier_data.num_citations
                                       FROM researcher_data FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id 
                                       ORDER BY h_index DESC`
@@ -346,6 +346,29 @@ async function handler(event) {
                           GROUP BY faculty
                           ORDER BY SUM(num_publications) DESC`;
                           
+      break;
+
+    case "getResearcherGrants":
+      //Get our owned id of the researcher in researcher data table
+      // Currently the column is mis named it has been fixed.
+      let researcher_id = await sql`SELECT researcher_id FROM researcher_data WHERE scopus_id=${event.arguments.id}`
+      
+      let grantResults = await sql`SELECT * from grant_data WHERE assigned_id=${researcher_id[0].researcher_id}`
+      
+      payload = grantResults
+      
+      break;
+    
+    case "getAllGrantAgencies":
+      let agencies = await sql`SELECT DISTINCT agency FROM grant_data`
+      
+      console.log(agencies);
+      
+      payload = [];
+      
+      for(let i = 0; i<agencies.length; i++) {
+        payload.push(agencies[i].agency);
+      }
       break;
   }
 

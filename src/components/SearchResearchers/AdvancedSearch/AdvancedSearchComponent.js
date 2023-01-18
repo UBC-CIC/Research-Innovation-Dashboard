@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import ResearcherSearchResultsComponent from "../ResearcherSearchResultsComponent";
 import PublicationSearchResultsComponent from "../PublicationSearchResultsComponent";
+import GrantInformation from "../../ResearcherProfile/GrantInformation";
 import AutoCompleteDropDown from "./AutoCompleteDrowDown";
 import InputBase from "@mui/material/InputBase";
 import Scroll from "react-scroll";
@@ -22,18 +23,18 @@ import {
   getAllDistinctJournals,
   getAllDepartments,
   getAllFaculty,
+  advancedSearchGrants,
 } from "../../../graphql/queries";
 
 export default function Advanced_Search(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
   const [publicationSearchResults, setPublicationSearchResults] = useState([]);
+  const [grantsSearchResults, setGrantsSearchResults] = useState([]);
   const [allJournals, setAllJournals] = useState([]);
   const [allDepartments, setAllDepartments] = useState([]);
   const [allFaculty, setAllFaculty] = useState([]);
-  const [researcherSearchResultPage, setResearcherSearchResultPage] =
-    useState(1);
-  const [publicationsSearchResultPage, setPublicationsSearchResultPage] =
-    useState(1);
+  const [researcherSearchResultPage, setResearcherSearchResultPage] = useState(1);
+  const [publicationsSearchResultPage, setPublicationsSearchResultPage] = useState(1);
 
   let scroll = Scroll.animateScroll;
 
@@ -50,15 +51,10 @@ export default function Advanced_Search(props) {
     Journal,
   } = useParams();
 
-  const [
-    includeAllTheseWordsSearchBarValue,
-    setIncludeAllTheseWordsSearchBarValue,
-  ] = useState("");
-  const [exactPhraseSearchBarValue, setExactPhraseSearchBarValue] =
-    useState("");
+  const [includeAllTheseWordsSearchBarValue,setIncludeAllTheseWordsSearchBarValue] = useState("");
+  const [exactPhraseSearchBarValue, setExactPhraseSearchBarValue] = useState("");
   const [anyWordsSearchBarValue, setAnyWordsSearchBarValue] = useState("");
-  const [noneOfTheseWordsSearchBarValue, setNoneOfTheseWordsSearchBarValue] =
-    useState("");
+  const [noneOfTheseWordsSearchBarValue, setNoneOfTheseWordsSearchBarValue] = useState("");
 
   const [filterFacultyValue, setFilterFacultyValue] = useState("");
   const [filterDepartmentValue, setFilterDepartmentValue] = useState("");
@@ -240,6 +236,23 @@ export default function Advanced_Search(props) {
     );
   };
 
+  const searchGrantsQuery = async () => {
+    const grantsSearchResult = await API.graphql({
+      query: advancedSearchGrants,
+      variables: {
+        includeAllTheseWords: AllWords,
+        includeTheseExactWordsOrPhrases: ExactPhrase,
+        includeAnyOfTheseWords: AnyWords,
+        noneOfTheseWords: NoneOfTheseWords,
+        table: "grant_data",
+      },
+    });
+    console.log(grantsSearchResult)
+    setGrantsSearchResults(
+      grantsSearchResult.data.advancedSearchGrants
+    );
+  };
+
   function scrollToResults() {
     titleRef.current.scrollIntoView({ behavior: "smooth" });
   }
@@ -247,6 +260,7 @@ export default function Advanced_Search(props) {
   async function search() {
     await searchResearchersQuery();
     await searchPublicationsQuery();
+    await searchGrantsQuery();
     scrollToResults();
   }
 
@@ -478,7 +492,7 @@ export default function Advanced_Search(props) {
           value={contentToSearchForValue}
           setValue={setContentToSearchForValue}
           title={"Type Of Content To Search For"}
-          DropDownArray={["Everything", "Researchers", "Publications"]}
+          DropDownArray={["Everything", "Researchers", "Publications", "Grants"]}
         />
         <Paper
           square={true}
@@ -543,6 +557,9 @@ export default function Advanced_Search(props) {
           publicationsSearchResultPage={publicationsSearchResultPage}
           setPublicationsSearchResultPage={setPublicationsSearchResultPage}
         />
+      )}
+      {(SearchForWhat === "Everything" || SearchForWhat === "Grants") && (
+        <GrantInformation grantData={grantsSearchResults} tabOpened={false} initialNumberOfRows={50}/>
       )}
     </div>
   );

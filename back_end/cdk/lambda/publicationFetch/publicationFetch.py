@@ -38,9 +38,14 @@ def fetch_publications(author_id):
     response = requests.get(url, headers=headers, params=query)
     rjson = response.json()
     stored_results = 0
+    if 'search-results' not in rjson:
+        return (publications)
     total_results = int(rjson['search-results']['opensearch:totalResults'])
     publications = []
     while(stored_results < total_results):
+        if 'search-results' not in rjson:
+            return (publications)
+            
         results = rjson['search-results']['entry']
         for result in results:
             keys = result.keys()

@@ -19,11 +19,11 @@ export default function PUBLICATIONS(props) {
   const [sortByTitle, setSortByTitle] = useState(false);
   const [sortByTitleDirection, setSortByTitleDirection] = useState("desc");
 
-  const [sortByNumberCitations, setSortyByNumberCitations] = useState(true);
+  const [sortByNumberCitations, setSortyByNumberCitations] = useState(false);
   const [sortByNumberCitationsDirection, setSortyByNumberCitationsDirection] =
     useState("desc");
 
-  const [sortByYear, setSortByYear] = useState(false);
+  const [sortByYear, setSortByYear] = useState(true);
   const [sortByYearDirection, setSortByYearDirection] = useState("desc");
 
   const DescendingSortByCitationsPublications =

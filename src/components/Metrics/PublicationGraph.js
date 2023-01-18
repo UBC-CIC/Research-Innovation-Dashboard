@@ -94,7 +94,7 @@ const PublicationGraph = () => {
           }}
         >
           <Typography variant="h5">
-            Total Publications At UBC Per Year{" "}
+            Total Publications Per Year{" "}
           </Typography>
           <Box
             sx={{

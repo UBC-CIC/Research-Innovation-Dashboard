@@ -30,6 +30,7 @@ type Publication {
 type Query {
   advancedSearchPublications(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, journal: String!, noneOfTheseWords: String!, table: String!, year_gte: Int!, year_lte: Int!): [Publication]
   advancedSearchResearchers(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, prime_department: String!, prime_faculty: String!, table: String!): [ResearcherOpenSearch]
+  advancedSearchGrants(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, table: String!): [grant]
   allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
   facultyMetrics(faculty: String!): [facultyMetric]
   getAllDepartments: [String]

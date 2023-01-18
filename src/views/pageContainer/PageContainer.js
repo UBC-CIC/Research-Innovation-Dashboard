@@ -8,8 +8,8 @@ import ResearcherProfileOverview from "../../components/ResearcherProfile/Resear
 import { Routes, Route } from "react-router-dom";
 import SearchComponent from "../../components/SearchResearchers/Search/SearchComponent";
 import AdvancedSearchComponent from "../../components/SearchResearchers/AdvancedSearch/AdvancedSearchComponent";
-import Rankings from "../../components/Rankings/Rankings";
-import UbcMetrics from "../../components/Metrics/Metrics";
+import Impacts from "../../components/Impacts/Impact";
+import Metrics from "../../components/Metrics/Metrics";
 import AdminDashboard from "../../components/AdminDashboard/AdminDashboard";
 import { Auth } from "aws-amplify";
 
@@ -67,11 +67,11 @@ function PageContainer(props) {
             path="/Researchers/:scopusId"
             element={<ResearcherProfileOverview />}
           />
-          <Route path="/Metrics/" element={<UbcMetrics />} />
+          <Route path="/Metrics/" element={<Metrics />} />
           {adminUser && (
             <Route path="/AdminDashboard/" element={<AdminDashboard />} />
           )}
-          <Route path="/Impact/" element={<Rankings />} />
+          <Route path="/Impact/" element={<Impacts />} />
           <Route
             path="/AdvancedSearch/:SearchForWhat/:AllWords/:ExactPhrase/:AnyWords/:NoneOfTheseWords/:Department/:Faculty/:yearFrom/:yearTo/:Journal"
             element={<AdvancedSearchComponent />}
@@ -85,7 +85,11 @@ function PageContainer(props) {
             element={<SearchComponent whatToSearch={"Publications"} />}
           />
           <Route
-            path="/:anyDepartmentFilter/:anyFacultyFilter/:journalFilter/:searchValue/"
+            path="/Search/Grants/:grantFilter/:searchValue/"
+            element={<SearchComponent whatToSearch={"Grants"} />}
+          />
+          <Route
+            path="/:anyDepartmentFilter/:anyFacultyFilter/:journalFilter/:grantFilter/:searchValue/"
             element={<SearchComponent whatToSearch={"Everything"} />}
           />
           <Route

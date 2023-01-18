@@ -69,6 +69,34 @@ export const advancedSearchResearchers = /* GraphQL */ `
     }
   }
 `;
+export const advancedSearchGrants = /* GraphQL */ `
+  query AdvancedSearchGrants(
+    $includeAllTheseWords: String!
+    $includeAnyOfTheseWords: String!
+    $includeTheseExactWordsOrPhrases: String!
+    $noneOfTheseWords: String!
+    $table: String!
+  ) {
+    advancedSearchGrants(
+      includeAllTheseWords: $includeAllTheseWords
+      includeAnyOfTheseWords: $includeAnyOfTheseWords
+      includeTheseExactWordsOrPhrases: $includeTheseExactWordsOrPhrases
+      noneOfTheseWords: $noneOfTheseWords
+      table: $table
+    ) {
+      name
+      department
+      agency
+      grant_program
+      amount
+      project_title
+      keywords
+      year
+      start_date
+      end_date
+    }
+  }
+`;
 export const allPublicationsPerFacultyQuery = /* GraphQL */ `
   query AllPublicationsPerFacultyQuery {
     allPublicationsPerFacultyQuery {
@@ -101,9 +129,9 @@ export const getAllFaculty = /* GraphQL */ `
     getAllFaculty
   }
 `;
-export const getAllResearchersRankings = /* GraphQL */ `
-  query GetAllResearchersRankings {
-    getAllResearchersRankings {
+export const getAllResearchersImpacts = /* GraphQL */ `
+  query GetAllResearchersImpacts {
+    getAllResearchersImpacts {
       h_index
       num_citations
       preferred_name
@@ -254,9 +282,9 @@ export const getResearcherPubsByYear = /* GraphQL */ `
     }
   }
 `;
-export const getResearcherRankingsByDepartment = /* GraphQL */ `
-  query GetResearcherRankingsByDepartment($prime_department: String!) {
-    getResearcherRankingsByDepartment(prime_department: $prime_department) {
+export const getResearcherImpactsByDepartment = /* GraphQL */ `
+  query GetResearcherImpactsByDepartment($prime_department: String!) {
+    getResearcherImpactsByDepartment(prime_department: $prime_department) {
       h_index
       num_citations
       preferred_name
@@ -266,9 +294,9 @@ export const getResearcherRankingsByDepartment = /* GraphQL */ `
     }
   }
 `;
-export const getResearcherRankingsByFaculty = /* GraphQL */ `
-  query GetResearcherRankingsByFaculty($prime_faculty: String!) {
-    getResearcherRankingsByFaculty(prime_faculty: $prime_faculty) {
+export const getResearcherImpactsByFaculty = /* GraphQL */ `
+  query GetResearcherImpactsByFaculty($prime_faculty: String!) {
+    getResearcherImpactsByFaculty(prime_faculty: $prime_faculty) {
       h_index
       num_citations
       preferred_name
@@ -401,5 +429,48 @@ export const getFlaggedIds = /* GraphQL */ `
       second_department
       second_faculty
     }
+  }
+`;
+export const getResearcherGrants = /* GraphQL */ `
+  query GetResearcherGrants($id: ID!) {
+    getResearcherGrants(id: $id) {
+      name
+      department
+      agency
+      grant_program
+      amount
+      project_title
+      keywords
+      year
+      start_date
+      end_date
+    }
+  }
+`;
+export const searchGrants = /* GraphQL */ `
+  query SearchGrants(
+    $search_value: String!
+    $grantAgenciesToFilterBy: [String]!
+  ) {
+    searchGrants(
+      search_value: $search_value
+      grantAgenciesToFilterBy: $grantAgenciesToFilterBy
+    ) {
+      name
+      department
+      agency
+      grant_program
+      amount
+      project_title
+      keywords
+      year
+      start_date
+      end_date
+    }
+  }
+`;
+export const getAllGrantAgencies = /* GraphQL */ `
+  query GetAllGrantAgencies {
+    getAllGrantAgencies
   }
 `;

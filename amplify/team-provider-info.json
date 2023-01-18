@@ -1,15 +1,34 @@
 {
-  "dev": {
+  "devc": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-vpriapp-dev-130538-authRole",
-      "UnauthRoleArn": "arn:aws:iam::649335657496:role/amplify-vpriapp-dev-130538-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::649335657496:role/amplify-vpriapp-dev-130538-authRole",
+      "AuthRoleName": "amplify-vpriinnovationdashbo-devc-194040-authRole",
+      "UnauthRoleArn": "arn:aws:iam::657341422592:role/amplify-vpriinnovationdashbo-devc-194040-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::657341422592:role/amplify-vpriinnovationdashbo-devc-194040-authRole",
       "Region": "ca-central-1",
-      "DeploymentBucketName": "amplify-vpriapp-dev-130538-deployment",
-      "UnauthRoleName": "amplify-vpriapp-dev-130538-unauthRole",
-      "StackName": "amplify-vpriapp-dev-130538",
-      "StackId": "arn:aws:cloudformation:ca-central-1:649335657496:stack/amplify-vpriapp-dev-130538/09252720-e5d4-11ec-a7fc-02aee884baba",
-      "AmplifyAppId": "d2tqwxzio7j81v"
+      "DeploymentBucketName": "amplify-vpriinnovationdashbo-devc-194040-deployment",
+      "UnauthRoleName": "amplify-vpriinnovationdashbo-devc-194040-unauthRole",
+      "StackName": "amplify-vpriinnovationdashbo-devc-194040",
+      "StackId": "arn:aws:cloudformation:ca-central-1:657341422592:stack/amplify-vpriinnovationdashbo-devc-194040/0819a1c0-7667-11ed-9eb9-028fc27a4036",
+      "AmplifyAppId": "d2i4h1j41cg5m8"
+    },
+    "categories": {
+      "auth": {
+        "vpriinnovationdashbo197a129c": {},
+        "userPoolGroups": {}
+      }
+    }
+  },
+  "devb": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-vpriinnovationdashbo-devb-215307-authRole",
+      "UnauthRoleArn": "arn:aws:iam::213994244377:role/amplify-vpriinnovationdashbo-devb-215307-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::213994244377:role/amplify-vpriinnovationdashbo-devb-215307-authRole",
+      "Region": "ca-central-1",
+      "DeploymentBucketName": "amplify-vpriinnovationdashbo-devb-215307-deployment",
+      "UnauthRoleName": "amplify-vpriinnovationdashbo-devb-215307-unauthRole",
+      "StackName": "amplify-vpriinnovationdashbo-devb-215307",
+      "StackId": "arn:aws:cloudformation:ca-central-1:213994244377:stack/amplify-vpriinnovationdashbo-devb-215307/0e40e730-65f9-11ed-9d28-0ab8cdf667cc",
+      "AmplifyAppId": "d19j5hkb36isvz"
     },
     "categories": {
       "auth": {

@@ -21,11 +21,7 @@ export class DmsStack extends Stack {
   public readonly replicationTask: dms.CfnReplicationTask;
 
   constructor(scope: Construct, id: string, vpcStack: VpcStack, opensearchStack: OpensearchStack, databaseStack: DatabaseStack, props?: StackProps) {
-    super(scope, id, {
-      env: {
-          region: 'ca-central-1'
-      },
-    });
+    super(scope, id, props);
 
     //Create Policy For DMS to access opensearch
     const opensearchAccessPolicy = new iam.PolicyDocument({
@@ -75,6 +71,8 @@ export class DmsStack extends Stack {
   
         // Attach the subnet group to the replication instance
         replicationSubnetGroupIdentifier: subnet.ref,
+
+        publiclyAccessible: false,
 
         // Attach the default VPC security group to the replication instance
         vpcSecurityGroupIds: [ vpcStack.vpc.vpcDefaultSecurityGroup ],
@@ -135,6 +133,16 @@ export class DmsStack extends Stack {
             "object-locator": {
               "schema-name": "public",
               "table-name": "publication_data"
+            },
+            "rule-action": "include"
+          },
+          {
+            "rule-type": "selection",
+            "rule-id": "3",
+            "rule-name": "import grant data",
+            "object-locator": {
+              "schema-name": "public",
+              "table-name": "grant_data"
             },
             "rule-action": "include"
           }]

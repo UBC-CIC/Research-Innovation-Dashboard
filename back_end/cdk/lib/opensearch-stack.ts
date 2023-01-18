@@ -20,11 +20,7 @@ export class OpensearchStack extends Stack {
     public readonly domainName: string;
 
     constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
-    super(scope, id, {
-      env: {
-          region: 'ca-central-1'
-      },
-    });
+      super(scope, id, props);
 
     this.domainName = 'vpri-cdk-opensearch-domain'
 
@@ -79,7 +75,12 @@ export class OpensearchStack extends Stack {
         vpc: vpcStack.vpc,
         vpcSubnets: [vpcStack.vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_ISOLATED})],
         securityGroups: [defaultSecurityGroup],
-        zoneAwareness: {availabilityZoneCount : 2}
+        zoneAwareness: {availabilityZoneCount : 2},
+        // encryptionAtRest: {
+        //     enabled: true,
+        // },
+        nodeToNodeEncryption: true,
+
     });
 
     //Attach vpc service linked role to opensearch domain
