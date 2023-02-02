@@ -31,7 +31,7 @@ export default function PUBLICATION({ publication_data }) {
       key={publication_data.id}
       container
       gridAutoRows="1fr"
-      style={{ marginLeft: "2%", marginRight: "2%" }}
+      style={{ marginLeft: "2%", marginRight: "2%", marginBottom: "2%" }}
     >
       <Grid item xs={10}>
         <Paper

@@ -15,7 +15,7 @@ function getCallback(callback) {
     const text = select(element);
     text.on("click", () => {
       if (isActive) {
-        window.open(`${window.location.origin}/%20/%20/%20/${word.text}`);
+        window.open(`${window.location.origin}/%20/%20/%20/%20/%20/${word.text}`);
       }
     });
   };

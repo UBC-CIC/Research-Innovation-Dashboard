@@ -469,8 +469,40 @@ export const searchGrants = /* GraphQL */ `
     }
   }
 `;
+export const searchPatents = /* GraphQL */ `
+  query SearchPatents(
+    $search_value: String!
+    $patentClassificationFilter: [String]!
+  ) {
+    searchPatents(
+      search_value: $search_value
+      patentClassificationFilter: $patentClassificationFilter
+    ) {
+      patent_number
+      patent_title
+      patent_inventors
+      patent_sponsors
+      patent_family_number
+      patent_classification
+      patent_publication_date
+    }
+  }
+`;
 export const getAllGrantAgencies = /* GraphQL */ `
   query GetAllGrantAgencies {
     getAllGrantAgencies
+  }
+`;
+export const getResearcherPatents = /* GraphQL */ `
+  query GetResearcherPatents($id: ID!) {
+    getResearcherPatents(id: $id) {
+      patent_number
+      patent_title
+      patent_inventors
+      patent_sponsors
+      patent_family_number
+      patent_classification
+      patent_publication_date
+    }
   }
 `;

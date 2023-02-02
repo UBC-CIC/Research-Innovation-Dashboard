@@ -12,22 +12,26 @@ import PublicationFilters from "./PublicationFilters";
 import { useParams } from "react-router-dom";
 import GrantInformation from "../../ResearcherProfile/GrantInformation"
 import GrantFilters from "../Search/GrantsFilters"
+import PatentInformation from "../../ResearcherProfile/PatentInformation"
+import PatentFilters from "../Search/PatentFilters"
 
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
   const [publicationSearchResults, setPublicationSearchResults] = useState([]);
   const [grantsSearchResults, setGrantsSearchResults] = useState([]);
+  const [patentsSearchResults, setPatentSearchResults] = useState([]);
   const [researcherSearchResultPage, setResearcherSearchResultPage] =
     useState(1);
   const [publicationsSearchResultPage, setPublicationsSearchResultPage] =
     useState(1);
 
-  let { anyDepartmentFilter, anyFacultyFilter, journalFilter, grantFilter } = useParams();
+  let { anyDepartmentFilter, anyFacultyFilter, journalFilter, grantFilter, patentClassifications } = useParams();
 
   let selectedDepartmentsArray = [];
   let selectedFacultyArray = [];
   let selectedJournalFilter = [];
   let selectGrantingAgency = [];
+  let selectedClassification = []
 
   if (!anyDepartmentFilter || anyDepartmentFilter === " ") {
     selectedDepartmentsArray = [];
@@ -53,6 +57,12 @@ export default function SearchComponent(props) {
   } else {
     selectGrantingAgency = grantFilter.split("&&");
   }
+  if (!patentClassifications || patentClassifications === " ") {
+    selectedClassification = [];
+    patentClassifications = " ";
+  } else {
+    selectedClassification = patentClassifications.split("&&");
+  }
   
   console.log(props.whatToSearch)
 
@@ -71,7 +81,9 @@ export default function SearchComponent(props) {
   const [journalPath, setJournalPath] = useState(journalFilter);
 
   const [selectedGrantAgency, setSelectedGrantAgency] = useState(selectGrantingAgency)
+  const [selectedPatentClassification, setSelectedPatentClassification] = useState(selectedClassification)
   const [grantPath, setGrantPath] = useState("");
+  const [patentClassificationPath, setPatentClassificationPath] = useState("")
 
   useEffect(() => {
     //if there are selected departments, join items in array to create 1 string (different departments separated by &&), replace all spaces with %20
@@ -118,6 +130,18 @@ export default function SearchComponent(props) {
     }
   }, [selectedGrantAgency])
 
+  useEffect(() => {
+    if (selectedPatentClassification.length > 0) {
+      let PatentPath = selectedPatentClassification[0];
+      for (let i = 1; i < selectedPatentClassification.length; i++) {
+        PatentPath = PatentPath + "&&" + selectedPatentClassification[i];
+      }
+      setPatentClassificationPath(PatentPath);
+    } else {
+      setPatentClassificationPath(" ");
+    }
+  }, [selectedPatentClassification])
+
   return (
     <div>
       <Grid container>
@@ -138,13 +162,16 @@ export default function SearchComponent(props) {
                   selectedFaculties={selectedFaculties}
                   selectedJournals={selectedJournals}
                   selectedGrants={selectedGrantAgency}
+                  selectedPatentClassification={selectedPatentClassification}
                   departmentPath={departmentPath}
                   facultyPath={facultyPath}
                   journalPath={journalPath}
                   grantPath={grantPath}
+                  patentClassificationPath={patentClassificationPath}
                   setResearcherSearchResultPage={setResearcherSearchResultPage}
                   setPublicationsSearchResultPage={setPublicationsSearchResultPage}
                   setGrantsSearchResults={setGrantsSearchResults}
+                  setPatentSearchResults={setPatentSearchResults}
                 />
                 <Paper
                   square={true}
@@ -223,6 +250,18 @@ export default function SearchComponent(props) {
             </Grid>
             <Grid item xs={10}>
               <GrantInformation grantData={grantsSearchResults} tabOpened={false} initialNumberOfRows={50}/>
+            </Grid>
+          </Grid>
+        )}
+        {(props.whatToSearch === "Everything" ||
+         props.whatToSearch === "Patents") && (
+          <Grid container item xs={12} sx={{ p: "1.5em" }}>
+            <Grid item xs={2}>
+              <PatentFilters selectedPatentClassification={selectedPatentClassification}
+              setSelectedPatentClassification={setSelectedPatentClassification}/>
+            </Grid>
+            <Grid item xs={10}>
+              <PatentInformation tabOpened={false} researcherPatents={patentsSearchResults} initialNumberOfRows={10}/>
             </Grid>
           </Grid>
         )}

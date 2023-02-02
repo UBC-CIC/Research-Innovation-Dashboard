@@ -154,7 +154,7 @@ function Navbar(props) {
           >
             <NavButton
               sx={{ paddingLeft: "0%" }}
-              onClick={() => (window.location.href = "/ / / / / /")}
+              onClick={() => (window.location.href = "/ / / / / / /")}
             >
               Home
             </NavButton>
@@ -178,6 +178,13 @@ function Navbar(props) {
               }
             >
               Grants
+            </NavButton>
+            <NavButton
+              onClick={() =>
+                (window.location.href = "/Search/Patents/ / /")
+              }
+            >
+              Patents
             </NavButton>
             <NavButton onClick={() => navigate("/Impact/")}>Impact</NavButton>
             <NavButton onClick={() => navigate("/Metrics/")}>Metrics</NavButton>

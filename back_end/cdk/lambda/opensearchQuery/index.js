@@ -393,9 +393,93 @@ switch(event.info.fieldName) {
       },
     };
 
-    searchResult = await search(query, "grant_data", 200);
+    searchResult = await search(query, "grant_data", 25);
     
     break;
+
+    case "searchPatents":
+      stringSplitArray = event.arguments.search_value.split(" ");
+      
+      for(let i = 0; i<stringSplitArray.length; i++){
+        let matchFamilyNumber = {
+          "match": {
+            "patent_family_number": {
+              "query": stringSplitArray[i],
+              "boost": 100
+            }
+          }
+        }
+        let matchPatentNumber = {
+          "match": {
+            "patent_number": {
+              "query": stringSplitArray[i],
+              "boost": 100
+            }
+          }
+        }
+        let matchPatentTitle = {
+          "match": {
+            "patent_title": {
+              "query": stringSplitArray[i],
+              "boost": 10
+            }
+          }
+        }
+        let matchInventors = {
+          "match": {
+            "patent_inventors": {
+              "query": stringSplitArray[i],
+              "boost": 5
+            }
+          }
+        }
+        let matchSponsors = {
+          "match": {
+            "patent_sponsors": {
+              "query": stringSplitArray[i],
+              "boost": 1
+            }
+          }
+        }
+        queryArray.push(matchFamilyNumber);
+        queryArray.push(matchPatentNumber);
+        queryArray.push(matchPatentTitle);
+        queryArray.push(matchInventors);
+        queryArray.push(matchSponsors);
+      }
+
+      //Create Patent Filters
+      let classificationsToInclude = event.arguments.patentClassificationFilter;
+      
+      if(classificationsToInclude.length != 0){
+        let theQueryString = '"' + classificationsToInclude[0] + '"';
+        for(let i = 1; i<classificationsToInclude.length; i++){
+          theQueryString += ' | "' +  classificationsToInclude[i] + '"';
+        }
+        let grantsFilter = {
+          simple_query_string: {
+            "query": theQueryString,
+            "fields": ["patent_classification"]
+          }
+        }
+        filters.push(grantsFilter);
+      }
+      
+      if(event.arguments.search_value.length == 0){
+        queryArray = [{match_all: {}}]
+      }
+      
+      query = {
+        query: {
+          bool: {
+            should: queryArray,
+            minimum_should_match: 1,
+            filter: filters
+          }
+        },
+      };
+      searchResult = await search(query, "patent_data", 25);
+      break;
 }
 
 console.log("HERE2")
@@ -588,7 +672,7 @@ if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName =
     };
     }
     
-    searchResult = await search(query, table, 50);
+    searchResult = await search(query, table, 25);
     console.log('SEARCH RESULTS');
     console.log(searchResult);
 }

@@ -62,7 +62,7 @@ export default function GrantInformation(props){
                             Project Title
                         </Paper>
                     </Grid>
-                    <Grid item xs={1}>
+                    <Grid item xs={2}>
                         <Paper
                         square={true}
                         elevation={0}
@@ -82,7 +82,7 @@ export default function GrantInformation(props){
                             Amount
                         </Paper>
                     </Grid>
-                    <Grid item xs={2}>
+                    <Grid item xs={1}>
                         <Paper
                         square={true}
                         elevation={0}

@@ -15,6 +15,7 @@ import { useParams } from "react-router-dom";
 import SimilarResearchers from "./SimilarResearchers";
 import LoadingWheel from "../LoadingWheel";
 import PublicationBarGraph from "./PublicationBarGraph";
+import PatentInformation from "./PatentInformation";
 
 import Amplify from "@aws-amplify/core";
 import { Auth } from "@aws-amplify/auth";
@@ -31,6 +32,7 @@ import {
   getNumberOfResearcherPubsAllYears,
   similarResearchers,
   getResearcherGrants,
+  getResearcherPatents,
 } from "../../graphql/queries";
 
 Amplify.configure(awsmobile);
@@ -61,6 +63,8 @@ export default function Researcher_profile_overview() {
   const [rank, setRank] = useState("")
   const [grantData, setGrantData] = useState([]);
   const [showGrants, setShowGrants] = useState(false);
+  const [showPatents, setShowPatents] = useState(false);
+  const [researcherPatents, setResearcherPatents] = useState([]);
 
   const [numberOfPublicationsToShow, setNumberOfPublicationsToShow] =
     useState(2);
@@ -113,6 +117,17 @@ export default function Researcher_profile_overview() {
   const [pageLoaded, setPageLoaded] = useState(false);
 
   const [showFullGraph, setShowFullGraph] = useState(false);
+
+  const getPatents = async () => {
+    const researcherPatentData = await API.graphql({
+      query: getResearcherPatents,
+      variables: { id: scopusId },
+    });
+
+    console.log(researcherPatentData.data.getResearcherPatents);
+
+    setResearcherPatents(researcherPatentData.data.getResearcherPatents);
+  }
 
   const getAllPublications = async () => {
     const dataSortedByCitation = await API.graphql({
@@ -208,10 +223,6 @@ export default function Researcher_profile_overview() {
         id: scopusId,
       },
     });
-
-
-
-    console.log(grantResult.data.getResearcherGrants)
     setGrantData(grantResult.data.getResearcherGrants);
     setPageLoaded(true);
   };
@@ -260,9 +271,6 @@ export default function Researcher_profile_overview() {
     }
 
     let sortedKeywordHashmap = [...keywordHashmap].sort((a, b) => b[1] - a[1]);
-
-    console.log(sortedKeywordHashmap);
-
     let sortedAreas = [];
     let areaWeight = [];
 
@@ -301,6 +309,9 @@ export default function Researcher_profile_overview() {
     getResearcherBarGraphData().catch((e) => {
       console.log(e);
     });
+    getPatents().catch((e) => {
+      console.log(e);
+    });
   }, []);
 
   useEffect(() => {
@@ -309,7 +320,6 @@ export default function Researcher_profile_overview() {
       funding += grantData[i].amount;
     }
     set_funding((funding.toLocaleString()))
-    // console.log(funding);
   }, [grantData]);
 
   function showOverviewFunc() {
@@ -320,6 +330,7 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowSimilarResearchers(false);
     setShowGrants(false);
+    setShowPatents(false);
     setShowFullGraph(false);
   }
 
@@ -331,6 +342,7 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowSimilarResearchers(false);
     setShowGrants(false);
+    setShowPatents(false);
     setShowFullGraph(false);
   }
 
@@ -340,6 +352,7 @@ export default function Researcher_profile_overview() {
     setShowPublications(true);
     setShowSimilarResearchers(false);
     setShowGrants(false);
+    setShowPatents(false);
     setShowFullGraph(false);
   }
 
@@ -349,6 +362,7 @@ export default function Researcher_profile_overview() {
     setShowPublications(false);
     setShowSimilarResearchers(true);
     setShowGrants(false);
+    setShowPatents(false);
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
@@ -360,6 +374,18 @@ export default function Researcher_profile_overview() {
     setShowPublications(false);
     setShowSimilarResearchers(false);
     setShowGrants(true);
+    setShowPatents(false);
+    setNumberOfPublicationsToShow(2);
+    setincreasePublicationListBy(5);
+    setShowFullGraph(false);
+  }
+  function showPatentsFunction() {
+    setShowOverview(false);
+    setShowAreasOfInterest(false);
+    setShowPublications(false);
+    setShowSimilarResearchers(false);
+    setShowGrants(false);
+    setShowPatents(true);
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
@@ -417,6 +443,7 @@ export default function Researcher_profile_overview() {
               showAreasOfInterestFunc,
               showPublicationsFunc,
               showGrantsFunction,
+              showPatentsFunction,
             }}
           />
           {showOverview && (
@@ -478,28 +505,36 @@ export default function Researcher_profile_overview() {
                 <Paper square={true} elevation={0} variant="outlined">
                     <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={2}/>
                     <Box textAlign="center">
-                    <Button
-                      onClick={showGrantsFunction}
-                      sx={{
-                        m: 1,
-                        border: "2px solid Black",
-                        color: "black",
-                        backgroundColor: "white",
-                      }}
-                    >
-                      View All Grants
-                    </Button>
-                  </Box>
+                      <Button
+                        onClick={showGrantsFunction}
+                        sx={{
+                          m: 1,
+                          border: "2px solid Black",
+                          color: "black",
+                          backgroundColor: "white",
+                        }}
+                      >
+                        View All Grants
+                      </Button>
+                    </Box>
                 </Paper>
               </Grid>
               <Grid item xs={12}>
                 <Paper square={true} elevation={0} variant="outlined">
-                  <IntellectualProperty
-                    researcher_information={{
-                      num_patents_filed,
-                      num_licensed_patents,
-                    }}
-                  />
+                  <PatentInformation  researcherPatents={researcherPatents} initialNumberOfRows={2}/>
+                  <Box textAlign="center">
+                      <Button
+                        onClick={showPatentsFunction}
+                        sx={{
+                          m: 1,
+                          border: "2px solid Black",
+                          color: "black",
+                          backgroundColor: "white",
+                        }}
+                      >
+                        View All Patents
+                      </Button>
+                    </Box>
                 </Paper>
               </Grid>
             </Grid>
@@ -546,6 +581,11 @@ export default function Researcher_profile_overview() {
           )}
           {showGrants && (
             <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={25}/>
+          )}
+          {showPatents && (
+            <Grid item xs={12}>
+            <PatentInformation tabOpened={showPatents} researcherPatents={researcherPatents} initialNumberOfRows={2}/>
+            </Grid>
           )}
         </Grid>
       )}

@@ -138,6 +138,15 @@ export class AppsyncStack extends Stack {
         prime_faculty: String
       }
       
+      type Impact {
+        h_index: Float
+        num_citations: Int
+        preferred_name: String
+        prime_department: String
+        prime_faculty: String
+        scopus_id: String
+      }
+      
       type Mutation {
         putPub(
           authors: [String!],
@@ -158,19 +167,6 @@ export class AppsyncStack extends Stack {
         link: String
         title: String!
         year_published: String
-      }
-
-      type grant {
-        name: String!
-        department: String
-        agency: String!
-        grant_program: String
-        amount: Int
-        project_title: String
-        keywords: String
-        year: String
-        start_date: String
-        end_date: String
       }
       
       type Query {
@@ -228,31 +224,14 @@ export class AppsyncStack extends Stack {
         getUpdatePublicationsLogs: [updatePublicationsLogType]
         getFlaggedIds: [[Researcher]]
         getResearcherGrants(id: ID!): [grant]
-        searchGrants(search_value: String!, grantAgenciesToFilterBy: String!): [grant]
+        searchGrants(search_value: String!, grantAgenciesToFilterBy: [String]!): [grant]
         getAllGrantAgencies: [String]
-      }
-
-      type updatePublicationsLogType {
-        number_of_publications_updated: Int
-        date_updated: String
-      }
-
-      type lastUpdated {
-        preferred_name: String
-        last_updated: String
-      }
-      
-      type Impact {
-        h_index: Float
-        num_citations: Int
-        preferred_name: String
-        prime_department: String
-        prime_faculty: String
-        scopus_id: String
+        getResearcherPatents(id: ID!): [patent]
+        searchPatents(search_value: String!, patentClassificationFilter: [String]!): [patent]
       }
       
       type Researcher {
-        institution_user_id: String
+        employee_id: String
         areas_of_interest: String
         campus: String
         email: String
@@ -326,6 +305,19 @@ export class AppsyncStack extends Stack {
         year: String
       }
       
+      type grant {
+        name: String!
+        department: String
+        agency: String!
+        grant_program: String
+        amount: Int
+        project_title: String
+        keywords: String
+        year: String
+        start_date: String
+        end_date: String
+      }
+      
       type graphData {
         lastFiveYears: [String]
         publicationsPerYear: [String]
@@ -335,6 +327,21 @@ export class AppsyncStack extends Stack {
         allyears: [String]
         publicationsPerYear: [String]
       }
+      
+      type lastUpdated {
+        preferred_name: String
+        last_updated: String
+      }
+      
+      type patent {
+        patent_number: String
+        patent_title: String
+        patent_inventors: String
+        patent_sponsors: String
+        patent_family_number: String
+        patent_classification: String
+        patent_publication_date: String
+      }      
       
       type pubsPerYear {
         count: String
@@ -351,10 +358,15 @@ export class AppsyncStack extends Stack {
         sum: Int
       }
       
+      type updatePublicationsLogType {
+        number_of_publications_updated: Int
+        date_updated: String
+      }
+      
       type wordCloud {
         text: String
         value: Int
-      }      
+      } 
       `
     });
 
@@ -378,6 +390,14 @@ export class AppsyncStack extends Stack {
     const SearchGrantsResolver = new appsync.CfnResolver(this, 'searchGrants', {
       apiId: APIID,
       fieldName: 'searchGrants',
+      typeName: 'Query',
+      dataSourceName: opensearchDataSource.name,
+    });
+    SearchGrantsResolver.addDependsOn(opensearchDataSource);
+
+    const SearchPatentsResolver = new appsync.CfnResolver(this, 'searchPatents', {
+      apiId: APIID,
+      fieldName: 'searchPatents',
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
@@ -421,7 +441,8 @@ export class AppsyncStack extends Stack {
     "getNumberOfResearcherPubsLastFiveYears", "getPub", "getResearcher", "getResearcherElsevier", "getResearcherFull",
     "getResearcherOrcid", "getResearcherPubsByCitations", "getResearcherPubsByTitle", "getResearcherPubsByYear",
     "getResearcherImpactsByDepartment", "getResearcherImpactsByFaculty", "totalPublicationPerYear", "wordCloud",
-    "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs", "getFlaggedIds", "getResearcherGrants", "getAllGrantAgencies"];
+    "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs", "getFlaggedIds", "getResearcherGrants", 
+    "getAllGrantAgencies", "getResearcherPatents"];
 
     for(var i = 0; i<postgresqlDBQueryList.length; i++){
       const resolver = new appsync.CfnResolver(this, postgresqlDBQueryList[i], {

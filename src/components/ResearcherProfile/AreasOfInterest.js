@@ -44,7 +44,6 @@ export default function AreasOfInterest(props){
     });
 
     const topFiveAreasOfInterest = () => {
-        console.log(props.areasOfInterest)
         return(
             <Grid item xs={12} sx={{pl: "2%", pr: "2%"}}>
                 <Box sx={{flexGrow: 1}}>
@@ -59,7 +58,6 @@ export default function AreasOfInterest(props){
                     width: 150,
                     height: 150,},}}
                 >
-                    <Tooltip title='hi'>
                     <Paper square={true} elevation={0} sx={{flexGrow: 1, ml: 0, mt: 1, mr: 1, mb: 1, border: 1}} component={Stack} direction="column" justifyContent="space-between" ml={0}>
                         <Paper sx={{height: "90%"}} elevation={0} component={Stack} direction="column" justifyContent="center">
                             <Typography align='center' variant='h5'>
@@ -72,7 +70,6 @@ export default function AreasOfInterest(props){
                             </Typography>
                         </Paper>
                     </Paper>
-                    </Tooltip>
                     <Paper square={true} elevation={0} sx={{flexGrow: 1, m: 1, border: 1}} component={Stack} direction="column" justifyContent="space-between">
                         <Paper sx={{height: "90%"}} elevation={0} component={Stack} direction="column" justifyContent="center">
                             <Typography align='center' variant='h5'>

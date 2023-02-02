@@ -15,7 +15,7 @@ export default function Grant(props){
                         square={true}
                         elevation={0}
                         variant="outlined"
-                        sx={{ textAlign: "center", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
+                        sx={{ textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
                         >
                             {props.name}
                         </Paper>
@@ -25,17 +25,17 @@ export default function Grant(props){
                         square={true}
                         elevation={0}
                         variant="outlined"
-                        sx={{ textAlign: "center", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
+                        sx={{ textAlign: "left", height: "100%", flexDirection: "column", display: "flex" }}
                         >
                             {props.projectTitle}
                         </Paper>
                     </Grid>
-                    <Grid item xs={1}>
+                    <Grid item xs={2}>
                         <Paper
                         square={true}
                         elevation={0}
                         variant="outlined"
-                        sx={{ textAlign: "center", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
+                        sx={{ textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
                         >
                             {props.agency}
                         </Paper>
@@ -45,17 +45,17 @@ export default function Grant(props){
                         square={true}
                         elevation={0}
                         variant="outlined"
-                        sx={{ textAlign: "center", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
+                        sx={{ textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
                         >
                             {props.amount.toLocaleString()}
                         </Paper>
                     </Grid>
-                    <Grid item xs={2}>
+                    <Grid item xs={1}>
                         <Paper
                         square={true}
                         elevation={0}
                         variant="outlined"
-                        sx={{ textAlign: "center", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
+                        sx={{ textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
                         >
                             {props.year}
                         </Paper>

@@ -10,7 +10,7 @@ import { useParams } from "react-router-dom";
 
 import { API } from "aws-amplify";
 
-import { searchResearcher, searchPublications, searchGrants } from "../../../graphql/queries";
+import { searchResearcher, searchPublications, searchGrants, searchPatents } from "../../../graphql/queries";
 
 export default function Search_Bar(props) {
   const {
@@ -25,6 +25,8 @@ export default function Search_Bar(props) {
     facultyPath,
     journalPath,
     grantPath,
+    patentClassificationPath,
+    selectedPatentClassification,
   } = props;
 
   let { searchValue } = useParams();
@@ -43,6 +45,7 @@ export default function Search_Bar(props) {
       searchResearchersQuery();
       searchPublicationsQuery();
       searchGrantsQuery();
+      searchPatentsQuery();
     } else if (whatToSearch === "Researchers") {
       searchResearchersQuery();
       setPublicationSearchResults([]);
@@ -51,6 +54,8 @@ export default function Search_Bar(props) {
       searchPublicationsQuery();
     } else if (whatToSearch === "Grants") {
       searchGrantsQuery();
+    } else if (whatToSearch === "Patents") {
+      searchPatentsQuery();
     }
   }
 
@@ -83,7 +88,6 @@ export default function Search_Bar(props) {
   };
 
   const searchGrantsQuery = async () => {
-    console.log(selectedGrants)
     const searchGrantsResults = await API.graphql({
       query: searchGrants,
       variables: {
@@ -91,11 +95,23 @@ export default function Search_Bar(props) {
         grantAgenciesToFilterBy: selectedGrants,
       },
     });
-
-    console.log(searchGrantsResults.data.searchGrants)
     
     props.setGrantsSearchResults(searchGrantsResults.data.searchGrants)
   }
+
+  const searchPatentsQuery = async () => {
+    const searchPatentsResult = await API.graphql({
+      query: searchPatents,
+      variables: {
+        search_value: searchValue,
+        patentClassificationFilter: selectedPatentClassification,
+      },
+    });
+    
+    props.setPatentSearchResults(searchPatentsResult.data.searchPatents)
+  }
+
+
 
   const routeChange = () => {
     console.log("Triggered!")
@@ -120,6 +136,9 @@ export default function Search_Bar(props) {
     else if (whatToSearch === "Grants") {
       path = "/Search/Grants/"+grantPath +"/"+searchPath+"/";
     }
+    else if (whatToSearch === "Patents"){
+      path = "/Search/Patents/"+patentClassificationPath+"/"+searchPath+"/";
+    }
     else {
       path =
         "/" +
@@ -130,6 +149,8 @@ export default function Search_Bar(props) {
         journalPath +
         "/" +
         grantPath +
+        "/" +
+        patentClassificationPath +
         "/" +
         searchPath +
         "/";
