@@ -76,7 +76,7 @@ export default function PatentInformation(props){
                         direction={sortByYearDirection}
                     > */}
                         <Typography align="center" variant="h6">
-                            Patent Number
+                            Family Number
                         </Typography>
                     {/* </TableSortLabel> */}
                     </Paper>

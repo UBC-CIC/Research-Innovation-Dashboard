@@ -11,6 +11,12 @@ import Latex from 'react-latex-next'
 
 export default function Patent(props){
 
+    
+
+    // const mappedPatentNumbers = props.patentNumber.map(patentNumber) => {
+    //     <a>{patentNumber}</a>
+    // }
+
     return(
     <Grid
       container
@@ -28,7 +34,7 @@ export default function Patent(props){
                 </Typography>
                 <Typography>Inventor Names: {props.inventors}</Typography>
                 <Typography>Sponsors: {props.sponsors}</Typography>
-                <Typography>Family Number: {props.familyNumber}</Typography>
+                <Typography>Patent Number: {props.patentNumber}</Typography>
                 <Typography>Classifications: {props.patentClassification}</Typography>
             </Paper>
         </Grid>
@@ -41,7 +47,7 @@ export default function Patent(props){
                 justifyContent="center"
             >
                 <Typography align="center" variant="h6">
-                    {props.patentNumber}
+                    {props.familyNumber}
                 </Typography>
             </Paper>
         </Grid>
