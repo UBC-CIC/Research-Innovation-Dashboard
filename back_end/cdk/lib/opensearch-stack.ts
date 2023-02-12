@@ -1,6 +1,6 @@
 import { VpcStack } from './vpc-stack';
 
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import { DockerImageAsset, NetworkMode } from 'aws-cdk-lib/aws-ecr-assets';
@@ -73,6 +73,7 @@ export class OpensearchStack extends Stack {
         domainName: 'vpri-cdk-opensearch-domain',
         accessPolicies: [openSearchPolicyStatement],
         vpc: vpcStack.vpc,
+        removalPolicy: RemovalPolicy.DESTROY,
         vpcSubnets: [vpcStack.vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_ISOLATED})],
         securityGroups: [defaultSecurityGroup],
         zoneAwareness: {availabilityZoneCount : 2},
@@ -80,7 +81,6 @@ export class OpensearchStack extends Stack {
         //     enabled: true,
         // },
         nodeToNodeEncryption: true,
-
     });
 
     //Attach vpc service linked role to opensearch domain

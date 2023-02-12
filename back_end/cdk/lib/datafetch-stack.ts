@@ -6,6 +6,7 @@ import { aws_iam as iam} from 'aws-cdk-lib';
 import  { aws_s3 as s3 } from 'aws-cdk-lib'
 import { aws_stepfunctions as sfn} from 'aws-cdk-lib';
 import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
+import { aws_logs as logs } from 'aws-cdk-lib';
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { DatabaseStack } from './database-stack';
 import { DmsStack } from './dms-stack';
@@ -114,6 +115,16 @@ export class DataFetchStack extends cdk.Stack {
       ],
       resources: [`arn:aws:ssm:ca-central-1:${this.account}:parameter/service/elsevier/api/user_name/*`]
     }));
+    nameMatchRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // CloudWatch Logs
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      resources: ["arn:aws:logs:*:*:*"]
+    }));
 
     const dataFetchRole = new Role(this, 'DataFetchRole', {
       roleName: 'DataFetchRole',
@@ -180,6 +191,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/scopusClean'),
       timeout: cdk.Duration.minutes(15),
       role: nameMatchRole,
+      logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
@@ -196,6 +208,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/institutionClean'),
       timeout: cdk.Duration.minutes(15),
       role: nameMatchRole,
+      logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
@@ -213,6 +226,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/compareNames'),
       timeout: cdk.Duration.minutes(15),
       role: nameMatchRole,
+      logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
@@ -230,6 +244,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/cleanNoMatches'),
       timeout: cdk.Duration.minutes(15),
       role: nameMatchRole,
+      logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
@@ -247,6 +262,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/identifyDuplicates'),
       timeout: cdk.Duration.minutes(15),
       role: nameMatchRole,
+      logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
@@ -266,6 +282,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/researcherFetch'),
       timeout: cdk.Duration.minutes(15),
       role: dataFetchRole,
+      logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
         S3_BUCKET_NAME: s3Bucket.bucketName,
@@ -283,6 +300,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/elsevierFetch'),
       timeout: cdk.Duration.minutes(15),
       role: dataFetchRole,
+      logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
         SCIVAL_MAX_AUTHORS: '100',
@@ -303,6 +321,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/orcidFetch'),
       timeout: cdk.Duration.minutes(15),
       role: dataFetchRole,
+      logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
         ORCID_URL: 'http://pub.orcid.org/'
@@ -320,6 +339,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/publicationFetch'),
       timeout: cdk.Duration.minutes(15),
       role: dataFetchRole,
+      logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
         RESULTS_PER_PAGE: '25',
@@ -338,6 +358,7 @@ export class DataFetchStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda/startReplication'),
       timeout: cdk.Duration.minutes(15),
       role: dataFetchRole,
+      logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
         Replication_Task_Arn: dmsStack.replicationTask.ref

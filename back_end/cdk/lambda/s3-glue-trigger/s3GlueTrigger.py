@@ -75,10 +75,14 @@ def lambda_handler(event, context):
                 Bucket=bucketName,
                 Prefix="raw/sshrc/"
             )
+
             objectCount = len(objectList["Contents"])
 
-            print("# of files: " + str(objectCount))
             print(objectList["Contents"])
+            for obj in objectList["Contents"]:
+                if obj["Key"] == "raw/sshrc/":
+                    objectCount -= 1
+            print("# of files: " + str(objectCount))
 
             # glue api call to list the job runs, limited to the most recent runs
             jobRuns = glue_client.get_job_runs(JobName=jobName, MaxResults=1)

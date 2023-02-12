@@ -1,4 +1,4 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import { DockerImageAsset, NetworkMode } from 'aws-cdk-lib/aws-ecr-assets';
@@ -76,8 +76,9 @@ export class DmsStack extends Stack {
 
         // Attach the default VPC security group to the replication instance
         vpcSecurityGroupIds: [ vpcStack.vpc.vpcDefaultSecurityGroup ],
-    });
 
+    });
+    
     // Get database credentials here
     const mySecretFromName = secretsmanager.Secret.fromSecretNameV2(this, 'SecretFromName', databaseStack.secretPath);
 
@@ -158,5 +159,10 @@ export class DmsStack extends Stack {
           }]
         })
     })
+
+    instance.applyRemovalPolicy(RemovalPolicy.DESTROY)
+    source.applyRemovalPolicy(RemovalPolicy.DESTROY)
+    target.applyRemovalPolicy(RemovalPolicy.DESTROY)
+    this.replicationTask.applyRemovalPolicy(RemovalPolicy.DESTROY)
   }
 }

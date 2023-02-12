@@ -42,7 +42,7 @@ export class DatabaseStack extends Stack {
       }),
       multiAz: true,
       allocatedStorage: 100,
-      maxAllocatedStorage: 105,
+      maxAllocatedStorage: 115,
       allowMajorVersionUpgrade: false,
       autoMinorVersionUpgrade: true,
       backupRetention: cdk.Duration.days(7),

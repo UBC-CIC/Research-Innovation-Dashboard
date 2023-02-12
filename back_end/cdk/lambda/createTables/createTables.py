@@ -134,6 +134,22 @@ def lambda_handler(event, context):
     columns.append(createColumn('end_date', 'character varying', '', True))
     query = createQuery('grant_data', columns)
     cursor.execute(query)
-    
+
+    # Create Patent Data Table
+    columns = []
+    columns.append(createColumn('patent_id', 'uuid', 'DEFAULT uuid_generate_v4() PRIMARY KEY', False))
+    columns.append(createColumn('patent_number', 'varchar', '',  False))
+    columns.append(createColumn('patent_country_code', 'varchar', '', False))
+    columns.append(createColumn('patent_kind_code', 'varchar', '', False))
+    columns.append(createColumn('patent_title', 'varchar', '', False))
+    columns.append(createColumn('patent_inventors', 'varchar', '', False))
+    columns.append(createColumn('patent_sponsors', 'varchar', '', False))
+    columns.append(createColumn('patent_family_number', 'varchar', '', False))
+    columns.append(createColumn('patent_classification', 'varchar', '', False))
+    columns.append(createColumn('patent_publication_date', 'varchar', '', False))
+    columns.append(createColumn('inventors_assigned_ids', 'varchar[]', '', True))
+    query = createQuery('patent_data', columns)
+    cursor.execute(query)
+
     cursor.close()
     connection.commit()

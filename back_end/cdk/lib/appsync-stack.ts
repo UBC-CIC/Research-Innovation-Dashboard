@@ -401,7 +401,7 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    SearchGrantsResolver.addDependsOn(opensearchDataSource);
+    SearchPatentsResolver.addDependsOn(opensearchDataSource);
 
     const SimilarResearchersResolver = new appsync.CfnResolver(this, 'similarResearchers', {
       apiId: APIID,

@@ -71,6 +71,13 @@ export class VpcStack extends Stack {
       subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED}
     });
 
+    // Add Cloudwatch endpoint to VPC
+    this.vpc.addInterfaceEndpoint("Cloudwatch Endpoint", {
+      service: ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
+      securityGroups: [defaultSecurityGroup],
+      subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED}
+    });
+
     // create opensearch service linked role. Without this role you cannot attach a vpc to opensearch
     this.openSearchVPCPermissions = new iam.CfnServiceLinkedRole(this, 'OpenSearchSLR', {
         awsServiceName: 'opensearchservice.amazonaws.com'

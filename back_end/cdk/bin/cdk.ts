@@ -10,6 +10,7 @@ import { AppsyncStack } from '../lib/appsync-stack'
 import { DatabaseStack } from '../lib/database-stack';
 import { DataFetchStack } from '../lib/datafetch-stack';
 import { GrantDataStack } from '../lib/grantdata-stack';
+import { PatentDataStack } from '../lib/patentdata-stack';
 
 
 const app = new cdk.App();
@@ -33,4 +34,8 @@ const grantDataStack = new GrantDataStack(app, 'GrantDataStack', vpcStack, datab
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 grantDataStack.addDependency(vpcStack)
 grantDataStack.addDependency(databaseStack)
+const patentDataStack = new PatentDataStack(app, 'PatentDataStack', grantDataStack, 
+    {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
+patentDataStack.addDependency(grantDataStack)
+
 
