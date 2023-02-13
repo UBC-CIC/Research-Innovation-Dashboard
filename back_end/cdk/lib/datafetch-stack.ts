@@ -182,6 +182,18 @@ export class DataFetchStack extends cdk.Stack {
       ],
       resources: [dmsStack.replicationTask.ref]
     }));
+    // Allow CloudWatch logs
+    dataFetchRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // CloudWatch Logs
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      resources: ["arn:aws:logs:*:*:*"]
+    }));
+
     /*
       Define Lambdas and add correct permissions
     */

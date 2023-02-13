@@ -66,7 +66,7 @@ def confirmMatches(duplicates_split):
             
                 if response.json()["error-response"]["error-code"] == "RATE_LIMIT_EXCEEDED":
                     print(response.json()["error-response"])
-                    print("API Throttling, attempt to retry query after 60 seconds")
+                    print("API Throttling, attempt to retry query after 7 seconds")
                     time.sleep(7)
                     response = requests.get(url, headers=elsevier_headers, params=query)
                     print(response.headers)

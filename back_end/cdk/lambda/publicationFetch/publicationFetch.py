@@ -4,6 +4,7 @@ import boto3
 import psycopg2
 import os
 import time
+from datetime import datetime
 
 ssm_client = boto3.client('ssm')
 sm_client = boto3.client('secretsmanager')
@@ -11,10 +12,13 @@ sm_client = boto3.client('secretsmanager')
 '''
 Fetches the rds database credentials from secrets manager
 '''
+
+
 def getCredentials():
     credentials = {}
 
-    response = sm_client.get_secret_value(SecretId='vpri/credentials/dbCredentials')
+    response = sm_client.get_secret_value(
+        SecretId='vpri/credentials/dbCredentials')
     secrets = json.loads(response['SecretString'])
     credentials['username'] = secrets['username']
     credentials['password'] = secrets['password']
@@ -22,26 +26,49 @@ def getCredentials():
     credentials['db'] = secrets['dbname']
     return credentials
 
+
 '''
-Given an authors Scopus id, fetches all their publication data (if it exists) 
+Given an authors Scopus id, fetches all their publication data (if it exists)
 and returns the publications as a list of dicts
 '''
+
+
 def fetch_publications(author_id):
-    instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
-    apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
+    instoken = ssm_client.get_parameter(
+        Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
+    apikey = ssm_client.get_parameter(
+        Name='/service/elsevier/api/user_name/key', WithDecryption=True)
     url = os.environ.get('SCOPUS_SEARCH_URL')
     results_per_page = int(os.environ.get('RESULTS_PER_PAGE'))
-    
-    headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
-    query = {'query': 'AU-ID(' + author_id + ')', 'view' : 'COMPLETE', 'cursor': '*'}
-    
+
+    headers = {'Accept': 'application/json',
+        'X-ELS-APIKey': apikey['Parameter']['Value'], 'X-ELS-Insttoken': instoken['Parameter']['Value']}
+    query = {'query': 'AU-ID(' + author_id + ')',
+                             'view': 'COMPLETE', 'cursor': '*'}
+
     response = requests.get(url, headers=headers, params=query)
+    if "error-response" in response.json():
+        if "error-code" in response.json()["error-response"]:
+            if response.json()["error-response"]["error-code"] == "TOO_MANY_REQUESTS":
+                    dateTimeObject = datetime.fromtimestamp(
+                        int(response.headers['X-RateLimit-Reset']))
+                    raise Exception(
+                        "API limit has been exceded! Please try the data pipeline again on " + str(dateTimeObject) + "UTC Time")
+            
+            if response.json()["error-response"]["error-code"] == "RATE_LIMIT_EXCEEDED":
+                print(response.json()["error-response"])
+                print("API Throttling, attempt to retry query after 7 seconds")
+                time.sleep(7)
+                response = requests.get(url, headers=headers, params=query)
+                print(response.headers)
+
     rjson = response.json()
     stored_results = 0
+    publications = []
     if 'search-results' not in rjson:
         return (publications)
     total_results = int(rjson['search-results']['opensearch:totalResults'])
-    publications = []
+   
     while(stored_results < total_results):
         if 'search-results' not in rjson:
             return (publications)
