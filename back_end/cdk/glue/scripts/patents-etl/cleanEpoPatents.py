@@ -18,10 +18,11 @@ from awsglue.utils import getResolvedOptions
 
 # define job parameters
 args = getResolvedOptions(
-    sys.argv, ["TEMP_BUCKET_NAME", "EPO_INSTITUTION_NAME", "FILE_PATH"])
+    sys.argv, ["TEMP_BUCKET_NAME", "EPO_INSTITUTION_NAME", "FILE_PATH", "EQUIVALENT"])
 TEMP_BUCKET_NAME = args["TEMP_BUCKET_NAME"]
 EPO_INSTITUTION_NAME = args["EPO_INSTITUTION_NAME"]
 FILE_PATH = args["FILE_PATH"]
+EQUIVALENT = args["EQUIVALENT"]
 
 # clients
 glue_client = boto3.client("glue")
@@ -122,7 +123,9 @@ def clean_epo_patent():
     global FILE_PATH
 
     df = pd.read_csv(fetchFromS3(TEMP_BUCKET_NAME, FILE_PATH))
-
+    if EQUIVALENT == "true":
+        df = df.drop_duplicates()
+        print(f"Equivalent after drop duplicate: {str(len(df.index))} rows")
     # string -> list of string
     df["applicants"] = df["applicants"].apply(lambda x: format_list_column(x))
     # explode applicants in the list into individual row
@@ -172,8 +175,11 @@ def clean_epo_patent():
 
     # format datetime
     dates = pd.to_datetime(df["publication_date"], format='%Y%m%d')
-    df["publication_date"] = dates.dt.strftime('%Y-%b-%d')
-
+    df["publication_date"] = dates
+    if EQUIVALENT == "true":
+        # retain publication from 2001 onward
+        df = df[df.publication_date.dt.year >= 2001]
+    df["publication_date"] = df["publication_date"].dt.strftime('%Y-%b-%d')
     # format title to title format
     df["title"] = df["title"].str.title()
 
@@ -185,7 +191,10 @@ def clean_epo_patent():
     # print("date and time =", dt_string)
 
     # saving file with some datetime information for logging/debugging purpose
-    FILE_PATH = f"epo/patent_data_clean/patents_clean.csv"
+    if EQUIVALENT == "true":
+        FILE_PATH =  f"epo/patent_data_clean/equivalent/patents_equivalent_clean.csv"
+    else:
+        FILE_PATH = f"epo/patent_data_clean/initial/patents_clean.csv"
     putToS3(df, TEMP_BUCKET_NAME, FILE_PATH)
     print(f"Saved file at {TEMP_BUCKET_NAME}/{FILE_PATH}")
 
@@ -199,7 +208,8 @@ def main(argv):
     # start downstream job
     arguments = {
         "--TEMP_BUCKET_NAME": TEMP_BUCKET_NAME,
-        "--FILE_PATH": FILE_PATH
+        "--FILE_PATH": FILE_PATH,
+        "--EQUIVALENT": EQUIVALENT
     }
     glue_client.start_job_run(
         JobName="assignIdsEpoPatents",

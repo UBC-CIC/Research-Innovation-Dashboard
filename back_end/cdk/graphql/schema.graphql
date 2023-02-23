@@ -11,6 +11,15 @@ type Faculty {
   prime_faculty: String
 }
 
+type Impact {
+  h_index: Float
+  num_citations: Int
+  preferred_name: String
+  prime_department: String
+  prime_faculty: String
+  scopus_id: String
+}
+
 type Mutation {
   putPub(authors: [String!], id: ID!, journal: String, keywords: [String], title: String!): Publication
 }
@@ -28,60 +37,48 @@ type Publication {
 }
 
 type Query {
+  advancedSearchGrants(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, table: String!): [grant]
   advancedSearchPublications(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, journal: String!, noneOfTheseWords: String!, table: String!, year_gte: Int!, year_lte: Int!): [Publication]
   advancedSearchResearchers(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, prime_department: String!, prime_faculty: String!, table: String!): [ResearcherOpenSearch]
-  advancedSearchGrants(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, table: String!): [grant]
   allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
+  changeScopusId(newScopusId: String!, oldScopusId: String!): Boolean
   facultyMetrics(faculty: String!): [facultyMetric]
   getAllDepartments: [String]
   getAllDistinctJournals: [String]
   getAllFaculty: [String]
-  getAllResearchersRankings: [Ranking]
+  getAllGrantAgencies: [String]
+  getAllResearchersImpacts: [Impact]
+  getFlaggedIds: [[Researcher]]
   getNumberOfResearcherPubsAllYears(id: ID!): graphDataAllYears
   getNumberOfResearcherPubsLastFiveYears(id: ID!): graphData
   getPub(id: ID!): Publication
   getResearcher(id: ID!): Researcher
   getResearcherElsevier(id: ID!): ResearcherElsevier
   getResearcherFull(id: ID!): ResearcherFull
+  getResearcherGrants(id: ID!): [grant]
+  getResearcherImpactsByDepartment(prime_department: String!): [Impact]
+  getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
   getResearcherOrcid(id: ID!): ResearcherOrcid
+  getResearcherPatents(id: ID!): [patent]
   getResearcherPubsByCitations(id: ID!): [Publication]
   getResearcherPubsByTitle(id: ID!): [Publication]
   getResearcherPubsByYear(id: ID!): [Publication]
-  getResearcherRankingsByDepartment(prime_department: String!): [Ranking]
-  getResearcherRankingsByFaculty(prime_faculty: String!): [Ranking]
-  searchPublications(search_value: String!): [Publication]
-  searchResearcher(search_value: String!): [ResearcherOpenSearch]
+  getUpdatePublicationsLogs: [updatePublicationsLogType]
+  lastUpdatedResearchersList: [lastUpdated]
+  searchGrants(grantAgenciesToFilterBy: [String]!, search_value: String!): [grant]
+  searchPatents(patentClassificationFilter: [String]!, search_value: String!): [patent]
+  searchPublications(journalsToFilterBy: [String]!, search_value: String!): [Publication]
+  searchResearcher(departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!, search_value: String!): [ResearcherOpenSearch]
   similarResearchers(scopus_id: String!): [ResearcherOpenSearch]
   totalPublicationPerYear: [pubsPerYear]
-  wordCloud: [wordCloud]
-  changeScopusId(oldScopusId: String!, newScopusId: String!): Boolean
-	lastUpdatedResearchersList: [lastUpdated]
-  getUpdatePublicationsLogs: [updatePublicationsLogType]
-}
-
-type updatePublicationsLogType {
-	number_of_publications_updated: Int
-	date_updated: String
-}
-
-type lastUpdated {
-	preferred_name: String
-	last_updated: String
-}
-
-type Ranking {
-  h_index: Float
-  num_citations: Int
-  preferred_name: String
-  prime_department: String
-  prime_faculty: String
-  scopus_id: String
+  wordCloud(gte: Int!, lte: Int!): [wordCloud]
 }
 
 type Researcher {
   areas_of_interest: String
   campus: String
   email: String
+  employee_id: String
   first_name: String
   job_stream: String
   last_name: String
@@ -111,6 +108,7 @@ type ResearcherFull {
   job_stream: String
   keywords: String!
   last_name: String
+  last_updated: String
   num_citations: Int
   num_documents: Int
   num_patents_filed: Int
@@ -122,7 +120,6 @@ type ResearcherFull {
   scopus_id: String!
   second_department: String
   second_faculty: String
-  last_updated: String
 }
 
 type ResearcherOpenSearch {
@@ -130,13 +127,13 @@ type ResearcherOpenSearch {
   email: String
   first_name: String
   job_stream: String
-  keywords: String!
+  keywords: String
   last_name: String
   preferred_name: String
   prime_department: String
   prime_faculty: String
   rank: String
-  scopus_id: String!
+  scopus_id: String
   second_department: String
   second_faculty: String
 }
@@ -152,6 +149,19 @@ type facultyMetric {
   year: String
 }
 
+type grant {
+  agency: String!
+  amount: Int
+  department: String
+  end_date: String
+  grant_program: String
+  keywords: String
+  name: String!
+  project_title: String
+  start_date: String
+  year: String
+}
+
 type graphData {
   lastFiveYears: [String]
   publicationsPerYear: [String]
@@ -162,6 +172,21 @@ type graphDataAllYears {
   publicationsPerYear: [String]
 }
 
+type lastUpdated {
+  last_updated: String
+  preferred_name: String
+}
+
+type patent {
+  patent_classification: String
+  patent_family_number: String
+  patent_inventors: String
+  patent_number: String
+  patent_publication_date: String
+  patent_sponsors: String
+  patent_title: String
+}
+
 type pubsPerYear {
   count: String
   year_published: String
@@ -170,6 +195,11 @@ type pubsPerYear {
 type totalPubsPerFaculty {
   faculty: String
   sum: Int
+}
+
+type updatePublicationsLogType {
+  date_updated: String
+  number_of_publications_updated: Int
 }
 
 type wordCloud {

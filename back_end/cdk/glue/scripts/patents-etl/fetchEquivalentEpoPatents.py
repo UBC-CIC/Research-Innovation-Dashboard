@@ -16,12 +16,12 @@ from awsglue.utils import getResolvedOptions
 
 # define job parameters
 args = getResolvedOptions(
-    sys.argv, ["TEMP_BUCKET_NAME", "EPO_INSTITUTION_NAME", "API_SECRET_NAME"])
+    sys.argv, ["TEMP_BUCKET_NAME", "EPO_INSTITUTION_NAME", "API_SECRET_NAME", "FILE_PATH"])
 TEMP_BUCKET_NAME = args["TEMP_BUCKET_NAME"]
 API_SECRET_NAME = args["API_SECRET_NAME"]
 EPO_INSTITUTION_NAME = args["EPO_INSTITUTION_NAME"]
+FILE_PATH = args["FILE_PATH"]
 ACCESS_AUTH_URL = "https://ops.epo.org/3.2/auth/accesstoken"
-OPS_SEARCH_URL = "http://ops.epo.org/3.2/rest-services/published-data/search/biblio"
 
 # get API credentials
 glue_client = boto3.client("glue")
@@ -57,123 +57,63 @@ def authorization():
 
 
 """
-This function will parse the EPO_INSITUTION_NAME parameter into the query string
-@return: str
-"""
-
-def parse_params():
-    
-    # split by comma
-    split = EPO_INSTITUTION_NAME.split(",")
-    # ["UNIV BRITISH COLUMBIA", "UNIVERSITY OF BRITISH COLUMBIA"]
-    # -> ['"UNIV BRITISH COLUMBIA"', '"UNIVERSITY OF BRITISH COLUMBIA"']
-    for idx, name in enumerate(split):
-        split[idx] = f'ia="{split[idx]}"'
-    # 'ia="UNIV BRITISH COLUMBIA" or ia="UNIVERSITY OF BRITISH COLUMBIA"'
-    params = ' or '.join(split)
-    return params
-
-"""
-This function fetch the count (total number of patents) for the search results from the API query
-@return: int, the count
-"""
-
-
-def get_patent_count():
-
-    access_token = authorization()
-    headers = {"Authorization": f"Bearer {access_token}",
-               "Accept": "application/json"}
-    inst_params = parse_params()
-    print(inst_params)
-    payload = {"Range": "1-1",
-               "q": f'({inst_params}) and pd>=2001 and (pn=CA or pn=US)'}
-    # encode space as %20 instead of + per OPS v3.2 API reference
-    params = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
-
-    try:
-        response = requests.get(
-            url=OPS_SEARCH_URL, headers=headers, params=params)
-        response_json = response.json()
-    except json.decoder.JSONDecodeError as e:
-        if "CLIENT.RobotDetected" in response.text:
-            print("RobotDetected during fetching total patent count")
-            time.sleep(60)
-            try:
-                response = requests.get(
-                    url=OPS_SEARCH_URL, headers=headers, params=params)
-                response_json = response.json()
-            except json.decoder.JSONDecodeError as e:
-                print("RobotDetected again, exiting!")
-                raise SystemExit
-
-    # get the patent count in year 2022
-    patent_count = response_json['ops:world-patent-data']['ops:biblio-search']['@total-result-count']
-    print(f"patent count is: {patent_count}")
-    return int(patent_count)
-
-
-"""
 This function will fetch all the patents contains in the search results, and store the results in
 CSV format inside an S3 Bucket
 """
 
 
-def fetch_all_patent_data():
+def fetch_all_equivalent_patent_data():
 
-    patent_count = get_patent_count()
-    inst_params = parse_params()
-    print(inst_params)
     global col_dict
+    df_patent = pd.read_csv(fetchFromS3(TEMP_BUCKET_NAME, FILE_PATH))
+    patent_publications = df_patent["publication_number"].values.tolist()
 
-    # adjust Range parameter in API query to query as many patent with fewest API calls as possible
-    # we round the number of patent up to the nearest hundred, since the api does not return anything for index number
-    # larger than total patent count
-    # also Range can be as most 100, which means we can retrieve up to 100 patents per api call
-    upperbound = math.ceil(patent_count/100)*100
-    current_lowerbound = 1
-
-    for i in range(1, int(upperbound/100) + 1):
-
-        access_token = authorization()
+    for idx, publication_number in enumerate(patent_publications):
+        
+        # refresh access token after 100 entries fetches
+        # every token expires after 20 minutes
+        if idx % 100 == 0:
+            access_token = authorization()
         headers = {"Authorization": f"Bearer {access_token}",
                    "Accept": "application/json"}
-        payload = {"Range": f"{current_lowerbound}-{i*100}",
-                   "q": f'({inst_params}) and pd>=2001 and (pn=CA or pn=US)'}
-        # encode space as %20 instead of + per OPS v3.2 API reference
-        params = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
-
+        OPS_SEARCH_URL = f"http://ops.epo.org/3.2/rest-services/published-data/publication/docdb/{publication_number}/equivalents/biblio"
+        
         try:
             response = requests.get(
-                url=OPS_SEARCH_URL, headers=headers, params=params)
+                url=OPS_SEARCH_URL, headers=headers)
             searchResult = response.json()[
-                'ops:world-patent-data']['ops:biblio-search']['ops:search-result']['exchange-documents']
+                'ops:world-patent-data']['ops:equivalents-inquiry']['ops:inquiry-result']
         except json.decoder.JSONDecodeError as e:
             if "CLIENT.RobotDetected" in response.text:
                 print("RobotDetected during fetching patent data")
                 time.sleep(60)
                 try:
                     response = requests.get(
-                        url=OPS_SEARCH_URL, headers=headers, params=params)
+                        url=OPS_SEARCH_URL, headers=headers)
                     searchResult = response.json()[
-                        'ops:world-patent-data']['ops:biblio-search']['ops:search-result']['exchange-documents']
+                        'ops:world-patent-data']['ops:equivalents-inquiry']['ops:inquiry-result']
                 except json.decoder.JSONDecodeError as e:
                     print("RobotDetected again, exiting!")
                     raise SystemExit
 
         for document in searchResult:
-
+            
+            # weird bug
+            if document in ["publication-reference", "exchange-documents"]:
+                continue
+            
             publication_number = ""
             title = ""  # invention title
             applicants = []  # list of applicant names
             publication_date = ""
             inventors = []  # list of inventor names
-            family_number = document['exchange-document']['@family-id']
+            print(document)
+            family_number = document['exchange-documents']['exchange-document']['@family-id']
             cpc = []  # list of cpc numbers
             country_code = ""
             kind_code = ""
 
-            bib_data = document['exchange-document']['bibliographic-data']
+            bib_data = document['exchange-documents']["exchange-document"]['bibliographic-data']
 
             # extract publication_number, publication_date, country_code, kind_code
             if type(bib_data['publication-reference']['document-id']) is list:
@@ -206,7 +146,7 @@ def fetch_all_patent_data():
                             # cpc = cpc + clf['section']['$'] + ","
                 else:
                     cpc.append(bib_data['patent-classifications']
-                               ['patent-classification']['section']['$'])
+                              ['patent-classification']['section']['$'])
             else:
                 cpc.append("")
 
@@ -222,6 +162,8 @@ def fetch_all_patent_data():
                 title = bib_data['invention-title']['$']
 
             # extract applicants
+            if 'applicants' not in bib_data['parties'].keys():
+                continue
             if type(bib_data['parties']['applicants']['applicant']) is list:
                 for app in bib_data['parties']['applicants']['applicant']:
                     if app['@data-format'] == 'original':
@@ -253,7 +195,9 @@ def fetch_all_patent_data():
             col_dict["country_code"].append(country_code)
             col_dict["kind_code"].append(kind_code)
 
-        current_lowerbound += 100
+        # sleep for 2 seconds to avoid throttling
+        # max 30 queries per minutes with this setting
+        time.sleep(2)
 
 
 col_dict = {"publication_number": [], "title": [], "inventors": [],
@@ -267,8 +211,8 @@ def main(argv):
     global col_dict
 
     try:
-        fetch_all_patent_data()
-        print(f"Fetching patent data process completed successfully!")
+        fetch_all_equivalent_patent_data()
+        print(f"Fetching equivalent patent data process completed successfully!")
     except SystemExit:
         print(
             f"API fetching process exited early. Saving entries we currently have into s3.")
@@ -281,23 +225,21 @@ def main(argv):
         # print("date and time =", dt_string)
 
         df = pd.DataFrame(col_dict)
+        df = df[(df.country_code.str.contains("US")) | (df.country_code.str.contains("CA"))]
         total_patent_count = len(df.index)
         
-        FILE_PATH = f"epo/patent_data_raw_from_source/initial/patents_{total_patent_count}.csv"
+        FILE_PATH = f"epo/patent_data_raw_from_source/equivalents/patents_equivalents_{total_patent_count}.csv"
         putToS3(df, TEMP_BUCKET_NAME, FILE_PATH)
         print(f"Finish saving {total_patent_count} entries to s3")
 
         # start downstream Glue Job
         arguments = {
             "--TEMP_BUCKET_NAME": TEMP_BUCKET_NAME,
-            "--FILE_PATH": FILE_PATH
+            "--FILE_PATH": FILE_PATH,
+            "--EQUIVALENT": "true"
         }
         glue_client.start_job_run(
             JobName="cleanEpoPatents",
-            Arguments=arguments
-        )
-        glue_client.start_job_run(
-            JobName="fetchEquivalentEpoPatents",
             Arguments=arguments
         )
 

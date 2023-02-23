@@ -14,23 +14,29 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import { triggers } from "aws-cdk-lib";
 import { DatabaseStack } from "./database-stack";
 import { Effect, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { DmsStack } from "./dms-stack";
 
 export class GrantDataStack extends Stack {
+
   public readonly glueConnection: glue.CfnConnection;
   public readonly glueConnectionName: string;
+  public readonly glueDmsConnection: glue.CfnConnection;
+  public readonly glueDmsConnectionName: string;
   public readonly secretPath: string;
   public readonly glueS3Bucket: s3.Bucket;
+  public readonly dmsTaskArn: string;
 
   constructor(
     scope: Construct,
     id: string,
     vpcStack: VpcStack,
     databaseStack: DatabaseStack,
+    dmsStack: DmsStack,
     props?: StackProps
   ) {
     super(scope, id, props);
-
     this.secretPath = databaseStack.secretPath;
+    this.dmsTaskArn = dmsStack.replicationTask.ref
 
     // Create new Glue  Role
     const roleName = "AWSGlueServiceRole-ShellJob";
@@ -56,6 +62,15 @@ export class GrantDataStack extends Stack {
     glueRole.addManagedPolicy(glueConsoleFullAccessPolicy);
     glueRole.addManagedPolicy(glueSecretManagerPolicy);
     glueRole.addManagedPolicy(glueAmazonS3FullAccessPolicy);
+    //Create a policy to start DMS task
+    glueRole.addToPolicy(new iam.PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        "dms:StartReplicationTask",
+        "dms:DescribeReplicationTasks"
+      ],
+      resources: ["*"]
+    }));
 
     // Create S3 bucket for Glue Job scripts/data
     this.glueS3Bucket = new s3.Bucket(this, "glue-s3-bucket", {
@@ -156,6 +171,15 @@ export class GrantDataStack extends Stack {
         resources: ["arn:aws:logs:*:*:*"],
       })
     );
+
+    glueTrigger.addToRolePolicy(new iam.PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        "dms:StartReplicationTask",
+        "dms:DescribeReplicationTasks"
+      ],
+      resources: ["*"]
+    }));  
 
     // grant permission for s3 to invoke lambda
     glueTrigger.addPermission("s3-invoke", {
@@ -335,6 +359,32 @@ export class GrantDataStack extends Stack {
       }
     );
 
+    // Create a Connection to the PostgreSQL database inside the VPC
+    this.glueDmsConnectionName = "vpri-postgres-dms-conn";
+   
+    const dmsConnectionProps: { [key: string]: any } = {
+      KAFKA_SSL_ENABLED: "false",
+    };
+    
+    this.glueDmsConnection = new glue.CfnConnection(
+      this,
+      this.glueDmsConnectionName,
+      {
+        catalogId: this.account, // this AWS account ID
+        connectionInput: {
+          name: this.glueDmsConnectionName,
+          description: "a connection to the vpri DMS replication instance for Glue",
+          connectionType: "NETWORK",
+          connectionProperties: dmsConnectionProps,
+          physicalConnectionRequirements: {
+            availabilityZone: vpcStack.availabilityZones[0],
+            securityGroupIdList: [securityGroup],
+            subnetId: dmsStack.subnet.subnetIds[0],
+          },
+        },
+      }
+    );
+
     // a parameter at deployment time for the institution name filter of CFI grant data
     const cfiInstitutionName = new cdk.CfnParameter(
       this,
@@ -359,6 +409,7 @@ export class GrantDataStack extends Stack {
       "--SECRET_NAME": databaseStack.secretPath,
       "--BUCKET_NAME": grantDataS3Bucket.bucketName,
       "--CFI_INSTITUTION_NAME": cfiInstitutionName.valueAsString,
+      "--DMS_TASK_ARN": this.dmsTaskArn
     };
 
     // Glue Job: clean cihr data
@@ -517,6 +568,34 @@ export class GrantDataStack extends Stack {
       defaultArguments: defaultArguments,
     });
 
+    // Glue Job: start dms replication task
+    const startDmsReplicationTaskJobName = "start-dms-replication-task-pythonshell";
+    const startDmsReplicationTaskJob = new glue.CfnJob(this, startDmsReplicationTaskJobName, {
+      name: startDmsReplicationTaskJobName,
+      role: glueRole.roleArn,
+      command: {
+        name: "pythonshell",
+        pythonVersion: PYTHON_VER,
+        scriptLocation:
+          "s3://" +
+          this.glueS3Bucket.bucketName +
+          "/scripts/grants-etl/" +
+          startDmsReplicationTaskJobName +
+          ".py",
+      },
+      executionProperty: {
+        maxConcurrentRuns: MAX_CONCURRENT_RUNS,
+      },
+      connections: {
+        connections: [this.glueDmsConnectionName],
+      },
+      maxRetries: MAX_RETRIES,
+      maxCapacity: MAX_CAPACITY,
+      timeout: TIMEOUT, // 120 min timeout duration
+      glueVersion: GLUE_VER,
+      defaultArguments: defaultArguments,
+    });
+
     // Deploy glue job to glue S3 bucket
     new s3deploy.BucketDeployment(this, "DeployGlueJobFiles", {
       sources: [s3deploy.Source.asset("./glue/scripts/grants-etl")],
@@ -535,6 +614,7 @@ export class GrantDataStack extends Stack {
     cleanCfiJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     assignIdsJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     storeDataJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    startDmsReplicationTaskJob.applyRemovalPolicy(RemovalPolicy.DESTROY)
     createFolders.applyRemovalPolicy(RemovalPolicy.DESTROY);
     glueTrigger.applyRemovalPolicy(RemovalPolicy.DESTROY);
     this.glueConnection.applyRemovalPolicy(RemovalPolicy.DESTROY);

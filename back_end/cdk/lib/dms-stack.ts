@@ -15,10 +15,12 @@ import { OpensearchStack } from './opensearch-stack';
 import { VpcStack } from './vpc-stack';
 import { DatabaseStack } from './database-stack';
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import { CfnReplicationSubnetGroup } from 'aws-cdk-lib/aws-dms';
 
 export class DmsStack extends Stack {
 
   public readonly replicationTask: dms.CfnReplicationTask;
+  public readonly subnet: CfnReplicationSubnetGroup;
 
   constructor(scope: Construct, id: string, vpcStack: VpcStack, opensearchStack: OpensearchStack, databaseStack: DatabaseStack, props?: StackProps) {
     super(scope, id, props);
@@ -56,7 +58,7 @@ export class DmsStack extends Stack {
     }
 
     // Create a subnet group in the VPC that has access to both the postgresql db and opensearch
-    const subnet = new dms.CfnReplicationSubnetGroup(this, 'SubnetGroup', {
+    this.subnet = new dms.CfnReplicationSubnetGroup(this, 'SubnetGroup', {
         replicationSubnetGroupIdentifier: 'cdk-subnetgroup',
         replicationSubnetGroupDescription: 'subnets that have access to my rds source and target opensearch cluster.',
         subnetIds: subnets,
@@ -70,7 +72,7 @@ export class DmsStack extends Stack {
         replicationInstanceClass: 'dms.t3.micro',
   
         // Attach the subnet group to the replication instance
-        replicationSubnetGroupIdentifier: subnet.ref,
+        replicationSubnetGroupIdentifier: this.subnet.ref,
 
         publiclyAccessible: false,
 

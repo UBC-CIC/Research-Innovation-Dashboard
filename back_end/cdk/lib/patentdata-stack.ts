@@ -51,6 +51,15 @@ export class PatentDataStack extends Stack {
     glueRole.addManagedPolicy(glueConsoleFullAccessPolicy);
     glueRole.addManagedPolicy(glueSecretManagerPolicy);
     glueRole.addManagedPolicy(glueAmazonS3FullAccessPolicy);
+    //Create a policy to start DMS task
+    glueRole.addToPolicy(new iam.PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        "dms:StartReplicationTask",
+        "dms:DescribeReplicationTasks"
+      ],
+      resources: ["*"]
+    }));
 
     // create S3 bucket for the patent data
     const patentDataS3Bucket = new s3.Bucket(this, "patent-data-s3-bucket", {
@@ -64,10 +73,10 @@ export class PatentDataStack extends Stack {
 
     // reuse Glue bucket from grant to store glue Script
     const glueS3Bucket = grantDataStack.glueS3Bucket;
-    // reuse Glue Connection from grant
-    const glueConnection = grantDataStack.glueConnection;
     // reuse Glue Connection's name
     const glueConnectionName = grantDataStack.glueConnectionName;
+    // reuse Glue DMS Connection's name
+    const glueDmsConnectionName = grantDataStack.glueDmsConnectionName;
 
     // a parameter at deployment time for the institution name filter of EPO patent data
     const epoInstitutionName = new cdk.CfnParameter(
@@ -95,7 +104,10 @@ export class PatentDataStack extends Stack {
       "--API_SECRET_NAME": this.ops_apikey,
       "--TEMP_BUCKET_NAME": patentDataS3Bucket.bucketName,
       "--EPO_INSTITUTION_NAME": epoInstitutionName.valueAsString,
-      "--FILE_PATH": ""
+      "--FILE_PATH": "",
+      "--EQUIVALENT": "false",
+      "--DMS_TASK_ARN": grantDataStack.dmsTaskArn
+
     };
 
     // Glue Job: fetch EPO patent data from OPS API
@@ -111,6 +123,31 @@ export class PatentDataStack extends Stack {
           glueS3Bucket.bucketName +
           "/scripts/patents-etl/" +
           fetchEpoPatentsJobName +
+          ".py",
+      },
+      executionProperty: {
+        maxConcurrentRuns: MAX_CONCURRENT_RUNS,
+      },
+      maxRetries: MAX_RETRIES,
+      maxCapacity: MAX_CAPACITY,
+      timeout: TIMEOUT, // 120 min timeout duration
+      glueVersion: GLUE_VER,
+      defaultArguments: defaultArguments,
+    });
+
+    // Glue Job: fetch EPO patent data from OPS API
+    const fetchEquivalentEpoPatentsJobName = "fetchEquivalentEpoPatents";
+    const fetchEquivalentEpoPatentsJob = new glue.CfnJob(this, fetchEquivalentEpoPatentsJobName, {
+      name: fetchEquivalentEpoPatentsJobName,
+      role: glueRole.roleArn,
+      command: {
+        name: "pythonshell",
+        pythonVersion: PYTHON_VER,
+        scriptLocation:
+          "s3://" +
+          glueS3Bucket.bucketName +
+          "/scripts/patents-etl/" +
+          fetchEquivalentEpoPatentsJobName +
           ".py",
       },
       executionProperty: {
@@ -176,7 +213,7 @@ export class PatentDataStack extends Stack {
       defaultArguments: defaultArguments,
     });
 
-    // Glue Job: clean cfi data
+    // Glue Job: store EPO patent data
     const storeEpoPatentsJobName = "storeEpoPatents";
     const storeEpoPatentsJob = new glue.CfnJob(this, storeEpoPatentsJobName, {
       name: storeEpoPatentsJobName,
@@ -196,6 +233,34 @@ export class PatentDataStack extends Stack {
       },
       connections: {
         connections: [glueConnectionName]
+      },
+      maxRetries: MAX_RETRIES,
+      maxCapacity: MAX_CAPACITY,
+      timeout: TIMEOUT, // 120 min timeout duration
+      glueVersion: GLUE_VER,
+      defaultArguments: defaultArguments,
+    });
+
+    // Glue Job: clean cfi data
+    const startDmsReplicationTaskJobName = "startDmsReplicationTask";
+    const startDmsReplicationTaskJob = new glue.CfnJob(this, startDmsReplicationTaskJobName, {
+      name: startDmsReplicationTaskJobName,
+      role: glueRole.roleArn,
+      command: {
+        name: "pythonshell",
+        pythonVersion: PYTHON_VER,
+        scriptLocation:
+          "s3://" +
+          glueS3Bucket.bucketName +
+          "/scripts/patents-etl/" +
+          startDmsReplicationTaskJobName +
+          ".py",
+      },
+      executionProperty: {
+        maxConcurrentRuns: MAX_CONCURRENT_RUNS,
+      },
+      connections: {
+        connections: [glueDmsConnectionName]
       },
       maxRetries: MAX_RETRIES,
       maxCapacity: MAX_CAPACITY,
@@ -230,9 +295,11 @@ export class PatentDataStack extends Stack {
 
     // Destroy Glue related resources when PatentDataStack is deleted
     fetchEpoPatentsJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    fetchEquivalentEpoPatentsJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     cleanEpoPatentsJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     assignIdsEpoPatentsJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     storeEpoPatentsJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    startDmsReplicationTaskJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     glueRole.applyRemovalPolicy(RemovalPolicy.DESTROY);
   }
 }

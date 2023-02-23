@@ -7,16 +7,20 @@ import psycopg2
 import psycopg2.extras as extras
 import boto3
 from awsglue.utils import getResolvedOptions
+from custom_utils.utils import fetchFromS3, putToS3
 
 # get environment variable for this Glue job
 args = getResolvedOptions(
-    sys.argv, ["BUCKET_NAME", "FILENAME_ID", "SECRET_NAME"])
+    sys.argv, ["BUCKET_NAME", "FILENAME_ID", "SECRET_NAME", "DMS_TASK_ARN"])
 BUCKET_NAME = args["BUCKET_NAME"]
 FILENAME_ID = args["FILENAME_ID"]
 SECRET_NAME = args["SECRET_NAME"]
+DMS_TASK_ARN = args["DMS_TASK_ARN"]
 
 
 def storeData():
+
+    global FILENAME_INSERT
 
     s3_client = boto3.resource('s3')
     response = s3_client.Object(BUCKET_NAME, FILENAME_ID).get()
@@ -29,9 +33,10 @@ def storeData():
     df_id = df_id[df_id["Assigned ID"] != ""]
 
     # rearrange columns order
-    df_id = df_id[['Assigned ID', 'Name', 'Department', 'Agency',
-                   'Grant Program', 'Amount', 'Project Title',
-                   'Keywords', 'Year', 'Start Date', 'End Date']]
+    columns_order = ['Assigned ID', 'Name', 'Department', 'Agency',
+                     'Grant Program', 'Amount', 'Project Title',
+                     'Keywords', 'Year', 'Start Date', 'End Date']
+    df_id = df_id[columns_order]
 
     # convert the entire DataFrame into a list of tuples (rows)
     cleanData = list(df_id.itertuples(index=False, name=None))
@@ -80,7 +85,25 @@ def storeData():
     cursor.close()
     connection.close()
 
+    df_insert = pd.DataFrame(listOfValuesToInsert, columns=columns_order)
+    split = FILENAME_ID.split(".csv", 1)
+    FILENAME_INSERT = (split[0] + "-insert" + split[1] +
+                       ".csv").replace("ids-assigned/", "insert/", 1)
+    putToS3(df_insert, BUCKET_NAME, FILENAME_INSERT)
+
     print("Job done!")
 
 
-storeData()
+
+def main(argv):
+
+    storeData()
+    
+    glue_client = boto3.client("glue")
+    response = glue_client.start_job_run(
+        JobName="start-dms-replication-task-pythonshell"
+    )
+
+
+if __name__ == "__main__":
+    main(sys.argv)

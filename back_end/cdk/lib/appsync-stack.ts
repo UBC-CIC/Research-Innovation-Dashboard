@@ -148,13 +148,7 @@ export class AppsyncStack extends Stack {
       }
       
       type Mutation {
-        putPub(
-          authors: [String!],
-          id: ID!,
-          journal: String,
-          keywords: [String],
-          title: String!
-        ): Publication
+        putPub(authors: [String!], id: ID!, journal: String, keywords: [String], title: String!): Publication
       }
       
       type Publication {
@@ -170,71 +164,48 @@ export class AppsyncStack extends Stack {
       }
       
       type Query {
-        advancedSearchPublications(
-          includeAllTheseWords: String!,
-          includeAnyOfTheseWords: String!,
-          includeTheseExactWordsOrPhrases: String!,
-          journal: String!,
-          noneOfTheseWords: String!,
-          table: String!,
-          year_gte: Int!,
-          year_lte: Int!
-        ): [Publication]
-        advancedSearchResearchers(
-          includeAllTheseWords: String!,
-          includeAnyOfTheseWords: String!,
-          includeTheseExactWordsOrPhrases: String!,
-          noneOfTheseWords: String!,
-          prime_department: String!,
-          prime_faculty: String!,
-          table: String!
-        ): [ResearcherOpenSearch]
-        advancedSearchGrants(
-          includeAllTheseWords: String!,
-          includeAnyOfTheseWords: String!,
-          includeTheseExactWordsOrPhrases: String!,
-          noneOfTheseWords: String!,
-          table: String!
-        ): [grant]
+        advancedSearchGrants(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, table: String!): [grant]
+        advancedSearchPublications(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, journal: String!, noneOfTheseWords: String!, table: String!, year_gte: Int!, year_lte: Int!): [Publication]
+        advancedSearchResearchers(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, prime_department: String!, prime_faculty: String!, table: String!): [ResearcherOpenSearch]
         allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
+        changeScopusId(newScopusId: String!, oldScopusId: String!): Boolean
         facultyMetrics(faculty: String!): [facultyMetric]
         getAllDepartments: [String]
         getAllDistinctJournals: [String]
         getAllFaculty: [String]
+        getAllGrantAgencies: [String]
         getAllResearchersImpacts: [Impact]
+        getFlaggedIds: [[Researcher]]
         getNumberOfResearcherPubsAllYears(id: ID!): graphDataAllYears
         getNumberOfResearcherPubsLastFiveYears(id: ID!): graphData
         getPub(id: ID!): Publication
         getResearcher(id: ID!): Researcher
         getResearcherElsevier(id: ID!): ResearcherElsevier
         getResearcherFull(id: ID!): ResearcherFull
+        getResearcherGrants(id: ID!): [grant]
+        getResearcherImpactsByDepartment(prime_department: String!): [Impact]
+        getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
         getResearcherOrcid(id: ID!): ResearcherOrcid
+        getResearcherPatents(id: ID!): [patent]
         getResearcherPubsByCitations(id: ID!): [Publication]
         getResearcherPubsByTitle(id: ID!): [Publication]
         getResearcherPubsByYear(id: ID!): [Publication]
-        getResearcherImpactsByDepartment(prime_department: String!): [Impact]
-        getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
-        searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
-        searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]
+        getUpdatePublicationsLogs: [updatePublicationsLogType]
+        lastUpdatedResearchersList: [lastUpdated]
+        searchGrants(grantAgenciesToFilterBy: [String]!, search_value: String!): [grant]
+        searchPatents(patentClassificationFilter: [String]!, search_value: String!): [patent]
+        searchPublications(journalsToFilterBy: [String]!, search_value: String!): [Publication]
+        searchResearcher(departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!, search_value: String!): [ResearcherOpenSearch]
         similarResearchers(scopus_id: String!): [ResearcherOpenSearch]
         totalPublicationPerYear: [pubsPerYear]
         wordCloud(gte: Int!, lte: Int!): [wordCloud]
-        changeScopusId(oldScopusId: String!, newScopusId: String!): Boolean
-        lastUpdatedResearchersList: [lastUpdated]
-        getUpdatePublicationsLogs: [updatePublicationsLogType]
-        getFlaggedIds: [[Researcher]]
-        getResearcherGrants(id: ID!): [grant]
-        searchGrants(search_value: String!, grantAgenciesToFilterBy: [String]!): [grant]
-        getAllGrantAgencies: [String]
-        getResearcherPatents(id: ID!): [patent]
-        searchPatents(search_value: String!, patentClassificationFilter: [String]!): [patent]
       }
       
       type Researcher {
-        employee_id: String
         areas_of_interest: String
         campus: String
         email: String
+        employee_id: String
         first_name: String
         job_stream: String
         last_name: String
@@ -264,6 +235,7 @@ export class AppsyncStack extends Stack {
         job_stream: String
         keywords: String!
         last_name: String
+        last_updated: String
         num_citations: Int
         num_documents: Int
         num_patents_filed: Int
@@ -275,7 +247,6 @@ export class AppsyncStack extends Stack {
         scopus_id: String!
         second_department: String
         second_faculty: String
-        last_updated: String
       }
       
       type ResearcherOpenSearch {
@@ -306,16 +277,16 @@ export class AppsyncStack extends Stack {
       }
       
       type grant {
-        name: String!
-        department: String
         agency: String!
-        grant_program: String
         amount: Int
-        project_title: String
-        keywords: String
-        year: String
-        start_date: String
+        department: String
         end_date: String
+        grant_program: String
+        keywords: String
+        name: String!
+        project_title: String
+        start_date: String
+        year: String
       }
       
       type graphData {
@@ -329,28 +300,23 @@ export class AppsyncStack extends Stack {
       }
       
       type lastUpdated {
-        preferred_name: String
         last_updated: String
+        preferred_name: String
       }
       
       type patent {
-        patent_number: String
-        patent_title: String
-        patent_inventors: String
-        patent_sponsors: String
-        patent_family_number: String
         patent_classification: String
+        patent_family_number: String
+        patent_inventors: String
+        patent_number: String
         patent_publication_date: String
-      }      
+        patent_sponsors: String
+        patent_title: String
+      }
       
       type pubsPerYear {
         count: String
         year_published: String
-      }
-      
-      schema {
-        query: Query
-        mutation: Mutation
       }
       
       type totalPubsPerFaculty {
@@ -359,8 +325,8 @@ export class AppsyncStack extends Stack {
       }
       
       type updatePublicationsLogType {
-        number_of_publications_updated: Int
         date_updated: String
+        number_of_publications_updated: Int
       }
       
       type wordCloud {

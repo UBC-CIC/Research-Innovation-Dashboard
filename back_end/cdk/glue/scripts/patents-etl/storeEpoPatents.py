@@ -20,11 +20,13 @@ from awsglue.utils import getResolvedOptions
 
 # define job parameters
 args = getResolvedOptions(
-    sys.argv, ["TEMP_BUCKET_NAME", "EPO_INSTITUTION_NAME", "FILE_PATH", "DB_SECRET_NAME"])
+    sys.argv, ["TEMP_BUCKET_NAME", "EPO_INSTITUTION_NAME", "FILE_PATH", "DB_SECRET_NAME", "DMS_TASK_ARN", "EQUIVALENT"])
 TEMP_BUCKET_NAME = args["TEMP_BUCKET_NAME"]
 EPO_INSTITUTION_NAME = args["EPO_INSTITUTION_NAME"]
 FILE_PATH = args["FILE_PATH"]
 DB_SECRET_NAME = args["DB_SECRET_NAME"]
+DMS_TASK_ARN = args["DMS_TASK_ARN"]
+EQUIVALENT = args["EQUIVALENT"]
 
 
 def storePatentData():
@@ -63,7 +65,7 @@ def storePatentData():
     # # clear data from table (for testing)
     # query = "TRUNCATE patent_data"
     # cursor.execute(query)
-    
+
     # query = """CREATE TABLE IF NOT EXISTS public.patent_data (
     #   patent_id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
     #   patent_number varchar,
@@ -84,14 +86,14 @@ def storePatentData():
     # check for duplicate insertion
     schema = """patent_number, patent_country_code, patent_kind_code, patent_title, patent_inventors, patent_sponsors, 
                 patent_family_number, patent_classification, patent_publication_date, inventors_assigned_ids"""
-    
 
     query = f"SELECT {schema} FROM public.patent_data"
     cursor.execute(query)
     tableData = cursor.fetchall()
     df_database = pd.DataFrame(tableData, columns=columns_order)
     # combine both dataframe into one, then drop all duplicates column
-    df_insert = pd.concat([df_id, df_database], axis=0).drop_duplicates(subset=["family_number", "publication_number", "publication_date"], keep=False)
+    df_insert = pd.concat([df_id, df_database], axis=0).drop_duplicates(
+        subset=["family_number", "publication_number", "publication_date"], keep=False)
 
     listOfValuesToInsert = list(df_insert.itertuples(index=False, name=None))
     print(f"inserting {str(len(listOfValuesToInsert))} new entries!")
@@ -109,7 +111,10 @@ def storePatentData():
     # dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
     # print("date and time =", dt_string)
     # saving file with some datetime information for logging/debugging purpose
-    FILE_PATH = f"epo/patent_data_insert/patents_insert.csv"
+    if EQUIVALENT == "true":
+        FILE_PATH = f"epo/patent_data_insert/equivalent/patents_equivalent_insert.csv"
+    else:
+        FILE_PATH = f"epo/patent_data_insert/initial/patents_insert.csv"
     putToS3(df_insert, TEMP_BUCKET_NAME, FILE_PATH)
     print(f"Saved file at {TEMP_BUCKET_NAME}/{FILE_PATH}")
 
@@ -130,6 +135,13 @@ def storePatentData():
 def main(argv):
 
     storePatentData()
+
+    glue_client = boto3.client("glue")
+
+    # start downstream job
+    glue_client.start_job_run(
+        JobName="startDmsReplicationTask",
+    )
 
 
 if __name__ == "__main__":

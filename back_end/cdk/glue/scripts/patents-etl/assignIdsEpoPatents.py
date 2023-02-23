@@ -21,11 +21,12 @@ from pyjarowinkler.distance import get_jaro_distance
 
 # define job parameters
 args = getResolvedOptions(
-    sys.argv, ["TEMP_BUCKET_NAME", "EPO_INSTITUTION_NAME", "FILE_PATH", "DB_SECRET_NAME"])
+    sys.argv, ["TEMP_BUCKET_NAME", "EPO_INSTITUTION_NAME", "FILE_PATH", "DB_SECRET_NAME", "EQUIVALENT"])
 TEMP_BUCKET_NAME = args["TEMP_BUCKET_NAME"]
 EPO_INSTITUTION_NAME = args["EPO_INSTITUTION_NAME"]
 FILE_PATH = args["FILE_PATH"]
 DB_SECRET_NAME = args["DB_SECRET_NAME"]
+EQUIVALENT = args["EQUIVALENT"]
 
 # clients
 glue_client = boto3.client("glue")
@@ -251,7 +252,10 @@ def assign_ids_epo_patent():
     # # dd/mm/YY H:M:S
     # dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
     # print("date and time =", dt_string)
-    FILE_PATH = f"epo/patent_with_researcher_ids/patents-ids.csv"
+    if EQUIVALENT == "true":
+        FILE_PATH = f"epo/patent_with_researcher_ids/equivalent/patents_equivalent_ids.csv"
+    else:
+        FILE_PATH = f"epo/patent_with_researcher_ids/initial/patents_equivalent_ids.csv"
     putToS3(df, TEMP_BUCKET_NAME, FILE_PATH)
 
 # script entry point
@@ -264,7 +268,8 @@ def main(argv):
     # start downstream job
     arguments = {
         "--TEMP_BUCKET_NAME": TEMP_BUCKET_NAME,
-        "--FILE_PATH": FILE_PATH
+        "--FILE_PATH": FILE_PATH,
+        "--EQUIVALENT": EQUIVALENT
     }
     glue_client.start_job_run(
         JobName="storeEpoPatents",
