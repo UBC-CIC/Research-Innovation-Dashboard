@@ -7,11 +7,15 @@ import {useState, useEffect} from 'react';
 import './ResearcherProfile.css'
 import Patent from './Patent';
 import { Typography } from '@mui/material';
+import Pagination from "@mui/material/Pagination";
 
 export default function PatentInformation(props){
 
     const [numberOfRows, setNumberOfRows] = useState(props.initialNumberOfRows);
     const [increaseRowCountBy, setIncreaseRowCountBy] = useState(25);
+    const [page, setPage] = useState(1);
+
+    let numberOfPatentsPerPage = 3;
 
     function ShowMorePatentsButton() {
         if(numberOfRows<props.researcherPatents.length){
@@ -27,10 +31,19 @@ export default function PatentInformation(props){
         setNumberOfRows(numberOfRows+increaseRowCountBy);
     }
 
+    function paginationCallback(data, index) {
+        if (
+          (page - 1) * numberOfPatentsPerPage <= index &&
+          index < page * numberOfPatentsPerPage
+        ) {
+          return data;
+        }
+    }
+
     const mappedData =
     props.researcherPatents
       .filter(
-        (data, index) => index < numberOfRows
+        (data, index) => paginationCallback(data, index)
       )
       .map((filteredData, index) => (
         <Patent title={filteredData.patent_title} inventors={filteredData.patent_inventors} sponsors={filteredData.patent_sponsors}
@@ -94,7 +107,7 @@ export default function PatentInformation(props){
                         direction={sortByYearDirection}
                     > */}
                         <Typography align="center" variant="h6">
-                            Year Published
+                            Year Filed
                         </Typography>
                     {/* </TableSortLabel> */}
                     </Paper>
@@ -105,6 +118,24 @@ export default function PatentInformation(props){
             <Grid container>
                 {mappedData}
             </Grid>
+            {true && 
+            <Grid container>
+                <Grid item xs={12} sx={{ m: "2%" }}>
+                    <Box display="flex" alignItems="center" justifyContent="center">
+                        <Pagination
+                            size="large"
+                            defaultPage={1}
+                            page={page}
+                            count={Math.ceil(
+                                props.researcherPatents.length / numberOfPatentsPerPage
+                            )}
+                        onChange={(event, value) => {
+                            setPage(value);
+                        }}
+                        />
+                    </Box>
+                </Grid>
+            </Grid>}
             {props.tabOpened && 
                 <Box textAlign="center">
                     <ShowMorePatentsButton />

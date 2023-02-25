@@ -60,7 +60,7 @@ function App(props) {
               type={"image"}
               themeColor={"standard"}
               animateTitle={false}
-              title={"VPRI Innovation Dashboard"}
+              title={"Expertise Dashboard"}
               darkMode={true}
               disableSignUp={true}
             />

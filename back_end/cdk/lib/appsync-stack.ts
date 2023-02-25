@@ -216,7 +216,7 @@ export class AppsyncStack extends Stack {
         getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
         searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
         searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]
-        similarResearchers(scopus_id: String!): [ResearcherOpenSearch]
+        similarResearchers(researcher_id: String!): [ResearcherOpenSearch]
         totalPublicationPerYear: [pubsPerYear]
         wordCloud(gte: Int!, lte: Int!): [wordCloud]
         changeScopusId(oldScopusId: String!, newScopusId: String!): Boolean
@@ -231,6 +231,7 @@ export class AppsyncStack extends Stack {
       }
       
       type Researcher {
+        researcher_id: String
         employee_id: String
         areas_of_interest: String
         campus: String
@@ -279,6 +280,7 @@ export class AppsyncStack extends Stack {
       }
       
       type ResearcherOpenSearch {
+        researcher_id: String
         campus: String
         email: String
         first_name: String

@@ -34,7 +34,9 @@ export default function AreasOfInterest(props){
 
     const Areas = props.areasOfInterest.filter((data,index) => index < numberOfRows).map((area) => {
         return(
-            <Paper key={area} square={true} elevation={0} sx={{width: "23.79%", mr: "1%", border: 1, mt: "2%"}} component={Stack} direction="column" justifyContent="space-between" ml={0}>
+            <Paper key={area} square={true} elevation={0}  onClick={() => {props.showResearchersWithSimlarKeyword(area[0]);}}
+                    sx={{width: "23.79%", mr: "1%", border: 1, mt: "2%", '&:hover': {cursor: 'pointer'}}}
+                    component={Stack} direction="column" justifyContent="space-between" ml={0}>
                     <Typography align='center' variant='h6'>
                         {area[0]}
                     </Typography>
@@ -47,7 +49,7 @@ export default function AreasOfInterest(props){
         return(
             <Grid item xs={12} sx={{pl: "2%", pr: "2%"}}>
                 <Box sx={{flexGrow: 1}}>
-                    <div id ='Areas_Of_Interest_Text'>Areas Of Interest</div>
+                    <div id ='Areas_Of_Interest_Text'>Areas of Interest</div>
                     <Link style={{cursor: 'pointer'}} onClick={props.onClickFunctions.showSimilarResearchersFunc} id='similar_researchers'>{props.numberOfSimilarResearchers} Similar Researchers</Link>
                 </Box>  
                 <Box
@@ -58,7 +60,7 @@ export default function AreasOfInterest(props){
                     width: 150,
                     height: 150,},}}
                 >
-                    <Paper square={true} elevation={0} sx={{flexGrow: 1, ml: 0, mt: 1, mr: 1, mb: 1, border: 1}} component={Stack} direction="column" justifyContent="space-between" ml={0}>
+                    <Paper onClick={() => {props.showResearchersWithSimlarKeyword(props.areasOfInterest[0][0])}} square={true} elevation={0} sx={{flexGrow: 1, ml: 0, mt: 1, mr: 1, mb: 1, border: 1, '&:hover': {cursor: 'pointer'}}} component={Stack} direction="column" justifyContent="space-between" ml={0}>
                         <Paper sx={{height: "90%"}} elevation={0} component={Stack} direction="column" justifyContent="center">
                             <Typography align='center' variant='h5'>
                                 {props.areasOfInterest[0][0]}
@@ -70,7 +72,7 @@ export default function AreasOfInterest(props){
                             </Typography>
                         </Paper>
                     </Paper>
-                    <Paper square={true} elevation={0} sx={{flexGrow: 1, m: 1, border: 1}} component={Stack} direction="column" justifyContent="space-between">
+                    <Paper onClick={() => {props.showResearchersWithSimlarKeyword(props.areasOfInterest[1][0])}} square={true} elevation={0} sx={{flexGrow: 1, m: 1, border: 1, '&:hover': {cursor: 'pointer'}}} component={Stack} direction="column" justifyContent="space-between">
                         <Paper sx={{height: "90%"}} elevation={0} component={Stack} direction="column" justifyContent="center">
                             <Typography align='center' variant='h5'>
                                 {props.areasOfInterest[1][0]}
@@ -82,7 +84,7 @@ export default function AreasOfInterest(props){
                             </Typography>
                         </Paper>
                     </Paper>
-                    <Paper square={true} elevation={0} sx={{flexGrow: 1, m: 1, border: 1}} component={Stack} direction="column" justifyContent="space-between">
+                    <Paper onClick={() => {props.showResearchersWithSimlarKeyword(props.areasOfInterest[2][0])}} square={true} elevation={0} sx={{flexGrow: 1, m: 1, border: 1, '&:hover': {cursor: 'pointer'}}} component={Stack} direction="column" justifyContent="space-between">
                         <Paper sx={{height: "90%"}} elevation={0} component={Stack} direction="column" justifyContent="center">
                             <Typography align='center' variant='h5'>
                                 {props.areasOfInterest[2][0]}
@@ -94,7 +96,7 @@ export default function AreasOfInterest(props){
                             </Typography>
                         </Paper>
                     </Paper>
-                    <Paper square={true} elevation={0} sx={{flexGrow: 1, m: 1, border: 1}} component={Stack} direction="column" justifyContent="space-between">
+                    <Paper onClick={() => {props.showResearchersWithSimlarKeyword(props.areasOfInterest[3][0])}} square={true} elevation={0} sx={{flexGrow: 1, m: 1, border: 1, '&:hover': {cursor: 'pointer'}}} component={Stack} direction="column" justifyContent="space-between">
                         <Paper sx={{height: "90%"}} elevation={0} component={Stack} direction="column" justifyContent="center">
                             <Typography align='center' variant='h5'>
                                 {props.areasOfInterest[3][0]}
@@ -106,7 +108,7 @@ export default function AreasOfInterest(props){
                             </Typography>
                         </Paper>
                     </Paper>
-                    <Paper square={true} elevation={0} sx={{flexGrow: 1 , ml: 1, mt: 1, mr: 0, mb: 1, border: 1}} component={Stack} direction="column" justifyContent="space-between">
+                    <Paper onClick={() => {props.showResearchersWithSimlarKeyword(props.areasOfInterest[4][0])}} square={true} elevation={0} sx={{flexGrow: 1 , ml: 1, mt: 1, mr: 0, mb: 1, border: 1, '&:hover': {cursor: 'pointer'}}} component={Stack} direction="column" justifyContent="space-between">
                         <Paper sx={{height: "90%"}} elevation={0} component={Stack} direction="column" justifyContent="center">
                             <Typography align='center' variant='h5'>
                                 {props.areasOfInterest[4][0]}

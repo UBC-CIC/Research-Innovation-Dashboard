@@ -19,7 +19,9 @@ async function handler(event) {
   };
   
   let sql = postgres(connectionConfig);
+  
   let payload = {};
+  let scopusId;
   /*
   if (event.info.parentTypeName === "Mutation") {
     let newPublication = event.arguments.input;
@@ -29,6 +31,7 @@ async function handler(event) {
   */
   let date = new Date(); //Current Date
   let currentYear = date.getFullYear();
+  let researcher_id;
   console.log(event);
     switch(event.info.fieldName) {
     
@@ -109,9 +112,10 @@ async function handler(event) {
       break;
     case "getResearcherPubsByCitations":
       console.log("Getting Pubs");
+      scopusId = await sql`SELECT scopus_id FROM researcher_data WHERE ${event.arguments.id} = researcher_id`
       let publications_result;
       let publications = []
-      publications_result = await sql`SELECT * FROM public.publication_data WHERE ${event.arguments.id} = ANY (author_ids) ORDER BY cited_by DESC`;
+      publications_result = await sql`SELECT * FROM public.publication_data WHERE ${scopusId[0].scopus_id} = ANY (author_ids) ORDER BY cited_by DESC`;
       for (let i = 0; i < Object.keys(publications_result).length; i++) {
         publications[i] = publications_result[i.toString()];
       }
@@ -119,10 +123,10 @@ async function handler(event) {
       payload = publications;
       break;
     case "getResearcherPubsByYear":
-      console.log("Getting Pubs");
+      scopusId = await sql`SELECT scopus_id FROM researcher_data WHERE ${event.arguments.id} = researcher_id`
       let publications_result_year;
       let publications_year = []
-      publications_result_year = await sql`SELECT * FROM public.publication_data WHERE ${event.arguments.id} = ANY (author_ids) ORDER BY year_published DESC`;
+      publications_result_year = await sql`SELECT * FROM public.publication_data WHERE ${scopusId[0].scopus_id} = ANY (author_ids) ORDER BY year_published DESC`;
       for (let i = 0; i < Object.keys(publications_result_year).length; i++) {
         publications_year[i] = publications_result_year[i.toString()];
       }
@@ -130,10 +134,11 @@ async function handler(event) {
       payload = publications_year;
       break;
     case "getResearcherPubsByTitle":
+      scopusId = await sql`SELECT scopus_id FROM researcher_data WHERE ${event.arguments.id} = researcher_id`
       console.log("Getting Pubs");
       let publications_result_title;
       let publications_title = []
-      publications_result_title = await sql`SELECT * FROM public.publication_data WHERE ${event.arguments.id} = ANY (author_ids) ORDER BY title ASC`;
+      publications_result_title = await sql`SELECT * FROM public.publication_data WHERE ${scopusId[0].scopus_id} = ANY (author_ids) ORDER BY title ASC`;
       for (let i = 0; i < Object.keys(publications_result_title).length; i++) {
         publications_title[i] = publications_result_title[i.toString()];
       }
@@ -157,7 +162,7 @@ async function handler(event) {
       break;
     case "getResearcherFull":
       console.log("Getting Researcher Profile");
-      let [data] = await sql`SELECT * FROM public.researcher_data WHERE scopus_id = ${event.arguments.id}`;
+      let [data] = await sql`SELECT * FROM public.researcher_data WHERE researcher_id = ${event.arguments.id}`;
       let [elsevier_data] = await sql`SELECT * FROM public.elsevier_data WHERE id = ${data.scopus_id}`;
       let [orcid_data] = await sql`SELECT * FROM public.orcid_data WHERE id = ${data.scopus_id}`;
       data.keywords = data.keywords.toLowerCase();
@@ -188,9 +193,10 @@ async function handler(event) {
       payload = Rankings
       break;
     case "getNumberOfResearcherPubsLastFiveYears":
+      scopusId = await sql`SELECT scopus_id FROM researcher_data WHERE ${event.arguments.id} = researcher_id`
       let lastFiveYears = [(currentYear-4).toString(),(currentYear-3).toString(),(currentYear-2).toString(),(currentYear-1).toString(),(currentYear).toString()];
       let publicationsPerYear = ["0","0","0","0","0"];
-      let theResult = await sql`SELECT  COUNT(*), year_published FROM public.publication_data WHERE ${event.arguments.id} = ANY (author_ids) AND year_published>${currentYear-5} GROUP BY year_published ORDER BY year_published ASC`;
+      let theResult = await sql`SELECT  COUNT(*), year_published FROM public.publication_data WHERE ${scopusId[0].scopus_id} = ANY (author_ids) AND year_published>${currentYear-5} GROUP BY year_published ORDER BY year_published ASC`;
       for(let i = 0; i<Object.keys(theResult).length; i++){
         console.log(theResult[i.toString()].count);
         for(let j = (currentYear-4); j<=currentYear; j++){
@@ -204,8 +210,8 @@ async function handler(event) {
     case "getNumberOfResearcherPubsAllYears":
       let pubsPerYear = [];
       let yearArray = [];
-
-      let result = await sql`SELECT  COUNT(*), year_published FROM public.publication_data WHERE ${event.arguments.id} = ANY (author_ids) GROUP BY year_published ORDER BY year_published ASC`;
+      scopusId = await sql`SELECT scopus_id FROM researcher_data WHERE ${event.arguments.id} = researcher_id`
+      let result = await sql`SELECT  COUNT(*), year_published FROM public.publication_data WHERE ${scopusId[0].scopus_id} = ANY (author_ids) GROUP BY year_published ORDER BY year_published ASC`;
       
       let firstYearPublished = parseInt(result[0].year_published);
       
@@ -351,9 +357,7 @@ async function handler(event) {
     case "getResearcherGrants":
       //Get our owned id of the researcher in researcher data table
       // Currently the column is mis named it has been fixed.
-      let researcher_id = await sql`SELECT researcher_id FROM researcher_data WHERE scopus_id=${event.arguments.id}`
-      
-      let grantResults = await sql`SELECT * from grant_data WHERE assigned_id=${researcher_id[0].researcher_id}`
+      let grantResults = await sql`SELECT * from grant_data WHERE assigned_id=${event.arguments.id}`
       
       payload = grantResults
       
@@ -369,6 +373,64 @@ async function handler(event) {
       for(let i = 0; i<agencies.length; i++) {
         payload.push(agencies[i].agency);
       }
+      break;
+    
+    case "getResearcherPatents":
+      researcher_id = await sql`SELECT researcher_id FROM researcher_data WHERE researcher_id=${event.arguments.id}`
+      
+      let patenetResults = await sql`SELECT * from patent_data WHERE ${researcher_id[0].researcher_id} = ANY(inventors_assigned_ids)`
+      
+      let patentsObject = {};
+      
+      let dateCoverterObject = {
+        'Jan': 0,
+        'Feb': 1,
+        'Mar': 2,
+        'Apr': 3,
+        'May': 4,
+        'Jun': 5,
+        'Jul': 6,
+        'Aug': 7,
+        'Sep': 8,
+        'Oct': 9,
+        'Nov': 10,
+        'Dec': 11,
+      }
+      
+      for(let i = 0; i<patenetResults.length; i++) {
+        //If the patent family number is in the object update the information
+        //Otherwise store it
+        
+        if(patentsObject[patenetResults[i].patent_family_number]) {
+          //If the current stored date is 
+          
+          let currentStoredDate = patentsObject[patenetResults[i].patent_family_number].patent_publication_date;
+          currentStoredDate = currentStoredDate.split("-");
+          currentStoredDate = new Date( currentStoredDate[0], dateCoverterObject[currentStoredDate[1]], currentStoredDate[2]);
+          
+          let newDate = patenetResults[i].patent_publication_date
+          newDate = newDate.split("-");
+          newDate = new Date( newDate[0], dateCoverterObject[newDate[1]], newDate[2]);
+          //If the new date is closer to the present store that data instead
+          if(newDate > currentStoredDate) {
+            let currentPatentNumberList = patentsObject[patenetResults[i].patent_family_number].patent_number
+            patenetResults[i].patent_number = currentPatentNumberList + ", " + patenetResults[i].patent_number
+            patentsObject[patenetResults[i].patent_family_number] = patenetResults[i];
+          }
+        }
+        else {
+          patentsObject[patenetResults[i].patent_family_number] = patenetResults[i]
+        }
+      }
+      
+      patenetResults = []
+      
+      for (const patent in patentsObject) {
+        patenetResults.push(patentsObject[patent])
+      }
+      
+      payload = patenetResults
+      
       break;
   }
 

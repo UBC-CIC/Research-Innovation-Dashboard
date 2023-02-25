@@ -412,7 +412,7 @@ def removePublicationsWithNoInstitutionResearcher(cursor, connection):
 
 instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
 apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
-        
+
 credentials = getCredentials()
 connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
 cursor = connection.cursor()

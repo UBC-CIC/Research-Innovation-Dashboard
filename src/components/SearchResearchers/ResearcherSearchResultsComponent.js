@@ -7,6 +7,7 @@ import React from "react";
 import placeholderResearchPhoto from "../../assets/images/researcherPlaceholderImage.png";
 import Pagination from "@mui/material/Pagination";
 import Box from "@mui/material/Box";
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 export default function ResearcherSearchResultsComponent(props) {
   const { researchSearchResults } = props;
@@ -28,7 +29,6 @@ export default function ResearcherSearchResultsComponent(props) {
     researchSearchResults
       .filter((data, index) => researcherPaginationCallback(data, index))
       .map((researcher) => {
-        console.log(researcher.rank);
         return (
           <Paper
             key={researcher.scopus_id}
@@ -45,10 +45,11 @@ export default function ResearcherSearchResultsComponent(props) {
             />
             <Paper elevation={0} sx={{ width: "72%", marginTop: "4%" }}>
               <Link
+                target="_blank" rel="noopener noreferrer"
                 style={{ fontSize: "24px" }}
-                to={"/Researchers/" + researcher.scopus_id + "/"}
+                to={"/Researchers/" + researcher.researcher_id + "/"}
               >
-                {researcher.preferred_name} {(researcher.rank === "Adjunct Professor") && "*"} <br />
+                {researcher.preferred_name} {(researcher.rank === "Adjunct Professor") && "*"} <OpenInNewIcon fontSize="small" /><br />
               </Link>
               <Typography> {researcher.prime_faculty}</Typography>
               <Typography>
@@ -64,17 +65,17 @@ export default function ResearcherSearchResultsComponent(props) {
     <Grid container>
       {researchSearchResults.length === 0 && (
         <Paper elevation={0} square={true} sx={{ width: "100%" }}>
-          <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}>No Researcher Search Results</Typography>
+          <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}>{props.errorTitle}</Typography>
         </Paper>
       )}
       {researchSearchResults.length !== 0 && (
         <Paper elevation={0} square={true} sx={{ width: "100%" , }}>
-          <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}>Research Search Results</Typography>
+          <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}>{props.resultTitle}</Typography>
         </Paper>
       )}
       {ResearchResultsElement}
       <Grid container>
-        <Grid item xs={12} sx={{ m: "5%" }}>
+        <Grid item xs={12} sx={{ m: "2%" }}>
           <Box display="flex" alignItems="center" justifyContent="center">
             {researchSearchResults.length !== 0 && (
               <Pagination

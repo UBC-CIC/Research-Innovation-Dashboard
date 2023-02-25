@@ -1,5 +1,15 @@
 export type AmplifyDependentResourcesAttributes = {
+    "api": {
+        "vpriinnovationdashbo": {
+            "GraphQLAPIKeyOutput": "string",
+            "GraphQLAPIIdOutput": "string",
+            "GraphQLAPIEndpointOutput": "string"
+        }
+    },
     "auth": {
+        "userPoolGroups": {
+            "AdminsGroupRole": "string"
+        },
         "vpriinnovationdashbo197a129c": {
             "IdentityPoolId": "string",
             "IdentityPoolName": "string",
@@ -8,16 +18,6 @@ export type AmplifyDependentResourcesAttributes = {
             "UserPoolName": "string",
             "AppClientIDWeb": "string",
             "AppClientID": "string"
-        },
-        "userPoolGroups": {
-            "AdminsGroupRole": "string"
-        }
-    },
-    "api": {
-        "vpriinnovationdashbo": {
-            "GraphQLAPIKeyOutput": "string",
-            "GraphQLAPIIdOutput": "string",
-            "GraphQLAPIEndpointOutput": "string"
         }
     }
 }
