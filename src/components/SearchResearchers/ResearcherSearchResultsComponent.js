@@ -47,7 +47,7 @@ export default function ResearcherSearchResultsComponent(props) {
               <Link
                 target="_blank" rel="noopener noreferrer"
                 style={{ fontSize: "24px" }}
-                to={"/Researchers/" + researcher.scopus_id + "/"}
+                to={"/Researchers/" + researcher.researcher_id + "/"}
               >
                 {researcher.preferred_name} {(researcher.rank === "Adjunct Professor") && "*"} <OpenInNewIcon fontSize="small" /><br />
               </Link>

@@ -41,7 +41,7 @@ Amplify.configure(awsmobile);
 Auth.configure(awsmobile);
 
 export default function Researcher_profile_overview() {
-  const { scopusId } = useParams();
+  const { researcherId } = useParams();
 
   const [first_name, set_first_name] = useState("");
   const [last_name, set_last_name] = useState("");
@@ -68,6 +68,7 @@ export default function Researcher_profile_overview() {
   const [showPatents, setShowPatents] = useState(false);
   const [showResearchersWithSimilarKeyword, setShowResearchersWithSimilarKeyword] = useState(false);
   const [researcherPatents, setResearcherPatents] = useState([]);
+  const [scopusId, setScopusId] = useState("");
 
   const [numberOfPublicationsToShow, setNumberOfPublicationsToShow] =
     useState(2);
@@ -128,7 +129,7 @@ export default function Researcher_profile_overview() {
   const getPatents = async () => {
     const researcherPatentData = await API.graphql({
       query: getResearcherPatents,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
 
     console.log(researcherPatentData.data.getResearcherPatents);
@@ -139,15 +140,15 @@ export default function Researcher_profile_overview() {
   const getAllPublications = async () => {
     const dataSortedByCitation = await API.graphql({
       query: getResearcherPubsByCitations,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     const dataSortedByYear = await API.graphql({
       query: getResearcherPubsByYear,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     const dataSortedByTitle = await API.graphql({
       query: getResearcherPubsByTitle,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     let publication_data_sorted_by_ciation =
       dataSortedByCitation.data.getResearcherPubsByCitations;
@@ -208,13 +209,6 @@ export default function Researcher_profile_overview() {
 
     setNumberOfPublications(descendingPublicationsCitation.length);
 
-    const result = await API.graphql({
-      query: similarResearchers,
-      variables: {
-        scopus_id: scopusId,
-      },
-    });
-
     setDescendingPublicationListByCitation(descendingPublicationsCitation);
     setAscendingPublicationListByCitation(ascendingPublicationsCitation);
 
@@ -227,7 +221,7 @@ export default function Researcher_profile_overview() {
     const grantResult = await API.graphql({
       query: getResearcherGrants,
       variables: {
-        id: scopusId,
+        id: researcherId,
       },
     });
     setGrantData(grantResult.data.getResearcherGrants);
@@ -237,7 +231,7 @@ export default function Researcher_profile_overview() {
   const getResearcherGeneralInformation = async () => {
     const researcher_data_response = await API.graphql({
       query: getResearcherFull,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     let researcher_data = researcher_data_response.data.getResearcherFull;
     set_first_name(researcher_data.first_name);
@@ -253,13 +247,14 @@ export default function Researcher_profile_overview() {
     set_num_patents_filed(researcher_data.num_patents_filed);
     setLastUpdatedAt(researcher_data.last_updated);
     setRank(researcher_data.rank);
+    setScopusId(researcher_data.scopus_id)
 
     set_num_licensed_patents(0);
 
     const result = await API.graphql({
       query: similarResearchers,
       variables: {
-        scopus_id: scopusId,
+        researcher_id: researcherId,
       },
     });
 
@@ -290,11 +285,11 @@ export default function Researcher_profile_overview() {
   const getResearcherBarGraphData = async () => {
     const bar_graph_data_response = await API.graphql({
       query: getNumberOfResearcherPubsLastFiveYears,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     const bar_graph_data_response_all_years = await API.graphql({
       query: getNumberOfResearcherPubsAllYears,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     let bar_graph_data =
       bar_graph_data_response.data.getNumberOfResearcherPubsLastFiveYears;
@@ -433,7 +428,7 @@ export default function Researcher_profile_overview() {
     console.log(results);
     for(let i = 0; i<results.length; i++) {
       //Remove the researcher the keyword came from
-      if(results[i].scopus_id == scopusId) {
+      if(results[i].researcher_id == researcherId) {
         console.log("removed researcher you got keyword from");
         results.splice(i, 1);
         break;
