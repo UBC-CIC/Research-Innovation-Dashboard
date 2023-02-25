@@ -552,7 +552,7 @@ export default function Researcher_profile_overview() {
                 <Paper square={true} elevation={0} variant="outlined">
                     <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={2}/>
                     <Box textAlign="center">
-                      <Button
+                      {/* <Button
                         onClick={showGrantsFunction}
                         sx={{
                           m: 1,
@@ -562,7 +562,7 @@ export default function Researcher_profile_overview() {
                         }}
                       >
                         View All Grants
-                      </Button>
+                      </Button> */}
                     </Box>
                 </Paper>
               </Grid>
@@ -570,7 +570,7 @@ export default function Researcher_profile_overview() {
                 <Paper square={true} elevation={0} variant="outlined">
                   <PatentInformation  researcherPatents={researcherPatents} initialNumberOfRows={2}/>
                   <Box textAlign="center">
-                      <Button
+                      {/* <Button
                         onClick={showPatentsFunction}
                         sx={{
                           m: 1,
@@ -580,7 +580,7 @@ export default function Researcher_profile_overview() {
                         }}
                       >
                         View All Patents
-                      </Button>
+                      </Button> */}
                     </Box>
                 </Paper>
               </Grid>
