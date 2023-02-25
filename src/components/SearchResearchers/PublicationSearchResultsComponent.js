@@ -11,7 +11,7 @@ import Box from "@mui/material/Box";
 export default function PublicationSearchResultsComponent(props) {
   const { publicationSearchResults } = props;
 
-  let numberOfResearcherPerPage = 10;
+  let numberOfResearcherPerPage = 5;
 
   function ShowAllPublicationsResultsButton() {
     return (
@@ -118,7 +118,7 @@ export default function PublicationSearchResultsComponent(props) {
         {publicationSearchResults.length !== 0 && <PublicationsHeader />}
         {publications}
         <Grid container>
-          <Grid item xs={12} sx={{ m: "5%" }}>
+          <Grid item xs={12} sx={{ m: "2%" }}>
             <Box display="flex" alignItems="center" justifyContent="center">
               {publicationSearchResults.length !== 0 && (
                 <Pagination

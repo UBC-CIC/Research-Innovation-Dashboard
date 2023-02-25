@@ -16,6 +16,7 @@ import SimilarResearchers from "./SimilarResearchers";
 import LoadingWheel from "../LoadingWheel";
 import PublicationBarGraph from "./PublicationBarGraph";
 import PatentInformation from "./PatentInformation";
+import ResearcherSearchResultsComponent from "../SearchResearchers/ResearcherSearchResultsComponent";
 
 import Amplify from "@aws-amplify/core";
 import { Auth } from "@aws-amplify/auth";
@@ -33,6 +34,7 @@ import {
   similarResearchers,
   getResearcherGrants,
   getResearcherPatents,
+  searchResearcher,
 } from "../../graphql/queries";
 
 Amplify.configure(awsmobile);
@@ -64,6 +66,7 @@ export default function Researcher_profile_overview() {
   const [grantData, setGrantData] = useState([]);
   const [showGrants, setShowGrants] = useState(false);
   const [showPatents, setShowPatents] = useState(false);
+  const [showResearchersWithSimilarKeyword, setShowResearchersWithSimilarKeyword] = useState(false);
   const [researcherPatents, setResearcherPatents] = useState([]);
 
   const [numberOfPublicationsToShow, setNumberOfPublicationsToShow] =
@@ -117,6 +120,10 @@ export default function Researcher_profile_overview() {
   const [pageLoaded, setPageLoaded] = useState(false);
 
   const [showFullGraph, setShowFullGraph] = useState(false);
+
+  const [researchersWithClickedKeyword, setResearchersWithClickedKeyword] = useState([]);
+  const [researcherSearchResultPage, setResearcherSearchResultPage] = useState(1);
+  const [keywordToSearchFor, setKeywordToSearchFor] = useState("")
 
   const getPatents = async () => {
     const researcherPatentData = await API.graphql({
@@ -332,6 +339,7 @@ export default function Researcher_profile_overview() {
     setShowGrants(false);
     setShowPatents(false);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
 
   function showAreasOfInterestFunc() {
@@ -344,6 +352,7 @@ export default function Researcher_profile_overview() {
     setShowGrants(false);
     setShowPatents(false);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
 
   function showPublicationsFunc() {
@@ -354,6 +363,7 @@ export default function Researcher_profile_overview() {
     setShowGrants(false);
     setShowPatents(false);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
 
   function showSimilarResearchersFunc() {
@@ -366,6 +376,7 @@ export default function Researcher_profile_overview() {
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
 
   function showGrantsFunction() {
@@ -378,6 +389,7 @@ export default function Researcher_profile_overview() {
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
   function showPatentsFunction() {
     setShowOverview(false);
@@ -389,7 +401,46 @@ export default function Researcher_profile_overview() {
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
+  function showResearchersWithSimlarKeyword(keyWord) {
+    setShowOverview(false);
+    setShowAreasOfInterest(false);
+    setShowPublications(false);
+    setShowSimilarResearchers(false);
+    setShowGrants(false);
+    setShowPatents(false);
+    setNumberOfPublicationsToShow(2);
+    setincreasePublicationListBy(5);
+    setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(true);
+
+    setKeywordToSearchFor(keyWord);
+    getSimilarResearcherBasedOnKeyword(keyWord);
+  }
+
+  const getSimilarResearcherBasedOnKeyword = async (keyWord) => {
+    const searchResults = await API.graphql({
+      query: searchResearcher,
+      variables: {
+        search_value: keyWord,
+        departmentsToFilterBy: [],
+        facultiesToFilterBy: [],
+      },
+    });
+
+    let results = searchResults.data.searchResearcher;
+    console.log(results);
+    for(let i = 0; i<results.length; i++) {
+      //Remove the researcher the keyword came from
+      if(results[i].scopus_id == scopusId) {
+        console.log("removed researcher you got keyword from");
+        results.splice(i, 1);
+        break;
+      }
+    }
+    setResearchersWithClickedKeyword(results);
+  };
 
   return (
     <Box>
@@ -459,6 +510,7 @@ export default function Researcher_profile_overview() {
                     AreasOfInterestTabOpened={showAreasOfInterest}
                     numberOfSimilarResearchers={similarResearchersArray.length}
                     areasOfInterest={sortedAreasOfInterest}
+                    showResearchersWithSimlarKeyword={showResearchersWithSimlarKeyword}
                     onClickFunctions={{
                       showAreasOfInterestFunc,
                       showSimilarResearchersFunc,
@@ -544,6 +596,7 @@ export default function Researcher_profile_overview() {
               AreasOfInterestTabOpened={showAreasOfInterest}
               numberOfSimilarResearchers={similarResearchersArray.length}
               areasOfInterest={sortedAreasOfInterest}
+              showResearchersWithSimlarKeyword={showResearchersWithSimlarKeyword}
               onClickFunctions={{
                 showAreasOfInterestFunc,
                 showSimilarResearchersFunc,
@@ -586,6 +639,15 @@ export default function Researcher_profile_overview() {
             <Grid item xs={12}>
             <PatentInformation tabOpened={showPatents} researcherPatents={researcherPatents} initialNumberOfRows={2}/>
             </Grid>
+          )}
+          {showResearchersWithSimilarKeyword && (
+            <ResearcherSearchResultsComponent
+              researchSearchResults={researchersWithClickedKeyword}
+              researcherSearchResultPage={researcherSearchResultPage}
+              setResearcherSearchResultPage={setResearcherSearchResultPage}
+              resultTitle={"Other researchers with the Keyword: "+keywordToSearchFor}
+              errorTitle={"No Other Researchers with the keyword: "+keywordToSearchFor}
+            />
           )}
         </Grid>
       )}
