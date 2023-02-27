@@ -53,6 +53,7 @@ export const advancedSearchResearchers = /* GraphQL */ `
       prime_faculty: $prime_faculty
       table: $table
     ) {
+      researcher_id
       campus
       email
       first_name
@@ -175,6 +176,7 @@ export const getPub = /* GraphQL */ `
 export const getResearcher = /* GraphQL */ `
   query GetResearcher($id: ID!) {
     getResearcher(id: $id) {
+      researcher_id
       employee_id
       areas_of_interest
       campus
@@ -338,6 +340,7 @@ export const searchResearcher = /* GraphQL */ `
       departmentsToFilterBy: $departmentsToFilterBy
       facultiesToFilterBy: $facultiesToFilterBy
     ) {
+      researcher_id
       campus
       email
       first_name
@@ -355,8 +358,9 @@ export const searchResearcher = /* GraphQL */ `
   }
 `;
 export const similarResearchers = /* GraphQL */ `
-  query SimilarResearchers($scopus_id: String!) {
-    similarResearchers(scopus_id: $scopus_id) {
+  query SimilarResearchers($researcher_id: String!) {
+    similarResearchers(researcher_id: $researcher_id) {
+      researcher_id
       campus
       email
       first_name
@@ -413,6 +417,7 @@ export const getUpdatePublicationsLogs = /* GraphQL */ `
 export const getFlaggedIds = /* GraphQL */ `
   query GetFlaggedIds {
     getFlaggedIds {
+      researcher_id
       employee_id
       areas_of_interest
       campus

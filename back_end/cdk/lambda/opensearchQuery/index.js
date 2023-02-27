@@ -259,11 +259,13 @@ switch(event.info.fieldName) {
     
   case "similarResearchers":
     
+    console.log(event.arguments.researcher_id)
+    
     
     let scopusIDQuery = {
       query: {
         match_phrase: {
-          "scopus_id": event.arguments.scopus_id
+          "researcher_id": event.arguments.researcher_id
         }
       }
     }
@@ -271,6 +273,8 @@ switch(event.info.fieldName) {
     searchResult = await search(scopusIDQuery, "researcher_data", 10);
     
     let keyWords = searchResult[0]._source.keywords.split(", ");
+    
+    console.log(keyWords)
 
     let keywordHashmap = new Map();
     
@@ -285,7 +289,6 @@ switch(event.info.fieldName) {
     let j = 0;
     
     for (const [key, value] of keywordHashmap) {
-      console.log(key, value);
       if(j == 1000){
         break;
       }
@@ -309,7 +312,7 @@ switch(event.info.fieldName) {
           must_not: [
             {
               match: {
-                scopus_id: event.arguments.scopus_id
+                researcher_id: event.arguments.researcher_id
               }
             }
           ]
@@ -396,90 +399,90 @@ switch(event.info.fieldName) {
     searchResult = await search(query, "grant_data", 25);
     
     break;
-
-    case "searchPatents":
-      stringSplitArray = event.arguments.search_value.split(" ");
-      
-      for(let i = 0; i<stringSplitArray.length; i++){
-        let matchFamilyNumber = {
-          "match": {
-            "patent_family_number": {
-              "query": stringSplitArray[i],
-              "boost": 100
-            }
+  
+  case "searchPatents":
+    stringSplitArray = event.arguments.search_value.split(" ");
+    
+    for(let i = 0; i<stringSplitArray.length; i++){
+      let matchFamilyNumber = {
+        "match": {
+          "patent_family_number": {
+            "query": stringSplitArray[i],
+            "boost": 100
           }
         }
-        let matchPatentNumber = {
-          "match": {
-            "patent_number": {
-              "query": stringSplitArray[i],
-              "boost": 100
-            }
-          }
-        }
-        let matchPatentTitle = {
-          "match": {
-            "patent_title": {
-              "query": stringSplitArray[i],
-              "boost": 10
-            }
-          }
-        }
-        let matchInventors = {
-          "match": {
-            "patent_inventors": {
-              "query": stringSplitArray[i],
-              "boost": 5
-            }
-          }
-        }
-        let matchSponsors = {
-          "match": {
-            "patent_sponsors": {
-              "query": stringSplitArray[i],
-              "boost": 1
-            }
-          }
-        }
-        queryArray.push(matchFamilyNumber);
-        queryArray.push(matchPatentNumber);
-        queryArray.push(matchPatentTitle);
-        queryArray.push(matchInventors);
-        queryArray.push(matchSponsors);
       }
-
-      //Create Patent Filters
-      let classificationsToInclude = event.arguments.patentClassificationFilter;
-      
-      if(classificationsToInclude.length != 0){
-        let theQueryString = '"' + classificationsToInclude[0] + '"';
-        for(let i = 1; i<classificationsToInclude.length; i++){
-          theQueryString += ' | "' +  classificationsToInclude[i] + '"';
-        }
-        let grantsFilter = {
-          simple_query_string: {
-            "query": theQueryString,
-            "fields": ["patent_classification"]
+      let matchPatentNumber = {
+        "match": {
+          "patent_number": {
+            "query": stringSplitArray[i],
+            "boost": 100
           }
         }
-        filters.push(grantsFilter);
       }
-      
-      if(event.arguments.search_value.length == 0){
-        queryArray = [{match_all: {}}]
-      }
-      
-      query = {
-        query: {
-          bool: {
-            should: queryArray,
-            minimum_should_match: 1,
-            filter: filters
+      let matchPatentTitle = {
+        "match": {
+          "patent_title": {
+            "query": stringSplitArray[i],
+            "boost": 10
           }
-        },
-      };
-      searchResult = await search(query, "patent_data", 25);
-      break;
+        }
+      }
+      let matchInventors = {
+        "match": {
+          "patent_inventors": {
+            "query": stringSplitArray[i],
+            "boost": 5
+          }
+        }
+      }
+      let matchSponsors = {
+        "match": {
+          "patent_sponsors": {
+            "query": stringSplitArray[i],
+            "boost": 1
+          }
+        }
+      }
+      queryArray.push(matchFamilyNumber);
+      queryArray.push(matchPatentNumber);
+      queryArray.push(matchPatentTitle);
+      queryArray.push(matchInventors);
+      queryArray.push(matchSponsors);
+    }
+    
+    //Create Patent Filters
+    let classificationsToInclude = event.arguments.patentClassificationFilter;
+    
+    if(classificationsToInclude.length != 0){
+      let theQueryString = '"' + classificationsToInclude[0] + '"';
+      for(let i = 1; i<classificationsToInclude.length; i++){
+        theQueryString += ' | "' +  classificationsToInclude[i] + '"';
+      }
+      let grantsFilter = {
+        simple_query_string: {
+          "query": theQueryString,
+          "fields": ["patent_classification"]
+        }
+      }
+      filters.push(grantsFilter);
+    }
+    
+    if(event.arguments.search_value.length == 0){
+      queryArray = [{match_all: {}}]
+    }
+    
+    query = {
+      query: {
+        bool: {
+          should: queryArray,
+          minimum_should_match: 1,
+          filter: filters
+        }
+      },
+    };
+    searchResult = await search(query, "patent_data", 25);
+    break;
 }
 
 console.log("HERE2")

@@ -216,6 +216,8 @@ export default function SearchComponent(props) {
               <ResearcherSearchResultsComponent
                 researchSearchResults={researchSearchResults}
                 researcherSearchResultPage={researcherSearchResultPage}
+                resultTitle={"Research Search Results"}
+                errorTitle={"No Researcher Search Results"}
                 setResearcherSearchResultPage={setResearcherSearchResultPage}
               />
             </Grid>

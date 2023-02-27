@@ -190,18 +190,18 @@ export class AppsyncStack extends Stack {
         getResearcherPubsByCitations(id: ID!): [Publication]
         getResearcherPubsByTitle(id: ID!): [Publication]
         getResearcherPubsByYear(id: ID!): [Publication]
-        getUpdatePublicationsLogs: [updatePublicationsLogType]
-        lastUpdatedResearchersList: [lastUpdated]
-        searchGrants(grantAgenciesToFilterBy: [String]!, search_value: String!): [grant]
-        searchPatents(patentClassificationFilter: [String]!, search_value: String!): [patent]
-        searchPublications(journalsToFilterBy: [String]!, search_value: String!): [Publication]
-        searchResearcher(departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!, search_value: String!): [ResearcherOpenSearch]
-        similarResearchers(scopus_id: String!): [ResearcherOpenSearch]
+        getResearcherImpactsByDepartment(prime_department: String!): [Impact]
+        getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
+        searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
+        searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]
+        similarResearchers(researcher_id: String!): [ResearcherOpenSearch]
         totalPublicationPerYear: [pubsPerYear]
         wordCloud(gte: Int!, lte: Int!): [wordCloud]
       }
       
       type Researcher {
+        researcher_id: String
+        employee_id: String
         areas_of_interest: String
         campus: String
         email: String
@@ -250,6 +250,7 @@ export class AppsyncStack extends Stack {
       }
       
       type ResearcherOpenSearch {
+        researcher_id: String
         campus: String
         email: String
         first_name: String

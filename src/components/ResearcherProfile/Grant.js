@@ -47,7 +47,7 @@ export default function Grant(props){
                         variant="outlined"
                         sx={{ textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
                         >
-                            {props.amount.toLocaleString()}
+                            {"$"+props.amount.toLocaleString()}
                         </Paper>
                     </Grid>
                     <Grid item xs={1}>

@@ -11,11 +11,20 @@ import Latex from 'react-latex-next'
 
 export default function Patent(props){
 
-    
+    console.log(props.patentNumber.split(', '))
 
-    // const mappedPatentNumbers = props.patentNumber.map(patentNumber) => {
-    //     <a>{patentNumber}</a>
-    // }
+    console.log(props.patentNumber.split(' '))
+
+    const mappedPatentNumbers = props.patentNumber.split(' ').map((patentNumber) => {
+        let hasComma = patentNumber.includes(",");
+        let removedCommaPatentNumber = patentNumber.replace(",", "");
+        return (
+            <Box component="span" sx={{ display: 'inline' }}>
+                <a href={"https://worldwide.espacenet.com/patent/search/family/0"+props.familyNumber+"/publication/"+removedCommaPatentNumber+"?q="+removedCommaPatentNumber} target="_blank" rel="noopener noreferrer">{removedCommaPatentNumber}</a>
+                {hasComma && ", "}
+            </Box>
+        );
+    })
 
     return(
     <Grid
@@ -30,11 +39,11 @@ export default function Patent(props){
                 sx={{ textAlign: "left" }}
             >
                 <Typography variant="h5">
-                <a href={"https://worldwide.espacenet.com/patent/search/family/0"+props.familyNumber+"/publication/"+props.patentNumber+"?q="+props.patentNumber} target="_blank" rel="noopener noreferrer">   <Latex>{props.title}</Latex> <OpenInNewIcon fontSize="small" /></a>
+                    <Latex>{props.title}</Latex>
                 </Typography>
                 <Typography>Inventor Names: {props.inventors}</Typography>
                 <Typography>Sponsors: {props.sponsors}</Typography>
-                <Typography>Patent Number: {props.patentNumber}</Typography>
+                <Typography>Patent Number: {mappedPatentNumbers}</Typography>
                 <Typography>Classifications: {props.patentClassification}</Typography>
             </Paper>
         </Grid>

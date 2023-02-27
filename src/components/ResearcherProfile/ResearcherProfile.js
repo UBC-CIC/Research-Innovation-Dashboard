@@ -16,6 +16,7 @@ import SimilarResearchers from "./SimilarResearchers";
 import LoadingWheel from "../LoadingWheel";
 import PublicationBarGraph from "./PublicationBarGraph";
 import PatentInformation from "./PatentInformation";
+import ResearcherSearchResultsComponent from "../SearchResearchers/ResearcherSearchResultsComponent";
 
 import Amplify from "@aws-amplify/core";
 import { Auth } from "@aws-amplify/auth";
@@ -33,13 +34,14 @@ import {
   similarResearchers,
   getResearcherGrants,
   getResearcherPatents,
+  searchResearcher,
 } from "../../graphql/queries";
 
 Amplify.configure(awsmobile);
 Auth.configure(awsmobile);
 
 export default function Researcher_profile_overview() {
-  const { scopusId } = useParams();
+  const { researcherId } = useParams();
 
   const [first_name, set_first_name] = useState("");
   const [last_name, set_last_name] = useState("");
@@ -64,7 +66,9 @@ export default function Researcher_profile_overview() {
   const [grantData, setGrantData] = useState([]);
   const [showGrants, setShowGrants] = useState(false);
   const [showPatents, setShowPatents] = useState(false);
+  const [showResearchersWithSimilarKeyword, setShowResearchersWithSimilarKeyword] = useState(false);
   const [researcherPatents, setResearcherPatents] = useState([]);
+  const [scopusId, setScopusId] = useState("");
 
   const [numberOfPublicationsToShow, setNumberOfPublicationsToShow] =
     useState(2);
@@ -118,10 +122,14 @@ export default function Researcher_profile_overview() {
 
   const [showFullGraph, setShowFullGraph] = useState(false);
 
+  const [researchersWithClickedKeyword, setResearchersWithClickedKeyword] = useState([]);
+  const [researcherSearchResultPage, setResearcherSearchResultPage] = useState(1);
+  const [keywordToSearchFor, setKeywordToSearchFor] = useState("")
+
   const getPatents = async () => {
     const researcherPatentData = await API.graphql({
       query: getResearcherPatents,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
 
     console.log(researcherPatentData.data.getResearcherPatents);
@@ -132,15 +140,15 @@ export default function Researcher_profile_overview() {
   const getAllPublications = async () => {
     const dataSortedByCitation = await API.graphql({
       query: getResearcherPubsByCitations,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     const dataSortedByYear = await API.graphql({
       query: getResearcherPubsByYear,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     const dataSortedByTitle = await API.graphql({
       query: getResearcherPubsByTitle,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     let publication_data_sorted_by_ciation =
       dataSortedByCitation.data.getResearcherPubsByCitations;
@@ -201,13 +209,6 @@ export default function Researcher_profile_overview() {
 
     setNumberOfPublications(descendingPublicationsCitation.length);
 
-    const result = await API.graphql({
-      query: similarResearchers,
-      variables: {
-        scopus_id: scopusId,
-      },
-    });
-
     setDescendingPublicationListByCitation(descendingPublicationsCitation);
     setAscendingPublicationListByCitation(ascendingPublicationsCitation);
 
@@ -220,7 +221,7 @@ export default function Researcher_profile_overview() {
     const grantResult = await API.graphql({
       query: getResearcherGrants,
       variables: {
-        id: scopusId,
+        id: researcherId,
       },
     });
     setGrantData(grantResult.data.getResearcherGrants);
@@ -230,7 +231,7 @@ export default function Researcher_profile_overview() {
   const getResearcherGeneralInformation = async () => {
     const researcher_data_response = await API.graphql({
       query: getResearcherFull,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     let researcher_data = researcher_data_response.data.getResearcherFull;
     set_first_name(researcher_data.first_name);
@@ -246,13 +247,14 @@ export default function Researcher_profile_overview() {
     set_num_patents_filed(researcher_data.num_patents_filed);
     setLastUpdatedAt(researcher_data.last_updated);
     setRank(researcher_data.rank);
+    setScopusId(researcher_data.scopus_id)
 
     set_num_licensed_patents(0);
 
     const result = await API.graphql({
       query: similarResearchers,
       variables: {
-        scopus_id: scopusId,
+        researcher_id: researcherId,
       },
     });
 
@@ -283,11 +285,11 @@ export default function Researcher_profile_overview() {
   const getResearcherBarGraphData = async () => {
     const bar_graph_data_response = await API.graphql({
       query: getNumberOfResearcherPubsLastFiveYears,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     const bar_graph_data_response_all_years = await API.graphql({
       query: getNumberOfResearcherPubsAllYears,
-      variables: { id: scopusId },
+      variables: { id: researcherId },
     });
     let bar_graph_data =
       bar_graph_data_response.data.getNumberOfResearcherPubsLastFiveYears;
@@ -332,6 +334,7 @@ export default function Researcher_profile_overview() {
     setShowGrants(false);
     setShowPatents(false);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
 
   function showAreasOfInterestFunc() {
@@ -344,6 +347,7 @@ export default function Researcher_profile_overview() {
     setShowGrants(false);
     setShowPatents(false);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
 
   function showPublicationsFunc() {
@@ -354,6 +358,7 @@ export default function Researcher_profile_overview() {
     setShowGrants(false);
     setShowPatents(false);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
 
   function showSimilarResearchersFunc() {
@@ -366,6 +371,7 @@ export default function Researcher_profile_overview() {
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
 
   function showGrantsFunction() {
@@ -378,6 +384,7 @@ export default function Researcher_profile_overview() {
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
   function showPatentsFunction() {
     setShowOverview(false);
@@ -389,7 +396,46 @@ export default function Researcher_profile_overview() {
     setNumberOfPublicationsToShow(2);
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
   }
+  function showResearchersWithSimlarKeyword(keyWord) {
+    setShowOverview(false);
+    setShowAreasOfInterest(false);
+    setShowPublications(false);
+    setShowSimilarResearchers(false);
+    setShowGrants(false);
+    setShowPatents(false);
+    setNumberOfPublicationsToShow(2);
+    setincreasePublicationListBy(5);
+    setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(true);
+
+    setKeywordToSearchFor(keyWord);
+    getSimilarResearcherBasedOnKeyword(keyWord);
+  }
+
+  const getSimilarResearcherBasedOnKeyword = async (keyWord) => {
+    const searchResults = await API.graphql({
+      query: searchResearcher,
+      variables: {
+        search_value: keyWord,
+        departmentsToFilterBy: [],
+        facultiesToFilterBy: [],
+      },
+    });
+
+    let results = searchResults.data.searchResearcher;
+    console.log(results);
+    for(let i = 0; i<results.length; i++) {
+      //Remove the researcher the keyword came from
+      if(results[i].researcher_id == researcherId) {
+        console.log("removed researcher you got keyword from");
+        results.splice(i, 1);
+        break;
+      }
+    }
+    setResearchersWithClickedKeyword(results);
+  };
 
   return (
     <Box>
@@ -459,6 +505,7 @@ export default function Researcher_profile_overview() {
                     AreasOfInterestTabOpened={showAreasOfInterest}
                     numberOfSimilarResearchers={similarResearchersArray.length}
                     areasOfInterest={sortedAreasOfInterest}
+                    showResearchersWithSimlarKeyword={showResearchersWithSimlarKeyword}
                     onClickFunctions={{
                       showAreasOfInterestFunc,
                       showSimilarResearchersFunc,
@@ -505,7 +552,7 @@ export default function Researcher_profile_overview() {
                 <Paper square={true} elevation={0} variant="outlined">
                     <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={2}/>
                     <Box textAlign="center">
-                      <Button
+                      {/* <Button
                         onClick={showGrantsFunction}
                         sx={{
                           m: 1,
@@ -515,7 +562,7 @@ export default function Researcher_profile_overview() {
                         }}
                       >
                         View All Grants
-                      </Button>
+                      </Button> */}
                     </Box>
                 </Paper>
               </Grid>
@@ -523,7 +570,7 @@ export default function Researcher_profile_overview() {
                 <Paper square={true} elevation={0} variant="outlined">
                   <PatentInformation  researcherPatents={researcherPatents} initialNumberOfRows={2}/>
                   <Box textAlign="center">
-                      <Button
+                      {/* <Button
                         onClick={showPatentsFunction}
                         sx={{
                           m: 1,
@@ -533,7 +580,7 @@ export default function Researcher_profile_overview() {
                         }}
                       >
                         View All Patents
-                      </Button>
+                      </Button> */}
                     </Box>
                 </Paper>
               </Grid>
@@ -544,6 +591,7 @@ export default function Researcher_profile_overview() {
               AreasOfInterestTabOpened={showAreasOfInterest}
               numberOfSimilarResearchers={similarResearchersArray.length}
               areasOfInterest={sortedAreasOfInterest}
+              showResearchersWithSimlarKeyword={showResearchersWithSimlarKeyword}
               onClickFunctions={{
                 showAreasOfInterestFunc,
                 showSimilarResearchersFunc,
@@ -586,6 +634,15 @@ export default function Researcher_profile_overview() {
             <Grid item xs={12}>
             <PatentInformation tabOpened={showPatents} researcherPatents={researcherPatents} initialNumberOfRows={2}/>
             </Grid>
+          )}
+          {showResearchersWithSimilarKeyword && (
+            <ResearcherSearchResultsComponent
+              researchSearchResults={researchersWithClickedKeyword}
+              researcherSearchResultPage={researcherSearchResultPage}
+              setResearcherSearchResultPage={setResearcherSearchResultPage}
+              resultTitle={"Other researchers with the Keyword: "+keywordToSearchFor}
+              errorTitle={"No Other Researchers with the keyword: "+keywordToSearchFor}
+            />
           )}
         </Grid>
       )}

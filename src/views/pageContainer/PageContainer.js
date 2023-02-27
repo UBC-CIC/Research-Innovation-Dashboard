@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { updateMenuState } from "../../actions/menuActions";
 import { Grid } from "@mui/material";
 import NavigationBar from "../../components/NavigationBar";
-import ResearcherProfileOverview from "../../components/ResearcherProfile/ResearcherProfile";
+import ResearcherProfile from "../../components/ResearcherProfile/ResearcherProfile";
 import { Routes, Route } from "react-router-dom";
 import SearchComponent from "../../components/SearchResearchers/Search/SearchComponent";
 import AdvancedSearchComponent from "../../components/SearchResearchers/AdvancedSearch/AdvancedSearchComponent";
@@ -64,8 +64,8 @@ function PageContainer(props) {
       <main className={classes.content}>
         <Routes>
           <Route
-            path="/Researchers/:scopusId"
-            element={<ResearcherProfileOverview />}
+            path="/Researchers/:researcherId/"
+            element={<ResearcherProfile />}
           />
           <Route path="/Metrics/" element={<Metrics />} />
           {adminUser && (

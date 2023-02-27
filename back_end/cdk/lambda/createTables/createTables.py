@@ -65,6 +65,7 @@ def lambda_handler(event, context):
     columns.append(createColumn('extra_ids', 'character varying[]', '', False))
     columns.append(createColumn('pub_ids', 'character varying[]', '', False))
     columns.append(createColumn('keywords', 'character varying', '(10000000)', False))
+    columns.append(createColumn('merged_keywords', 'character varying', '(10000000)', False))
     columns.append(createColumn('last_updated', 'character varying', '', True))
     query = createQuery('researcher_data', columns)
     cursor.execute(query)
