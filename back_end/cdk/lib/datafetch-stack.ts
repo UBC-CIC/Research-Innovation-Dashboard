@@ -16,13 +16,14 @@ export class DataFetchStack extends cdk.Stack {
     super(scope, id, props);
 
     // Create the S3 Bucket
-    const s3Bucket = new s3.Bucket(this, 's3-bucket', {
+    const s3Bucket = new s3.Bucket(this, 'expertiseDashboard-data-s3-bucket', {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       versioned: false,
       publicReadAccess: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
+      serverAccessLogsPrefix: "accessLog"
     });
 
     /*
@@ -60,7 +61,8 @@ export class DataFetchStack extends cdk.Stack {
     const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', 'arn:aws:lambda:ca-central-1:336392948345:layer:AWSDataWrangler-Python39:5')
 
     // Create the database tables (runs during deployment)
-    const createTables = new triggers.TriggerFunction(this, 'createTables', {
+    const createTables = new triggers.TriggerFunction(this, 'expertiseDashboard-createTables', {
+      functionName: 'expertiseDashboard-createTables',
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'createTables.lambda_handler',
       layers: [psycopg2],
@@ -136,7 +138,7 @@ export class DataFetchStack extends cdk.Stack {
         // Secrets Manager
         "secretsmanager:GetSecretValue",
       ],
-      resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:vpri/credentials/*`]
+      resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:expertiseDashboard/credentials/*`]
     }));
     dataFetchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
@@ -197,7 +199,8 @@ export class DataFetchStack extends cdk.Stack {
     /*
       Define Lambdas and add correct permissions
     */
-    const scopusClean = new lambda.Function(this, 'scopusClean', {
+    const scopusClean = new lambda.Function(this, 'expertiseDashboard-scopusClean', {
+      functionName: 'expertiseDashboard-scopusClean',
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'scopusClean.lambda_handler',
       code: lambda.Code.fromAsset('lambda/scopusClean'),
@@ -214,7 +217,8 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
-    const institutionClean = new lambda.Function(this, 'institutionClean', {
+    const institutionClean = new lambda.Function(this, 'expertiseDashboard-institutionClean', {
+      functionName: 'expertiseDashboard-institutionClean',
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'institutionClean.lambda_handler',
       code: lambda.Code.fromAsset('lambda/institutionClean'),
@@ -231,8 +235,9 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
-    const compareNames = new lambda.Function(this, 'compareNames', {
+    const compareNames = new lambda.Function(this, 'expertiseDashboard-compareNames', {
       runtime: lambda.Runtime.PYTHON_3_9,
+      functionName: 'expertiseDashboard-compareNames',
       handler: 'compareNames.lambda_handler',
       layers: [pyjarowinkler, numpy],
       code: lambda.Code.fromAsset('lambda/compareNames'),
@@ -249,8 +254,9 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
-    const cleanNoMatches = new lambda.Function(this, 'cleanNoMatches', {
+    const cleanNoMatches = new lambda.Function(this, 'expertiseDashboard-cleanNoMatches', {
       runtime: lambda.Runtime.PYTHON_3_9,
+      functionName: 'expertiseDashboard-cleanNoMatches',
       handler: 'cleanNoMatches.lambda_handler',
       layers: [pyjarowinkler, requests],
       code: lambda.Code.fromAsset('lambda/cleanNoMatches'),
@@ -267,8 +273,9 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
-    const identifyDuplicates = new lambda.Function(this, 'identifyDuplicates', {
+    const identifyDuplicates = new lambda.Function(this, 'expertiseDashboard-identifyDuplicates', {
       runtime: lambda.Runtime.PYTHON_3_9,
+      functionName: 'expertiseDashboard-identifyDuplicates',
       handler: 'identifyDuplicates.lambda_handler',
       layers: [pyjarowinkler, requests],
       code: lambda.Code.fromAsset('lambda/identifyDuplicates'),
@@ -287,8 +294,9 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
-    const researcherFetch = new lambda.Function(this, 'researcherFetch', {
+    const researcherFetch = new lambda.Function(this, 'expertiseDashboard-researcherFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
+      functionName: 'expertiseDashboard-researcherFetch',
       handler: 'researcherFetch.lambda_handler',
       layers: [psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/researcherFetch'),
@@ -305,8 +313,9 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
-    const elsevierFetch = new lambda.Function(this, 'elsevierFetch', {
+    const elsevierFetch = new lambda.Function(this, 'expertiseDashboard-elsevierFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
+      functionName: 'expertiseDashboard-elsevierFetch',
       handler: 'elsevierFetch.lambda_handler',
       layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/elsevierFetch'),
@@ -326,8 +335,9 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
-    const orcidFetch = new lambda.Function(this, 'orcidFetch', {
+    const orcidFetch = new lambda.Function(this, 'expertiseDashboard-orcidFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
+      functionName: 'expertiseDashboard-orcidFetch',
       handler: 'orcidFetch.lambda_handler',
       layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/orcidFetch'),
@@ -344,8 +354,9 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
-    const publicationFetch = new lambda.Function(this, 'publicationFetch', {
+    const publicationFetch = new lambda.Function(this, 'expertiseDashboard-publicationFetch', {
       runtime: lambda.Runtime.PYTHON_3_9,
+      functionName: 'expertiseDashboard-publicationFetch',
       handler: 'publicationFetch.lambda_handler',
       layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/publicationFetch'),
@@ -363,8 +374,9 @@ export class DataFetchStack extends cdk.Stack {
       },
     });
 
-    const startReplication = new lambda.Function(this, 'startReplication', {
+    const startReplication = new lambda.Function(this, 'expertiseDashboard-startReplication', {
       runtime: lambda.Runtime.PYTHON_3_9,
+      functionName: 'expertiseDashboard-startReplication',
       handler: 'startReplication.lambda_handler',
       layers: [requests, psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/startReplication'),
@@ -465,7 +477,7 @@ export class DataFetchStack extends cdk.Stack {
       .next(publicationMap)
       .next(replicationStartInvoke);
     
-    const dataFetch = new sfn.StateMachine(this, 'Data Fetch State Machine', {
+    const dataFetch = new sfn.StateMachine(this, 'expertiseDashboard-DataFetchStateMachine', {
       definition: dataFetchDefinition,
     });
 

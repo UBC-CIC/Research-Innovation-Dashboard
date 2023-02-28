@@ -293,11 +293,11 @@ def main(argv):
             "--FILE_PATH": FILE_PATH
         }
         glue_client.start_job_run(
-            JobName="cleanEpoPatents",
+            JobName="expertiseDashboard-cleanEpoPatents",
             Arguments=arguments
         )
         glue_client.start_job_run(
-            JobName="fetchEquivalentEpoPatents",
+            JobName="expertiseDashboard-fetchEquivalentEpoPatents",
             Arguments=arguments
         )
 

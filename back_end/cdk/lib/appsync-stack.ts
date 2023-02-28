@@ -48,12 +48,22 @@ export class AppsyncStack extends Stack {
       resources: ['*']
     }));
     lambdaRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        //Logs
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+      ],
+      resources: ["arn:aws:logs:*:*:*"]
+    }));
+    lambdaRole.addToPolicy(new PolicyStatement({
         effect: Effect.ALLOW,
         actions: [
           //Secrets Manager
           "secretsmanager:GetSecretValue",
         ],
-        resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:vpri/credentials/*`]
+        resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:expertiseDashboard/credentials/*`]
     }));
 
     //Create Lamabda Service role for the Appsync datasources
@@ -69,7 +79,7 @@ export class AppsyncStack extends Stack {
                           //Lambda Invoke
                           "lambda:invokeFunction",
                         ],
-                        resources: ['*']
+                        resources: ['arn:aws:lambda:::function:*']
                     })
                 ]
             }),
@@ -87,8 +97,8 @@ export class AppsyncStack extends Stack {
     const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, vpcStack.vpc.vpcDefaultSecurityGroup);
 
     // Create the postgresql db query function.
-    const queryDbFunction = new lambda.Function(this, 'postgresQuery', {
-      functionName: "postgresQuery",
+    const queryDbFunction = new lambda.Function(this, 'expertiseDashboard-postgresQuery', {
+      functionName: "'expertiseDashboard-postgresQuery'",
       runtime: lambda.Runtime.NODEJS_16_X,
       handler: 'index.handler',
       timeout: cdk.Duration.seconds(300),
@@ -423,13 +433,13 @@ export class AppsyncStack extends Stack {
 
     // Waf Firewall
     const waf = new wafv2.CfnWebACL(this, 'waf', {
-      description: 'waf for VPRI',
+      description: 'waf for Expertise Dashboard',
       scope: 'REGIONAL',
       defaultAction: { allow: {} },
       visibilityConfig: { 
         sampledRequestsEnabled: true, 
         cloudWatchMetricsEnabled: true,
-        metricName: 'vpri-firewall'
+        metricName: 'expertiseDashboard-firewall'
       },
       rules: [
         {

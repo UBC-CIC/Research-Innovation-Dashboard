@@ -69,40 +69,40 @@ export class GrantDataStack extends Stack {
         "dms:StartReplicationTask",
         "dms:DescribeReplicationTasks"
       ],
-      resources: ["*"]
+      resources: [this.dmsTaskArn]
     }));
 
     // Create S3 bucket for Glue Job scripts/data
-    this.glueS3Bucket = new s3.Bucket(this, "glue-s3-bucket", {
+    this.glueS3Bucket = new s3.Bucket(this, "expertiseDashboard-glue-s3-bucket", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       versioned: false,
       publicReadAccess: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
+      serverAccessLogsPrefix: "accessLog"
     });
 
     // create S3 bucket for the grant data
-    const grantDataS3Bucket = new s3.Bucket(this, "grant-data-s3-bucket", {
+    const grantDataS3Bucket = new s3.Bucket(this, "expertiseDashboard-grant-data-s3-bucket", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       versioned: false,
       publicReadAccess: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
+      serverAccessLogsPrefix: "accessLog"
     });
 
     // create folder structure for the user to upload grant CSV files
-    const createFolders = new triggers.TriggerFunction(this, "createFolders", {
+    const createFolders = new triggers.TriggerFunction(this, "expertiseDashboard-createFolders", {
       runtime: lambda.Runtime.PYTHON_3_9,
+      functionName: "expertiseDashboard-createFolders",
       handler: "createGrantFolders.lambda_handler",
       code: lambda.Code.fromAsset("lambda/create-grant-folders"),
       timeout: cdk.Duration.minutes(1),
       memorySize: 512,
       vpc: vpcStack.vpc,
-      vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
-      },
       environment: {
         BUCKET_NAME: grantDataS3Bucket.bucketName,
       },
@@ -114,19 +114,31 @@ export class GrantDataStack extends Stack {
         resources: [`arn:aws:s3:::${grantDataS3Bucket.bucketName}/*`],
       })
     );
+
+    createFolders.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: [
+          // CloudWatch Logs
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ],
+        resources: ["arn:aws:logs:*:*:*"],
+      })
+    );
+
     createFolders.executeAfter(grantDataS3Bucket);
 
     // Lambda function to trigger Glue jobs
-    const glueTrigger = new lambda.Function(this, "s3-glue-trigger", {
+    const glueTrigger = new lambda.Function(this, "expertiseDashboard-s3-glue-trigger", {
       runtime: lambda.Runtime.PYTHON_3_9,
+      functionName: "expertiseDashboard-s3-glue-trigger",
       handler: "s3GlueTrigger.lambda_handler",
       code: lambda.Code.fromAsset("lambda/s3-glue-trigger"),
       timeout: cdk.Duration.minutes(1),
       memorySize: 512,
       vpc: vpcStack.vpc,
-      vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
-      },
       logRetention: logs.RetentionDays.SIX_MONTHS,
     });
 
@@ -141,7 +153,9 @@ export class GrantDataStack extends Stack {
           "glue:StartJobRun",
           "glue:UpdateJob"
         ],
-        resources: ["*"],
+        resources: [
+          "arn:aws:glue:::job/*"
+        ],
       })
     );
 
@@ -155,7 +169,10 @@ export class GrantDataStack extends Stack {
           "s3:ListMultipartUploadParts",
           "s3:ListObjectVersions",
         ],
-        resources: ["*"],
+        resources: [
+          `arn:aws:s3:::${grantDataS3Bucket.bucketName}`,
+          `arn:aws:s3:::${grantDataS3Bucket.bucketName}/*`
+        ],
       })
     );
 
@@ -178,7 +195,7 @@ export class GrantDataStack extends Stack {
         "dms:StartReplicationTask",
         "dms:DescribeReplicationTasks"
       ],
-      resources: ["*"]
+      resources: [this.dmsTaskArn]
     }));  
 
     // grant permission for s3 to invoke lambda
@@ -323,7 +340,7 @@ export class GrantDataStack extends Stack {
     });
 
     // Create a Connection to the PostgreSQL database inside the VPC
-    this.glueConnectionName = "vpri-postgres-conn";
+    this.glueConnectionName = "postgres-conn";
     const databaseSecret = sm.Secret.fromSecretNameV2(
       this,
       "databaseSecret",
@@ -347,7 +364,7 @@ export class GrantDataStack extends Stack {
         catalogId: this.account, // this AWS account ID
         connectionInput: {
           name: this.glueConnectionName,
-          description: "a connection to the vpri PostgreSQL database for Glue",
+          description: "a connection to the PostgreSQL database for Glue",
           connectionType: "JDBC",
           connectionProperties: connectionProperties,
           physicalConnectionRequirements: {
@@ -360,7 +377,7 @@ export class GrantDataStack extends Stack {
     );
 
     // Create a Connection to the PostgreSQL database inside the VPC
-    this.glueDmsConnectionName = "vpri-postgres-dms-conn";
+    this.glueDmsConnectionName = "postgres-dms-conn";
    
     const dmsConnectionProps: { [key: string]: any } = {
       KAFKA_SSL_ENABLED: "false",
@@ -373,7 +390,7 @@ export class GrantDataStack extends Stack {
         catalogId: this.account, // this AWS account ID
         connectionInput: {
           name: this.glueDmsConnectionName,
-          description: "a connection to the vpri DMS replication instance for Glue",
+          description: "a connection to the DMS replication instance for Glue",
           connectionType: "NETWORK",
           connectionProperties: dmsConnectionProps,
           physicalConnectionRequirements: {
@@ -413,7 +430,7 @@ export class GrantDataStack extends Stack {
     };
 
     // Glue Job: clean cihr data
-    const cleanCihrJobName = "clean-cihr-pythonshell";
+    const cleanCihrJobName = "expertiseDashboard-clean-cihr";
     const cleanCihrJob = new glue.CfnJob(this, cleanCihrJobName, {
       name: cleanCihrJobName,
       role: glueRole.roleArn,
@@ -424,7 +441,7 @@ export class GrantDataStack extends Stack {
           "s3://" +
           this.glueS3Bucket.bucketName +
           "/scripts/grants-etl/" +
-          cleanCihrJobName +
+          "cleanCihr" +
           ".py",
       },
       executionProperty: {
@@ -438,7 +455,7 @@ export class GrantDataStack extends Stack {
     });
 
     // Glue Job: clean nserc data
-    const cleanNsercJobName = "clean-nserc-pythonshell";
+    const cleanNsercJobName = "expertiseDashboard-clean-nserc";
     const cleanNsercJob = new glue.CfnJob(this, cleanNsercJobName, {
       name: cleanNsercJobName,
       role: glueRole.roleArn,
@@ -449,7 +466,7 @@ export class GrantDataStack extends Stack {
           "s3://" +
           this.glueS3Bucket.bucketName +
           "/scripts/grants-etl/" +
-          cleanNsercJobName +
+          "cleanNserc" +
           ".py",
       },
       executionProperty: {
@@ -463,7 +480,7 @@ export class GrantDataStack extends Stack {
     });
 
     // Glue Job: clean sshrc data
-    const cleanSshrcJobName = "clean-sshrc-pythonshell";
+    const cleanSshrcJobName = "expertiseDashboard-clean-sshrc";
     const cleanSshrcJob = new glue.CfnJob(this, cleanSshrcJobName, {
       name: cleanSshrcJobName,
       role: glueRole.roleArn,
@@ -474,7 +491,7 @@ export class GrantDataStack extends Stack {
           "s3://" +
           this.glueS3Bucket.bucketName +
           "/scripts/grants-etl/" +
-          cleanSshrcJobName +
+          "cleanSshrc" +
           ".py",
       },
       executionProperty: {
@@ -488,7 +505,7 @@ export class GrantDataStack extends Stack {
     });
 
     // Glue Job: clean cfi data
-    const cleanCfiJobName = "clean-cfi-pythonshell";
+    const cleanCfiJobName = "expertiseDashboard-clean-cfi";
     const cleanCfiJob = new glue.CfnJob(this, cleanCfiJobName, {
       name: cleanCfiJobName,
       role: glueRole.roleArn,
@@ -499,7 +516,7 @@ export class GrantDataStack extends Stack {
           "s3://" +
           this.glueS3Bucket.bucketName +
           "/scripts/grants-etl/" +
-          cleanCfiJobName +
+          "cleanCfi" +
           ".py",
       },
       executionProperty: {
@@ -513,7 +530,7 @@ export class GrantDataStack extends Stack {
     });
 
     // Glue Job: name-match and assign ids
-    const assignIdsJobName = "assign-ids-pythonshell";
+    const assignIdsJobName = "expertiseDashboard-assignIds";
     const assignIdsJob = new glue.CfnJob(this, assignIdsJobName, {
       name: assignIdsJobName,
       role: glueRole.roleArn,
@@ -524,7 +541,7 @@ export class GrantDataStack extends Stack {
           "s3://" +
           this.glueS3Bucket.bucketName +
           "/scripts/grants-etl/" +
-          assignIdsJobName +
+          "assignIds" +
           ".py",
       },
       executionProperty: {
@@ -541,7 +558,7 @@ export class GrantDataStack extends Stack {
     });
 
     // Glue Job: store data into table in database
-    const storeDataJobName = "store-data-pythonshell";
+    const storeDataJobName = "expertiseDashboard-storeData";
     const storeDataJob = new glue.CfnJob(this, storeDataJobName, {
       name: storeDataJobName,
       role: glueRole.roleArn,
@@ -552,7 +569,7 @@ export class GrantDataStack extends Stack {
           "s3://" +
           this.glueS3Bucket.bucketName +
           "/scripts/grants-etl/" +
-          storeDataJobName +
+          "storeData" +
           ".py",
       },
       executionProperty: {
@@ -569,7 +586,7 @@ export class GrantDataStack extends Stack {
     });
 
     // Glue Job: start dms replication task
-    const startDmsReplicationTaskJobName = "start-dms-replication-task-pythonshell";
+    const startDmsReplicationTaskJobName = "expertiseDashboard-startDmsReplicationTask-grant";
     const startDmsReplicationTaskJob = new glue.CfnJob(this, startDmsReplicationTaskJobName, {
       name: startDmsReplicationTaskJobName,
       role: glueRole.roleArn,
@@ -580,7 +597,7 @@ export class GrantDataStack extends Stack {
           "s3://" +
           this.glueS3Bucket.bucketName +
           "/scripts/grants-etl/" +
-          startDmsReplicationTaskJobName +
+          "startDmsReplicationTask-grant"+
           ".py",
       },
       executionProperty: {

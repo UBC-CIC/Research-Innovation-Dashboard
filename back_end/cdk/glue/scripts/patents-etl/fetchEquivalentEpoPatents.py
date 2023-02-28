@@ -239,7 +239,7 @@ def main(argv):
             "--EQUIVALENT": "true"
         }
         glue_client.start_job_run(
-            JobName="cleanEpoPatents",
+            JobName="expertiseDashboard-cleanEpoPatents",
             Arguments=arguments
         )
 

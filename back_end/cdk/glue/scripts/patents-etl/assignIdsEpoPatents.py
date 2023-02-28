@@ -232,6 +232,7 @@ def assign_ids_epo_patent():
         axis=1,
         result_type="expand"
     )
+    df["matched_inventors_names"] = df["inventor_fullname"]
     # put full names in the inventors column
     df["inventors"] = df.apply(lambda x: full_name(
         x["first_name"], x["last_name"], x["inventor_fullname"]), axis=1)
@@ -242,7 +243,9 @@ def assign_ids_epo_patent():
         {
             "inventors": lambda x: ', '.join(x),
             # get rid of empty strings
-            "inventors_assigned_ids": lambda x: list(filter(None, list(x)))
+            "inventors_assigned_ids": lambda x: list(filter(None, list(x))),
+            # column contain only the matched names
+            "matched_inventors_names": lambda x: list(filter(None, list(x)))
         }
     )
 
@@ -272,7 +275,7 @@ def main(argv):
         "--EQUIVALENT": EQUIVALENT
     }
     glue_client.start_job_run(
-        JobName="storeEpoPatents",
+        JobName="expertiseDashboard-storeEpoPatents",
         Arguments=arguments
     )
 

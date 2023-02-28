@@ -23,6 +23,7 @@ export class PatentDataStack extends Stack {
     scope: Construct,
     id: string,
     grantDataStack: GrantDataStack,
+    vpcStack: VpcStack,
     props?: StackProps
   ) {
     super(scope, id, props);
@@ -58,17 +59,18 @@ export class PatentDataStack extends Stack {
         "dms:StartReplicationTask",
         "dms:DescribeReplicationTasks"
       ],
-      resources: ["*"]
+      resources: [grantDataStack.dmsTaskArn]
     }));
 
     // create S3 bucket for the patent data
-    const patentDataS3Bucket = new s3.Bucket(this, "patent-data-s3-bucket", {
+    const patentDataS3Bucket = new s3.Bucket(this, "expertiseDashboard-patent-data-s3-bucket", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       versioned: false,
       publicReadAccess: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
+      serverAccessLogsPrefix: "accessLog"
     });
 
     // reuse Glue bucket from grant to store glue Script
@@ -90,7 +92,7 @@ export class PatentDataStack extends Stack {
     );
 
     // define a Glue Python Shell Job
-    this.ops_apikey  = "vpri/credentials/opsApi"
+    this.ops_apikey  = "expertiseDashboard/credentials/opsApi"
     const PYTHON_VER = "3.9";
     const GLUE_VER = "3.0";
     const MAX_RETRIES = 0; // no retries, only execute once
@@ -111,7 +113,7 @@ export class PatentDataStack extends Stack {
     };
 
     // Glue Job: fetch EPO patent data from OPS API
-    const fetchEpoPatentsJobName = "fetchEpoPatents";
+    const fetchEpoPatentsJobName = "expertiseDashboard-fetchEpoPatents";
     const fetchEpoPatentsJob = new glue.CfnJob(this, fetchEpoPatentsJobName, {
       name: fetchEpoPatentsJobName,
       role: glueRole.roleArn,
@@ -122,7 +124,7 @@ export class PatentDataStack extends Stack {
           "s3://" +
           glueS3Bucket.bucketName +
           "/scripts/patents-etl/" +
-          fetchEpoPatentsJobName +
+          "fetchEpoPatents" +
           ".py",
       },
       executionProperty: {
@@ -135,8 +137,8 @@ export class PatentDataStack extends Stack {
       defaultArguments: defaultArguments,
     });
 
-    // Glue Job: fetch EPO patent data from OPS API
-    const fetchEquivalentEpoPatentsJobName = "fetchEquivalentEpoPatents";
+    // Glue Job: fetch equivalent EPO patent data from OPS API
+    const fetchEquivalentEpoPatentsJobName = "expertiseDashboard-fetchEquivalentEpoPatents";
     const fetchEquivalentEpoPatentsJob = new glue.CfnJob(this, fetchEquivalentEpoPatentsJobName, {
       name: fetchEquivalentEpoPatentsJobName,
       role: glueRole.roleArn,
@@ -147,7 +149,7 @@ export class PatentDataStack extends Stack {
           "s3://" +
           glueS3Bucket.bucketName +
           "/scripts/patents-etl/" +
-          fetchEquivalentEpoPatentsJobName +
+          "fetchEquivalentEpoPatents" +
           ".py",
       },
       executionProperty: {
@@ -161,7 +163,7 @@ export class PatentDataStack extends Stack {
     });
 
     // Glue Job: clean EPO patent data
-    const cleanEpoPatentsJobName = "cleanEpoPatents";
+    const cleanEpoPatentsJobName = "expertiseDashboard-cleanEpoPatents";
     const cleanEpoPatentsJob = new glue.CfnJob(this, cleanEpoPatentsJobName, {
       name: cleanEpoPatentsJobName,
       role: glueRole.roleArn,
@@ -172,7 +174,7 @@ export class PatentDataStack extends Stack {
           "s3://" +
           glueS3Bucket.bucketName +
           "/scripts/patents-etl/" +
-          cleanEpoPatentsJobName +
+          "cleanEpoPatents" +
           ".py",
       },
       executionProperty: {
@@ -186,7 +188,7 @@ export class PatentDataStack extends Stack {
     });
 
     // Glue Job: assign Ids to EPO patent data
-    const assignIdsEpoPatentsJobName = "assignIdsEpoPatents";
+    const assignIdsEpoPatentsJobName = "expertiseDashboard-assignIdsEpoPatents";
     const assignIdsEpoPatentsJob = new glue.CfnJob(this, assignIdsEpoPatentsJobName, {
       name: assignIdsEpoPatentsJobName,
       role: glueRole.roleArn,
@@ -197,7 +199,7 @@ export class PatentDataStack extends Stack {
           "s3://" +
           glueS3Bucket.bucketName +
           "/scripts/patents-etl/" +
-          assignIdsEpoPatentsJobName +
+          "assignIdsEpoPatents" +
           ".py",
       },
       executionProperty: {
@@ -214,7 +216,7 @@ export class PatentDataStack extends Stack {
     });
 
     // Glue Job: store EPO patent data
-    const storeEpoPatentsJobName = "storeEpoPatents";
+    const storeEpoPatentsJobName = "expertiseDashboard-storeEpoPatents";
     const storeEpoPatentsJob = new glue.CfnJob(this, storeEpoPatentsJobName, {
       name: storeEpoPatentsJobName,
       role: glueRole.roleArn,
@@ -225,7 +227,7 @@ export class PatentDataStack extends Stack {
           "s3://" +
           glueS3Bucket.bucketName +
           "/scripts/patents-etl/" +
-          storeEpoPatentsJobName +
+          "storeEpoPatents" +
           ".py",
       },
       executionProperty: {
@@ -242,7 +244,7 @@ export class PatentDataStack extends Stack {
     });
 
     // Glue Job: clean cfi data
-    const startDmsReplicationTaskJobName = "startDmsReplicationTask";
+    const startDmsReplicationTaskJobName = "expertiseDashboard-startDmsReplicationTask-patent";
     const startDmsReplicationTaskJob = new glue.CfnJob(this, startDmsReplicationTaskJobName, {
       name: startDmsReplicationTaskJobName,
       role: glueRole.roleArn,
@@ -253,7 +255,7 @@ export class PatentDataStack extends Stack {
           "s3://" +
           glueS3Bucket.bucketName +
           "/scripts/patents-etl/" +
-          startDmsReplicationTaskJobName +
+          "startDmsReplicationTask-patent" +
           ".py",
       },
       executionProperty: {

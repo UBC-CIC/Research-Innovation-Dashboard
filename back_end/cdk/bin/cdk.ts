@@ -35,7 +35,7 @@ const grantDataStack = new GrantDataStack(app, 'GrantDataStack', vpcStack, datab
 grantDataStack.addDependency(vpcStack)
 grantDataStack.addDependency(databaseStack)
 grantDataStack.addDependency(dmsStack)
-const patentDataStack = new PatentDataStack(app, 'PatentDataStack', grantDataStack, 
+const patentDataStack = new PatentDataStack(app, 'PatentDataStack', grantDataStack, vpcStack,
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 patentDataStack.addDependency(grantDataStack)
 

@@ -35,6 +35,8 @@ def storePatentData():
     df_id = pd.read_csv(fetchFromS3(TEMP_BUCKET_NAME, FILE_PATH))
     df_id["inventors_assigned_ids"] = df_id["inventors_assigned_ids"].apply(
         lambda x: ast.literal_eval(x))
+    df_id["matched_inventors_names"] = df_id["matched_inventors_names"].apply(
+        lambda x: ast.literal_eval(x))
 
     # retain row with inventor ids
     df_id["id_count"] = df_id.apply(
@@ -42,7 +44,7 @@ def storePatentData():
     df_id = df_id[df_id.id_count > 0]
     # rearrange columns order
     columns_order = ['publication_number', 'country_code', 'kind_code', 'title', 'inventors',
-                     'applicants', 'family_number', 'cpc', 'publication_date', 'inventors_assigned_ids']
+                     'applicants', 'family_number', 'cpc', 'publication_date', 'inventors_assigned_ids', 'matched_inventors_names']
     df_id = df_id[columns_order]
     # cast family_number as str
     df_id["family_number"] = df_id["family_number"].astype(str)
@@ -85,7 +87,7 @@ def storePatentData():
 
     # check for duplicate insertion
     schema = """patent_number, patent_country_code, patent_kind_code, patent_title, patent_inventors, patent_sponsors, 
-                patent_family_number, patent_classification, patent_publication_date, inventors_assigned_ids"""
+                patent_family_number, patent_classification, patent_publication_date, inventors_assigned_ids, matched_inventors_names"""
 
     query = f"SELECT {schema} FROM public.patent_data"
     cursor.execute(query)
@@ -140,7 +142,7 @@ def main(argv):
 
     # start downstream job
     glue_client.start_job_run(
-        JobName="startDmsReplicationTask",
+        JobName="expertiseDashboard-startDmsReplicationTask-patent",
     )
 
 

@@ -18,7 +18,7 @@ def getCredentials():
     credentials = {}
 
     response = sm_client.get_secret_value(
-        SecretId='vpri/credentials/dbCredentials')
+        SecretId='expertiseDashboard/credentials/dbCredentials')
     secrets = json.loads(response['SecretString'])
     credentials['username'] = secrets['username']
     credentials['password'] = secrets['password']

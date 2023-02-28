@@ -7,7 +7,7 @@ sm_client = boto3.client('secretsmanager')
 def getCredentials():
     credentials = {}
 
-    response = sm_client.get_secret_value(SecretId='vpri/credentials/dbCredentials')
+    response = sm_client.get_secret_value(SecretId='expertiseDashboard/credentials/dbCredentials')
     secrets = json.loads(response['SecretString'])
     credentials['username'] = secrets['username']
     credentials['password'] = secrets['password']
@@ -148,7 +148,8 @@ def lambda_handler(event, context):
     columns.append(createColumn('patent_family_number', 'varchar', '', False))
     columns.append(createColumn('patent_classification', 'varchar', '', False))
     columns.append(createColumn('patent_publication_date', 'varchar', '', False))
-    columns.append(createColumn('inventors_assigned_ids', 'varchar[]', '', True))
+    columns.append(createColumn('inventors_assigned_ids', 'varchar[]', '', False))
+    columns.append(createColumn('matched_inventors_names', 'varchar[]', '', True))
     query = createQuery('patent_data', columns)
     cursor.execute(query)
 

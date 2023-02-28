@@ -101,7 +101,7 @@ def main(argv):
     
     glue_client = boto3.client("glue")
     response = glue_client.start_job_run(
-        JobName="start-dms-replication-task-pythonshell"
+        JobName="expertiseDashboard-startDmsReplicationTask-grant"
     )
 
 

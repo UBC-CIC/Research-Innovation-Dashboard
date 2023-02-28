@@ -4,6 +4,8 @@ import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { aws_rds as rds } from 'aws-cdk-lib';
 import { VpcStack } from './vpc-stack';
+import * as logs from 'aws-cdk-lib/aws-logs'
+import * as sm from 'aws-cdk-lib/aws-secretsmanager'
 
 export class DatabaseStack extends Stack {
     public readonly dbInstance: rds.DatabaseInstance;
@@ -12,7 +14,7 @@ export class DatabaseStack extends Stack {
     constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
       super(scope, id, props);
 
-    this.secretPath = 'vpri/credentials/dbCredentials';
+    this.secretPath = 'expertiseDashboard/credentials/dbCredentials';
 
     const parameterGroup = new rds.ParameterGroup(this, "rdsParameterGroup", {
       engine: rds.DatabaseInstanceEngine.postgres({
@@ -23,6 +25,9 @@ export class DatabaseStack extends Stack {
         "rds.logical_replication": "1",
       }
     })
+
+    // Database secret with customized username retrieve at deployment time
+    const dbUsername = sm.Secret.fromSecretNameV2(this, 'db-username', 'db-username')
 
     // Define the postgres database
     this.dbInstance = new rds.DatabaseInstance(this, 'db-instance', {
@@ -37,7 +42,7 @@ export class DatabaseStack extends Stack {
         ec2.InstanceClass.BURSTABLE3,
         ec2.InstanceSize.MICRO,
       ),
-      credentials: rds.Credentials.fromGeneratedSecret('postgres', {
+      credentials: rds.Credentials.fromGeneratedSecret(dbUsername.secretValue.unsafeUnwrap() , {
         secretName: this.secretPath
       }),
       multiAz: true,
@@ -47,11 +52,12 @@ export class DatabaseStack extends Stack {
       autoMinorVersionUpgrade: true,
       backupRetention: cdk.Duration.days(7),
       deleteAutomatedBackups: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
       deletionProtection: true,
-      databaseName: 'vpriDatabase',
+      databaseName: 'expertiseDashboard',
       publiclyAccessible: false,
       parameterGroup: parameterGroup,
+      cloudwatchLogsRetention: logs.RetentionDays.INFINITE,
+      storageEncrypted: true // storage encryption at rest
     });
 
     this.dbInstance.connections.securityGroups.forEach(function (securityGroup) {
