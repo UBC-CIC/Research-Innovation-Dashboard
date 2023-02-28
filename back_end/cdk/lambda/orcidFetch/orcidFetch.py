@@ -48,10 +48,14 @@ def storeAuthors(authors, credentials):
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     for author in authors:
-        queryline1 = "INSERT INTO public.orcid_data(id, num_patents_filed, last_updated) VALUES ('" + str(author['orcid_id']) + "', " + str(author['num_patents']) + ", '" + time_string + "')"
+        # queryline1 = "INSERT INTO public.orcid_data(id, num_patents_filed, last_updated) VALUES ('" + str(author['orcid_id']) + "', " + str(author['num_patents']) + ", '" + time_string + "')"
+        # queryline2 = "ON CONFLICT (id) DO UPDATE "
+        # queryline3 = "SET num_patents_filed='" + str(author['num_patents']) + "', last_updated='" + time_string + "'"
+        queryline1 = "INSERT INTO public.orcid_data(id, num_patents_filed, last_updated) VALUES (%s, %s, %s)"
         queryline2 = "ON CONFLICT (id) DO UPDATE "
-        queryline3 = "SET num_patents_filed='" + str(author['num_patents']) + "', last_updated='" + time_string + "'"
-        cursor.execute(queryline1 + queryline2 + queryline3)
+        queryline3 = "SET num_patents_filed=%s, last_updated=%s"
+        data = (str(author['orcid_id']), str(author['num_patents']), time_string, str(author['num_patents']), time_string)
+        cursor.execute(queryline1 + queryline2 + queryline3, data)
     cursor.close()
     connection.commit()
 
@@ -82,11 +86,16 @@ def storeLastUpdated(updatedTable, credentials):
     time_string = str(time.time())
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
+    # queryline1 = "INSERT INTO public.data_update_logs(table_name, last_updated) "
+    # queryline2 = "VALUES ('" + updatedTable + "', '" + time_string + "')"
+    # queryline3 = "ON CONFLICT (table_name) DO UPDATE "
+    # queryline4 = "SET last_updated='" + time_string + "'"
     queryline1 = "INSERT INTO public.data_update_logs(table_name, last_updated) "
-    queryline2 = "VALUES ('" + updatedTable + "', '" + time_string + "')"
+    queryline2 = "VALUES (%s, %s)"
     queryline3 = "ON CONFLICT (table_name) DO UPDATE "
-    queryline4 = "SET last_updated='" + time_string + "'"
-    cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
+    queryline4 = "SET last_updated=%s"
+    data = (updatedTable, time_string, time_string)
+    cursor.execute(queryline1 + queryline2 + queryline3 + queryline4, data)
     cursor.close()
     connection.commit()
     return

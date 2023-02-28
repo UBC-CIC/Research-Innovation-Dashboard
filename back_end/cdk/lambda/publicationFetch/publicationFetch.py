@@ -178,8 +178,9 @@ def store_keywords(author_id, publications, credentials):
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     
-    query = "UPDATE public.researcher_data SET keywords='" + keywords_string + "', pub_ids='" + pub_ids + "' WHERE scopus_id='" + author_id + "'"
-    cursor.execute(query)
+    query = "UPDATE public.researcher_data SET keywords=%s, pub_ids=%s WHERE scopus_id=%s"
+    data = (keywords_string, pub_ids, author_id)
+    cursor.execute(query, data)
     
     cursor.close()
     connection.commit()
@@ -191,11 +192,16 @@ def storeLastUpdated(updatedTable, credentials):
     time_string = str(time.time())
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
+    # queryline1 = "INSERT INTO public.data_update_logs(table_name, last_updated) "
+    # queryline2 = "VALUES ('" + updatedTable + "', '" + time_string + "')"
+    # queryline3 = "ON CONFLICT (table_name) DO UPDATE "
+    # queryline4 = "SET last_updated='" + time_string + "'"
     queryline1 = "INSERT INTO public.data_update_logs(table_name, last_updated) "
-    queryline2 = "VALUES ('" + updatedTable + "', '" + time_string + "')"
+    queryline2 = "VALUES (%s, %s)"
     queryline3 = "ON CONFLICT (table_name) DO UPDATE "
-    queryline4 = "SET last_updated='" + time_string + "'"
-    cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
+    queryline4 = "SET last_updated=%s"
+    data = (updatedTable, time_string, time_string)
+    cursor.execute(queryline1 + queryline2 + queryline3 + queryline4, data)
     cursor.close()
     connection.commit()
     return
