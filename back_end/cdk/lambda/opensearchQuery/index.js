@@ -51,6 +51,20 @@ let searchResult;
 let query;
 
 switch(event.info.fieldName) {
+  case "otherResearchersWithKeyword":
+    query = {
+      query: {
+        match_phrase_prefix: {
+          keywords: {
+              "query": event.arguments.keyword,
+          }
+        }
+      }
+    }
+    
+    searchResult = await search(query, "researcher_data", 50);
+    break;
+  
   case "searchResearcher":
     stringSplitArray = event.arguments.search_value.split(" ");
     for(var i = 0; i<stringSplitArray.length;i++){

@@ -11,20 +11,27 @@ import Latex from 'react-latex-next'
 
 export default function Patent(props){
 
-    console.log(props.patentNumber.split(', '))
-
-    console.log(props.patentNumber.split(' '))
-
     const mappedPatentNumbers = props.patentNumber.split(' ').map((patentNumber) => {
         let hasComma = patentNumber.includes(",");
         let removedCommaPatentNumber = patentNumber.replace(",", "");
         return (
-            <Box component="span" sx={{ display: 'inline' }}>
+            <Box key={patentNumber} component="span" sx={{ display: 'inline' }}>
                 <a href={"https://worldwide.espacenet.com/patent/search/family/0"+props.familyNumber+"/publication/"+removedCommaPatentNumber+"?q="+removedCommaPatentNumber} target="_blank" rel="noopener noreferrer">{removedCommaPatentNumber}</a>
                 {hasComma && ", "}
             </Box>
         );
     })
+
+    let patentStatus = "Under Review";
+
+    let patentsArray = props.patentNumber.split(', ');
+
+    for(let i = 0; i<patentsArray.length; i++) {
+        let lastChar = patentsArray[i].at(-2);
+        if(lastChar == "B"){
+            patentStatus = "Patented"
+        }
+    }
 
     return(
     <Grid
@@ -44,6 +51,7 @@ export default function Patent(props){
                 <Typography>Inventor Names: {props.inventors}</Typography>
                 <Typography>Sponsors: {props.sponsors}</Typography>
                 <Typography>Patent Number: {mappedPatentNumbers}</Typography>
+                <Typography>Patent Status: {patentStatus}</Typography>
                 <Typography>Classifications: {props.patentClassification}</Typography>
             </Paper>
         </Grid>

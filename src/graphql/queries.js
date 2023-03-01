@@ -511,3 +511,23 @@ export const getResearcherPatents = /* GraphQL */ `
     }
   }
 `;
+export const otherResearchersWithKeyword = /* GraphQL */ `
+  query OtherResearchersWithKeyword($keyword: String!) {
+    otherResearchersWithKeyword(keyword: $keyword) {
+      researcher_id
+      campus
+      email
+      first_name
+      job_stream
+      keywords
+      last_name
+      preferred_name
+      prime_department
+      prime_faculty
+      rank
+      scopus_id
+      second_department
+      second_faculty
+    }
+  }
+`;
