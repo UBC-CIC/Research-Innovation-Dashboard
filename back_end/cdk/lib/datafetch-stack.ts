@@ -105,7 +105,7 @@ export class DataFetchStack extends cdk.Stack {
         "ec2:DescribeInstances",
         "ec2:AttachNetworkInterface"
       ],
-      resources: ["*"]
+      resources: ["*"] // must be *
     }));
     nameMatchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
@@ -161,7 +161,7 @@ export class DataFetchStack extends cdk.Stack {
         "ec2:DescribeInstances",
         "ec2:AttachNetworkInterface"
       ],
-      resources: ["*"]
+      resources: ["*"] // must be *
     }));
     dataFetchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,

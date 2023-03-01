@@ -49,7 +49,7 @@ export class OpensearchStack extends Stack {
                             'ec2:Describe*',
                             'ec2:DeleteNetworkInterface',
                         ],
-                        resources: ["*"]
+                        resources: ["*"] // must be *
                     })
                 ]
             }),

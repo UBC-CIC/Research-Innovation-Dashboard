@@ -30,22 +30,13 @@ export class AppsyncStack extends Stack {
     lambdaRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
       actions: [
-        //Logs
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents",
-        
-        //VPC
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents",
         "ec2:CreateNetworkInterface",
         "ec2:DescribeNetworkInterfaces",
         "ec2:DeleteNetworkInterface",
         "ec2:AssignPrivateIpAddresses",
         "ec2:UnassignPrivateIpAddresses"
       ],
-      resources: ['*']
+      resources: ['*'] // must be *
     }));
     lambdaRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
