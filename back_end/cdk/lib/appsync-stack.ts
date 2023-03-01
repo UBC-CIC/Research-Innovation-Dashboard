@@ -169,25 +169,18 @@ export class AppsyncStack extends Stack {
         advancedSearchPublications(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, journal: String!, noneOfTheseWords: String!, table: String!, year_gte: Int!, year_lte: Int!): [Publication]
         advancedSearchResearchers(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, prime_department: String!, prime_faculty: String!, table: String!): [ResearcherOpenSearch]
         allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
-        changeScopusId(newScopusId: String!, oldScopusId: String!): Boolean
         facultyMetrics(faculty: String!): [facultyMetric]
         getAllDepartments: [String]
         getAllDistinctJournals: [String]
         getAllFaculty: [String]
-        getAllGrantAgencies: [String]
         getAllResearchersImpacts: [Impact]
-        getFlaggedIds: [[Researcher]]
         getNumberOfResearcherPubsAllYears(id: ID!): graphDataAllYears
         getNumberOfResearcherPubsLastFiveYears(id: ID!): graphData
         getPub(id: ID!): Publication
         getResearcher(id: ID!): Researcher
         getResearcherElsevier(id: ID!): ResearcherElsevier
         getResearcherFull(id: ID!): ResearcherFull
-        getResearcherGrants(id: ID!): [grant]
-        getResearcherImpactsByDepartment(prime_department: String!): [Impact]
-        getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
         getResearcherOrcid(id: ID!): ResearcherOrcid
-        getResearcherPatents(id: ID!): [patent]
         getResearcherPubsByCitations(id: ID!): [Publication]
         getResearcherPubsByTitle(id: ID!): [Publication]
         getResearcherPubsByYear(id: ID!): [Publication]
@@ -216,7 +209,6 @@ export class AppsyncStack extends Stack {
         areas_of_interest: String
         campus: String
         email: String
-        employee_id: String
         first_name: String
         job_stream: String
         last_name: String
@@ -417,7 +409,7 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    AdvancedSearchGrantsResolver.addDependsOn(opensearchDataSource);
+    OtherResearchersWithKeywordResolver.addDependsOn(opensearchDataSource);
 
     //Create all the PostgreSQL resolvers
     let postgresqlDBQueryList = ["allPublicationsPerFacultyQuery", "facultyMetrics", "getAllDepartments",
