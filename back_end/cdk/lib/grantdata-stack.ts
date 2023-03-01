@@ -154,7 +154,7 @@ export class GrantDataStack extends Stack {
           "glue:UpdateJob"
         ],
         resources: [
-          "arn:aws:glue:::job/*"
+          "*" // DO NOT CHANGE
         ],
       })
     );
@@ -195,7 +195,7 @@ export class GrantDataStack extends Stack {
         "dms:StartReplicationTask",
         "dms:DescribeReplicationTasks"
       ],
-      resources: [this.dmsTaskArn]
+      resources: ["*"] // Do Not change
     }));  
 
     // grant permission for s3 to invoke lambda
