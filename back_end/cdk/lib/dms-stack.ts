@@ -61,7 +61,7 @@ export class DmsStack extends Stack {
     this.subnet = new dms.CfnReplicationSubnetGroup(this, 'SubnetGroup', {
         replicationSubnetGroupIdentifier: 'cdk-subnetgroup',
         replicationSubnetGroupDescription: 'subnets that have access to my rds source and target opensearch cluster.',
-        subnetIds: subnets,
+        subnetIds: subnets
     });
 
     //Launch an instance in the subnet group created above

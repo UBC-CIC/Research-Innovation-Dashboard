@@ -27,10 +27,10 @@ export class DatabaseStack extends Stack {
     })
 
     // Database secret with customized username retrieve at deployment time
-    const dbUsername = sm.Secret.fromSecretNameV2(this, 'db-username', 'db-username')
+    const dbUsername = sm.Secret.fromSecretNameV2(this, 'expertiseDashboard-dbUsername', 'expertiseDashboard-dbUsername')
 
     // Define the postgres database
-    this.dbInstance = new rds.DatabaseInstance(this, 'db-instance', {
+    this.dbInstance = new rds.DatabaseInstance(this, 'expertiseDashboard', {
       vpc: vpcStack.vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PUBLIC,
@@ -42,7 +42,7 @@ export class DatabaseStack extends Stack {
         ec2.InstanceClass.BURSTABLE3,
         ec2.InstanceSize.MICRO,
       ),
-      credentials: rds.Credentials.fromGeneratedSecret(dbUsername.secretValue.unsafeUnwrap() , {
+      credentials: rds.Credentials.fromUsername(dbUsername.secretValueFromJson("username").unsafeUnwrap() , {
         secretName: this.secretPath
       }),
       multiAz: true,
@@ -57,7 +57,7 @@ export class DatabaseStack extends Stack {
       publiclyAccessible: false,
       parameterGroup: parameterGroup,
       cloudwatchLogsRetention: logs.RetentionDays.INFINITE,
-      storageEncrypted: true // storage encryption at rest
+      storageEncrypted: true, // storage encryption at rest
     });
 
     this.dbInstance.connections.securityGroups.forEach(function (securityGroup) {

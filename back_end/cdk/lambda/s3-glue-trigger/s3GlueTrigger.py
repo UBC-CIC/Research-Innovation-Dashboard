@@ -18,7 +18,7 @@ It can event extend to any other grant data that might be added in the future, b
 with these sepcific requirements:
 + The raw folder structure should look like similar to: raw/mygrant/mygrant_raw.csv
 + Only one raw file that needs to be cleaned per grant
-+ The user must create a Glue job that cleans that specific raw data, and name it similar to clean-mygrant-pythonshell
++ The user must create a Glue job that cleans that specific raw data, and name it similar to clean-mygrant
 
 A special case is the SSHRC datasets that include a program codes csv file, so
 we make sure that the Glue job is started only when both files are there when we perform a
@@ -133,7 +133,7 @@ def lambda_handler(event, context):
 
         # other than that this script will work for any grant data
         # just make sure the folder structure is raw/mygrant/mygrant-raw.csv
-        # and the Glue job for cleaning is called clean-mygrant-pythonshell
+        # and the Glue job for cleaning is called clean-mygrant
         else:
             try:
                 jobName = "expertiseDashboard-clean-" + file

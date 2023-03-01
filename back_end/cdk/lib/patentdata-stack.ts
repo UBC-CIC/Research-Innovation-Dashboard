@@ -28,7 +28,7 @@ export class PatentDataStack extends Stack {
   ) {
     super(scope, id, props);
 
-    // Create new Glue  Role
+    // Create new Glue Role. DO NOT RENAME THE ROLE!!!
     const roleName = "AWSGlueServiceRole-PatentData";
     const glueRole = new iam.Role(this, roleName, {
       assumedBy: new iam.ServicePrincipal("glue.amazonaws.com"),

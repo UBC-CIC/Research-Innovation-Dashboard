@@ -38,7 +38,7 @@ export class GrantDataStack extends Stack {
     this.secretPath = databaseStack.secretPath;
     this.dmsTaskArn = dmsStack.replicationTask.ref
 
-    // Create new Glue  Role
+    // Create new Glue Role. DO NOT RENAME THE ROLE!!!
     const roleName = "AWSGlueServiceRole-ShellJob";
     const glueRole = new iam.Role(this, roleName, {
       assumedBy: new iam.ServicePrincipal("glue.amazonaws.com"),

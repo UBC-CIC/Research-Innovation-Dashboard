@@ -84,11 +84,11 @@ export class VpcStack extends Stack {
         awsServiceName: 'opensearchservice.amazonaws.com'
     });
 
-    //Create Role For DMS to work
+    //Create Role For DMS to work. DO NOT RENAME THE ROLE!!!
     const role = new iam.Role(this, 'dms-vpc-role', {
       assumedBy: new iam.ServicePrincipal('dms.amazonaws.com'),
       description: 'DMS Role To Create Replication Group',
-      roleName: 'expertiseDashboard-dms-vpc-role'
+      roleName: 'dms-vpc-role'
     });
 
     role.addManagedPolicy(ManagedPolicy.fromManagedPolicyArn(this, 'DMS-VPC-Managed-Policy', 'arn:aws:iam::aws:policy/service-role/AmazonDMSVPCManagementRole'));

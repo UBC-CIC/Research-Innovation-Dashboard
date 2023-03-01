@@ -98,7 +98,7 @@ export class AppsyncStack extends Stack {
 
     // Create the postgresql db query function.
     const queryDbFunction = new lambda.Function(this, 'expertiseDashboard-postgresQuery', {
-      functionName: "'expertiseDashboard-postgresQuery'",
+      functionName: "expertiseDashboard-postgresQuery",
       runtime: lambda.Runtime.NODEJS_16_X,
       handler: 'index.handler',
       timeout: cdk.Duration.seconds(300),
