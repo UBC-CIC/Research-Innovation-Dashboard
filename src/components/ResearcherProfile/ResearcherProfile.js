@@ -35,6 +35,7 @@ import {
   getResearcherGrants,
   getResearcherPatents,
   searchResearcher,
+  otherResearchersWithKeyword,
 } from "../../graphql/queries";
 
 Amplify.configure(awsmobile);
@@ -399,6 +400,7 @@ export default function Researcher_profile_overview() {
     setShowResearchersWithSimilarKeyword(false);
   }
   function showResearchersWithSimlarKeyword(keyWord) {
+    keyWord = keyWord
     setShowOverview(false);
     setShowAreasOfInterest(false);
     setShowPublications(false);
@@ -416,15 +418,13 @@ export default function Researcher_profile_overview() {
 
   const getSimilarResearcherBasedOnKeyword = async (keyWord) => {
     const searchResults = await API.graphql({
-      query: searchResearcher,
+      query: otherResearchersWithKeyword,
       variables: {
-        search_value: keyWord,
-        departmentsToFilterBy: [],
-        facultiesToFilterBy: [],
+        keyword: keyWord
       },
     });
 
-    let results = searchResults.data.searchResearcher;
+    let results = searchResults.data.otherResearchersWithKeyword;
     console.log(results);
     for(let i = 0; i<results.length; i++) {
       //Remove the researcher the keyword came from

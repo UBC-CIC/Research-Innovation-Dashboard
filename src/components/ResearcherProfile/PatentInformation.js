@@ -11,6 +11,8 @@ import Pagination from "@mui/material/Pagination";
 
 export default function PatentInformation(props){
 
+    console.log(props.researcherPatents);
+
     const [numberOfRows, setNumberOfRows] = useState(props.initialNumberOfRows);
     const [increaseRowCountBy, setIncreaseRowCountBy] = useState(25);
     const [page, setPage] = useState(1);
@@ -46,7 +48,7 @@ export default function PatentInformation(props){
         (data, index) => paginationCallback(data, index)
       )
       .map((filteredData, index) => (
-        <Patent title={filteredData.patent_title} inventors={filteredData.patent_inventors} sponsors={filteredData.patent_sponsors}
+        <Patent key={index} title={filteredData.patent_title} inventors={filteredData.patent_inventors} sponsors={filteredData.patent_sponsors}
         publicationDate={filteredData.patent_publication_date} patentNumber={filteredData.patent_number}
         familyNumber={filteredData.patent_family_number} patentClassification={filteredData.patent_classification}/>
       ));

@@ -225,9 +225,10 @@ export class AppsyncStack extends Stack {
         getFlaggedIds: [[Researcher]]
         getResearcherGrants(id: ID!): [grant]
         searchGrants(search_value: String!, grantAgenciesToFilterBy: [String]!): [grant]
+        searchPatents(search_value: String!, patentClassificationFilter: [String]!): [patent]
         getAllGrantAgencies: [String]
         getResearcherPatents(id: ID!): [patent]
-        searchPatents(search_value: String!, patentClassificationFilter: [String]!): [patent]
+        otherResearchersWithKeyword(keyword: String!): [ResearcherOpenSearch]
       }
       
       type Researcher {
@@ -343,7 +344,7 @@ export class AppsyncStack extends Stack {
         patent_family_number: String
         patent_classification: String
         patent_publication_date: String
-      }      
+      }
       
       type pubsPerYear {
         count: String
@@ -368,7 +369,7 @@ export class AppsyncStack extends Stack {
       type wordCloud {
         text: String
         value: Int
-      } 
+      }
       `
     });
 
@@ -432,6 +433,14 @@ export class AppsyncStack extends Stack {
     const AdvancedSearchGrantsResolver = new appsync.CfnResolver(this, 'advancedSearchGrants', {
       apiId: APIID,
       fieldName: 'advancedSearchGrants',
+      typeName: 'Query',
+      dataSourceName: opensearchDataSource.name,
+    });
+    AdvancedSearchGrantsResolver.addDependsOn(opensearchDataSource);
+
+    const OtherResearchersWithKeywordResolver = new appsync.CfnResolver(this, 'otherResearchersWithKeyword', {
+      apiId: APIID,
+      fieldName: 'otherResearchersWithKeyword',
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
