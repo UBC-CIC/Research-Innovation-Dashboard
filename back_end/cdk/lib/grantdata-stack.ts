@@ -154,7 +154,7 @@ export class GrantDataStack extends Stack {
           "glue:UpdateJob"
         ],
         resources: [
-          "arn:aws:glue:::job/*"
+          "*" // DO NOT CHANGE
         ],
       })
     );
