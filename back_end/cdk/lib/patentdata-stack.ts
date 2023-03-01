@@ -59,7 +59,7 @@ export class PatentDataStack extends Stack {
         "dms:StartReplicationTask",
         "dms:DescribeReplicationTasks"
       ],
-      resources: [grantDataStack.dmsTaskArn]
+      resources: ["*"] // DO NOT CHANGE
     }));
 
     // create S3 bucket for the patent data
