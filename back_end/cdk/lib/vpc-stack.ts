@@ -17,8 +17,8 @@ export class VpcStack extends Stack {
 
     const natGatewayProvider = ec2.NatProvider.gateway()
 
-    // VPC for vpri application
-    this.vpc = new ec2.Vpc(this, 'Vpc', {
+    // VPC for application
+    this.vpc = new ec2.Vpc(this, 'expertiseDashboard-Vpc', {
         cidr: '10.0.0.0/16',
         natGatewayProvider: natGatewayProvider,
         natGateways: 1,
@@ -39,6 +39,7 @@ export class VpcStack extends Stack {
           },
         },
     });
+    this.vpc.addFlowLog('expertiseDashboard-vpcFlowLog');
 
     // Get default security group for VPC
     const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, this.vpc.vpcDefaultSecurityGroup);
@@ -71,12 +72,19 @@ export class VpcStack extends Stack {
       subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED}
     });
 
+    // Add Cloudwatch endpoint to VPC
+    this.vpc.addInterfaceEndpoint("Cloudwatch Endpoint", {
+      service: ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
+      securityGroups: [defaultSecurityGroup],
+      subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED}
+    });
+
     // create opensearch service linked role. Without this role you cannot attach a vpc to opensearch
     this.openSearchVPCPermissions = new iam.CfnServiceLinkedRole(this, 'OpenSearchSLR', {
         awsServiceName: 'opensearchservice.amazonaws.com'
     });
 
-    //Create Role For DMS to work
+    //Create Role For DMS to work. DO NOT RENAME THE ROLE!!!
     const role = new iam.Role(this, 'dms-vpc-role', {
       assumedBy: new iam.ServicePrincipal('dms.amazonaws.com'),
       description: 'DMS Role To Create Replication Group',

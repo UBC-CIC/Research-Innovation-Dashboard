@@ -1,6 +1,6 @@
 import { VpcStack } from './vpc-stack';
 
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import { DockerImageAsset, NetworkMode } from 'aws-cdk-lib/aws-ecr-assets';
@@ -13,6 +13,7 @@ import * as rds from 'aws-cdk-lib/aws-rds'
 import * as cdk from 'aws-cdk-lib'
 import * as lambda from 'aws-cdk-lib/aws-lambda'
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import * as logs from  'aws-cdk-lib/aws-logs'
 
 export class OpensearchStack extends Stack {
     public readonly devDomain: opensearch.Domain;
@@ -22,7 +23,7 @@ export class OpensearchStack extends Stack {
     constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
       super(scope, id, props);
 
-    this.domainName = 'vpri-cdk-opensearch-domain'
+    this.domainName = 'cdk-opensearch-domain'
 
     //Create a role for lambda to access opensearch
     const lambdaRole = new Role(this, 'OpenSearchLambdaRole', {
@@ -37,12 +38,18 @@ export class OpensearchStack extends Stack {
                             // Opensearch
                             "es:ESHttpGet",
                             "es:ESHttpPost",
+                        ],
+                        resources: ["arn:aws:es:::domain/*"]
+                    }),
+                    new PolicyStatement({
+                        effect: Effect.ALLOW,
+                        actions: [
                             // VPC
                             'ec2:CreateNetworkInterface',
                             'ec2:Describe*',
                             'ec2:DeleteNetworkInterface',
                         ],
-                        resources: ['*']
+                        resources: ["*"] // must be *
                     })
                 ]
             }),
@@ -61,16 +68,15 @@ export class OpensearchStack extends Stack {
     // get the default security group from the vpc
     const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, vpcStack.vpc.vpcDefaultSecurityGroup);
     
-
     // Create the opensearch domain
-    this.devDomain = new opensearch.Domain(this, 'vpriCdkOpensearchDomain', {
+    this.devDomain = new opensearch.Domain(this, 'expertiseDashboard-CdkOpensearchDomain', {
         version: opensearch.EngineVersion.OPENSEARCH_1_1,
         enableVersionUpgrade: true,
         capacity: {
             dataNodes: 2,
             dataNodeInstanceType: "t2.small.search"
         },
-        domainName: 'vpri-cdk-opensearch-domain',
+        domainName: this.domainName,
         accessPolicies: [openSearchPolicyStatement],
         vpc: vpcStack.vpc,
         vpcSubnets: [vpcStack.vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_ISOLATED})],
@@ -79,8 +85,7 @@ export class OpensearchStack extends Stack {
         // encryptionAtRest: {
         //     enabled: true,
         // },
-        nodeToNodeEncryption: true,
-
+        nodeToNodeEncryption: true
     });
 
     //Attach vpc service linked role to opensearch domain
@@ -117,9 +122,9 @@ export class OpensearchStack extends Stack {
         description: 'opensearch',
     });
 
-    // Create the openserach query function.
-    this.opensearchFunction = new lambda.Function(this, 'opensearchQuery', {
-        functionName: "opensearchQuery",
+    // Create the opensearch query function.
+    this.opensearchFunction = new lambda.Function(this, 'expertiseDashboard-opensearchQuery', {
+        functionName: "expertiseDashboard-opensearchQuery",
         runtime: lambda.Runtime.NODEJS_16_X,
         handler: 'index.handler',
         timeout: cdk.Duration.seconds(300),
@@ -131,7 +136,8 @@ export class OpensearchStack extends Stack {
         securityGroups: [ defaultSecurityGroup ],
         vpc: vpcStack.vpc,
         code: lambda.Code.fromAsset('lambda/opensearchQuery'),
-        layers: [aws4Layer, awsSdkLayer, opensearchLayer]
+        layers: [aws4Layer, awsSdkLayer, opensearchLayer],
+        logRetention: logs.RetentionDays.SIX_MONTHS
     });
   }
 }

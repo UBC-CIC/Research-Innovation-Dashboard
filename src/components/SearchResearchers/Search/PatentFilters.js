@@ -74,7 +74,7 @@ const PatentFilters = ({
   return (
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
       <Typography variant="h6">Filter for Patents:</Typography>
-      <Typography sx={{ my: "1em", color: "#0055B7" }}>Grants</Typography>
+      <Typography sx={{ my: "1em", color: "#0055B7" }}>Patent Classifications</Typography>
       {renderClassificationsOptions()}
       <PatentFiltersDialog
         open={openPatentFiltersDialog}

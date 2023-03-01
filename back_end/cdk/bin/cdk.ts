@@ -10,6 +10,7 @@ import { AppsyncStack } from '../lib/appsync-stack'
 import { DatabaseStack } from '../lib/database-stack';
 import { DataFetchStack } from '../lib/datafetch-stack';
 import { GrantDataStack } from '../lib/grantdata-stack';
+import { PatentDataStack } from '../lib/patentdata-stack';
 
 
 const app = new cdk.App();
@@ -29,8 +30,13 @@ const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseSta
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 const appsyncStack = new AppsyncStack(app, 'AppsyncStack', openSearchStack, vpcStack, databaseStack, 
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
-const grantDataStack = new GrantDataStack(app, 'GrantDataStack', vpcStack, databaseStack, 
+const grantDataStack = new GrantDataStack(app, 'GrantDataStack', vpcStack, databaseStack, dmsStack,
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 grantDataStack.addDependency(vpcStack)
 grantDataStack.addDependency(databaseStack)
+grantDataStack.addDependency(dmsStack)
+const patentDataStack = new PatentDataStack(app, 'PatentDataStack', grantDataStack, vpcStack,
+    {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
+patentDataStack.addDependency(grantDataStack)
+
 

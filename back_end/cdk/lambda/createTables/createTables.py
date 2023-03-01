@@ -7,7 +7,7 @@ sm_client = boto3.client('secretsmanager')
 def getCredentials():
     credentials = {}
 
-    response = sm_client.get_secret_value(SecretId='vpri/credentials/dbCredentials')
+    response = sm_client.get_secret_value(SecretId='expertiseDashboard/credentials/dbCredentials')
     secrets = json.loads(response['SecretString'])
     credentials['username'] = secrets['username']
     credentials['password'] = secrets['password']
@@ -135,6 +135,23 @@ def lambda_handler(event, context):
     columns.append(createColumn('end_date', 'character varying', '', True))
     query = createQuery('grant_data', columns)
     cursor.execute(query)
-    
+
+    # Create Patent Data Table
+    columns = []
+    columns.append(createColumn('patent_id', 'uuid', 'DEFAULT uuid_generate_v4() PRIMARY KEY', False))
+    columns.append(createColumn('patent_number', 'varchar', '',  False))
+    columns.append(createColumn('patent_country_code', 'varchar', '', False))
+    columns.append(createColumn('patent_kind_code', 'varchar', '', False))
+    columns.append(createColumn('patent_title', 'varchar', '', False))
+    columns.append(createColumn('patent_inventors', 'varchar', '', False))
+    columns.append(createColumn('patent_sponsors', 'varchar', '', False))
+    columns.append(createColumn('patent_family_number', 'varchar', '', False))
+    columns.append(createColumn('patent_classification', 'varchar', '', False))
+    columns.append(createColumn('patent_publication_date', 'varchar', '', False))
+    columns.append(createColumn('inventors_assigned_ids', 'varchar[]', '', False))
+    columns.append(createColumn('matched_inventors_names', 'varchar[]', '', True))
+    query = createQuery('patent_data', columns)
+    cursor.execute(query)
+
     cursor.close()
     connection.commit()

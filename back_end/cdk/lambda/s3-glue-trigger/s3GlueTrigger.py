@@ -18,7 +18,7 @@ It can event extend to any other grant data that might be added in the future, b
 with these sepcific requirements:
 + The raw folder structure should look like similar to: raw/mygrant/mygrant_raw.csv
 + Only one raw file that needs to be cleaned per grant
-+ The user must create a Glue job that cleans that specific raw data, and name it similar to clean-mygrant-pythonshell
++ The user must create a Glue job that cleans that specific raw data, and name it similar to clean-mygrant
 
 A special case is the SSHRC datasets that include a program codes csv file, so
 we make sure that the Glue job is started only when both files are there when we perform a
@@ -68,17 +68,21 @@ def lambda_handler(event, context):
 
         # sshrc is a special case because the cleaning process require two differen files
         if "raw/sshrc/" in fileKey:
-            jobName = "clean-sshrc-pythonshell"
+            jobName = "expertiseDashboard-clean-sshrc"
 
             # s3 api call to list the objects with the specified path (folder)
             objectList = s3_client.list_objects_v2(
                 Bucket=bucketName,
                 Prefix="raw/sshrc/"
             )
+
             objectCount = len(objectList["Contents"])
 
-            print("# of files: " + str(objectCount))
             print(objectList["Contents"])
+            for obj in objectList["Contents"]:
+                if obj["Key"] == "raw/sshrc/":
+                    objectCount -= 1
+            print("# of files: " + str(objectCount))
 
             # glue api call to list the job runs, limited to the most recent runs
             jobRuns = glue_client.get_job_runs(JobName=jobName, MaxResults=1)
@@ -129,10 +133,10 @@ def lambda_handler(event, context):
 
         # other than that this script will work for any grant data
         # just make sure the folder structure is raw/mygrant/mygrant-raw.csv
-        # and the Glue job for cleaning is called clean-mygrant-pythonshell
+        # and the Glue job for cleaning is called clean-mygrant
         else:
             try:
-                jobName = "clean-" + file + "-pythonshell"
+                jobName = "expertiseDashboard-clean-" + file
                 response = glue_client.start_job_run(
                     JobName=jobName,
                     MaxCapacity=MAX_CAPACITY,
@@ -149,7 +153,7 @@ def lambda_handler(event, context):
     # trigger when a clean file appears in the clean folder
     # need MaximumConcurrentRuns = at least 4
     elif "clean/" in s3_event["object"]["key"]:
-        jobName = "assign-ids-pythonshell"
+        jobName = "expertiseDashboard-assignIds"
 
         fileKey = s3_event["object"]["key"]
 
@@ -182,7 +186,7 @@ def lambda_handler(event, context):
     # this will trigger a job to store the data in a table in the database
     # need MaximumConcurrentRuns = at least 4
     elif "ids-assigned/" in s3_event["object"]["key"]:
-        jobName = "store-data-pythonshell"
+        jobName = "expertiseDashboard-storeData"
 
         fileKey = s3_event["object"]["key"]
 

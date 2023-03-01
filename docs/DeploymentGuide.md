@@ -80,7 +80,7 @@ Now that you are in the backend directory, install the core dependencies with th
 npm install
 ```
 
-## Step 2: Upload the Elsevier API Key and Institution Token
+## Step 2: Upload the Elsevier API Key, Institution Token, Database secret and OPS API Key
 
 While in the `back_end/cdk` folder, run the following commands. Ensure you replace "INSTITUTION_TOKEN" in the first command with your own Elsevier institution token and you replace "API_KEY" in the second command with your own Elsevier API key.
 
@@ -88,6 +88,34 @@ While in the `back_end/cdk` folder, run the following commands. Ensure you repla
 aws ssm put-parameter --name "/service/elsevier/api/user_name/instoken" --value "INSTITUTION_TOKEN" --type SecureString --overwrite
 aws ssm put-parameter --name "/service/elsevier/api/user_name/key" --value "API_KEY" --type SecureString --overwrite
 ```
+
+You would also have to supply a custom database username when deploying the solution to increase security. Run the following command and ensure you replace `DB-USERNAME` with the custom name of your choice.
+
+```
+aws secretsmanager create-secret \
+    --name expertiseDashboard-dbUsername \
+    --description "Custom username for PostgreSQL database" \
+    --secret-string "{\"username\":\"DB-USERNAME\"}"
+```
+
+For example: you want to set the database username as "expertisedashboard"
+
+```
+aws secretsmanager create-secret \
+    --name expertiseDashboard-dbUsername \
+    --description "Custom username for PostgreSQL database" \
+    --secret-string "{\"username\":\"expertisedashboard\"}"
+```
+
+Similar to Elsevier API, you would have to obtain a consumer key and consumer secret key to be able to use the OPSv3.2 API. Store the secrets in Secret Manager by doing the following, replacing `CONSUMER_KEY` and `CONSUMER_SECRET_KEY` with the appropriate values:
+
+```
+aws secretsmanager create-secret \
+    --name "expertiseDashboard/credentials/opsApi" \
+    --description "API keys for OPS" \
+    --secret-string "{\"consumer_key\":\"CONSUMER_KEY\",\"consumer_secret_key\":\"CONSUMER_SECRET_KEY\"}"
+```
+
 
 ## Step 3: CDK Deployment
 
@@ -136,10 +164,24 @@ cdk deploy DataFetchStack --profile your-profile-name
 cdk deploy GrantDataStack --parameters GrantDataStack:cfiInstitutionName="Your Institution Name" --profile your-profile-name
 ```
 
+```
+cdk deploy PatentDataStack --parameters PatentDataStack:epoInstitutionName="Your Institution Name" --profile your-profile-name
+```
+
 **Note for deploying the GrantDataStack**: when you obtain the CSV file for the **CFI** grant data, you must make a note of the name of your institution that appears under the `Institution / Établissement` column. For example: if your institution name is *The University of British Columbia*,
 then you would do:
 ```
 cdk deploy GrantDataStack --parameters GrantDataStack:cfiInstitutionName="The University of British Columbia" --profile your-profile-name
+```
+
+**Note for deploying the PatentDataStack**: You must make a note of what the name of your institution appear on [Espacenet](https://worldwide.espacenet.com/patent/) or by working with a representative from the European Patent Office. We highly recommend working with a patent specialist to determine the exact name that represents your institution on Espacenet/EPO.
+
+For example, it was determined that the EPO/Espacenet use "UNIV BRITISH COLUMBIA" to represent UNIVERSITY OF BRITISH COLUMBIA. ![alt text](images/deploymentGuide/espacenet-applicant-name.png)
+
+Thus you should do the following:
+
+```
+cdk deploy PatentDataStack --parameters PatentDataStack:epoInstitutionName="UNIV BRITISH COLUMBIA,UNIVERSITY OF BRITISH COLUMBIA" --profile your-profile-name
 ```
 
 # Step 4: Upload Data to S3 for the DataPipeline

@@ -5,6 +5,7 @@ import boto3
 from pyjarowinkler.distance import get_jaro_distance
 import os
 from datetime import datetime
+import time
 
 s3_client = boto3.client("s3")
 ssm_client = boto3.client('ssm')
@@ -59,12 +60,22 @@ def lambda_handler(event, context):
                 if response.json()["error-response"]["error-code"] == "TOO_MANY_REQUESTS":
                     dateTimeObject = datetime.fromtimestamp(int(response.headers['X-RateLimit-Reset']))
                     raise Exception("API limit has been exceded! Please try the data pipeline again on " + str(dateTimeObject) + "UTC Time")
-        
-        
+            
+                if response.json()["error-response"]["error-code"] == "RATE_LIMIT_EXCEEDED":
+                    print(response.json()["error-response"])
+                    print("API Throttling, attempt to retry query after 7 seconds")
+                    time.sleep(7)
+                    response = requests.get(url, headers=elsevier_headers, params=query)
+                    print(response.headers)
+                    # raise Exception(json.dumps(response.json()["error-response"]))
+              
         if (len(author_ids) == 1):
             results = response.json()['author-retrieval-response']
-        else:
+        elif 'author-retrieval-response-list' not in response.json():
+            results = response.json()['author-retrieval-response']
+        elif 'author-retrieval-response' not in response.json():
             results = response.json()['author-retrieval-response-list']['author-retrieval-response']
+
         for result in results:
             found_match = False
             data = result['coredata']

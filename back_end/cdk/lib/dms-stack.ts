@@ -1,4 +1,4 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import { DockerImageAsset, NetworkMode } from 'aws-cdk-lib/aws-ecr-assets';
@@ -15,10 +15,12 @@ import { OpensearchStack } from './opensearch-stack';
 import { VpcStack } from './vpc-stack';
 import { DatabaseStack } from './database-stack';
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import { CfnReplicationSubnetGroup } from 'aws-cdk-lib/aws-dms';
 
 export class DmsStack extends Stack {
 
   public readonly replicationTask: dms.CfnReplicationTask;
+  public readonly subnet: CfnReplicationSubnetGroup;
 
   constructor(scope: Construct, id: string, vpcStack: VpcStack, opensearchStack: OpensearchStack, databaseStack: DatabaseStack, props?: StackProps) {
     super(scope, id, props);
@@ -56,10 +58,10 @@ export class DmsStack extends Stack {
     }
 
     // Create a subnet group in the VPC that has access to both the postgresql db and opensearch
-    const subnet = new dms.CfnReplicationSubnetGroup(this, 'SubnetGroup', {
+    this.subnet = new dms.CfnReplicationSubnetGroup(this, 'SubnetGroup', {
         replicationSubnetGroupIdentifier: 'cdk-subnetgroup',
         replicationSubnetGroupDescription: 'subnets that have access to my rds source and target opensearch cluster.',
-        subnetIds: subnets,
+        subnetIds: subnets
     });
 
     //Launch an instance in the subnet group created above
@@ -70,14 +72,15 @@ export class DmsStack extends Stack {
         replicationInstanceClass: 'dms.t3.micro',
   
         // Attach the subnet group to the replication instance
-        replicationSubnetGroupIdentifier: subnet.ref,
+        replicationSubnetGroupIdentifier: this.subnet.ref,
 
         publiclyAccessible: false,
 
         // Attach the default VPC security group to the replication instance
         vpcSecurityGroupIds: [ vpcStack.vpc.vpcDefaultSecurityGroup ],
-    });
 
+    });
+    
     // Get database credentials here
     const mySecretFromName = secretsmanager.Secret.fromSecretNameV2(this, 'SecretFromName', databaseStack.secretPath);
 
@@ -158,5 +161,10 @@ export class DmsStack extends Stack {
           }]
         })
     })
+
+    instance.applyRemovalPolicy(RemovalPolicy.DESTROY)
+    source.applyRemovalPolicy(RemovalPolicy.DESTROY)
+    target.applyRemovalPolicy(RemovalPolicy.DESTROY)
+    this.replicationTask.applyRemovalPolicy(RemovalPolicy.DESTROY)
   }
 }
