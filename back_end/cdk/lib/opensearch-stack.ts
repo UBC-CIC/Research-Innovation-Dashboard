@@ -39,7 +39,9 @@ export class OpensearchStack extends Stack {
                             "es:ESHttpGet",
                             "es:ESHttpPost",
                         ],
-                        resources: ["arn:aws:es:::domain/*"]
+                        resources: ["arn:aws:es:*:*:domain/*"]
+                        //arn:aws:es:ca-central-1:649335657496:domain/cdk-opensearch-domain
+                        //arn:aws:es:::domain/*
                     }),
                     new PolicyStatement({
                         effect: Effect.ALLOW,

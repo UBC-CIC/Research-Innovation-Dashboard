@@ -22,14 +22,14 @@ export default function Patent(props){
         );
     })
 
-    let patentStatus = "Under Review";
+    let patentStatus = "Pre-grant Publication";
 
     let patentsArray = props.patentNumber.split(', ');
 
     for(let i = 0; i<patentsArray.length; i++) {
         let lastChar = patentsArray[i].at(-2);
         if(lastChar == "B"){
-            patentStatus = "Patented"
+            patentStatus = "Patent Publication"
         }
     }
 

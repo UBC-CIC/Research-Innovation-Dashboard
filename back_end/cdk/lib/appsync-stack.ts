@@ -10,9 +10,10 @@ import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePri
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { DatabaseStack } from './database-stack';
 import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
+import { DataFetchStack } from './datafetch-stack';
 
 export class AppsyncStack extends Stack {
-  constructor(scope: Construct, id: string, opensearchStack: OpensearchStack, vpcStack: VpcStack, databaseStack: DatabaseStack, props?: StackProps) {
+  constructor(scope: Construct, id: string, opensearchStack: OpensearchStack, vpcStack: VpcStack, databaseStack: DatabaseStack, dataFetchStack: DataFetchStack, props?: StackProps) {
     super(scope, id, props);
 
     // Get the API ID from paramter Store
@@ -57,26 +58,6 @@ export class AppsyncStack extends Stack {
         resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:expertiseDashboard/credentials/*`]
     }));
 
-    //Create Lamabda Service role for the Appsync datasources
-    const appsyncLambdaServiceRole = new Role(this, 'appsyncLambdaServiceRole', {
-      roleName: 'appsyncLambdaServiceRole',
-        assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-        inlinePolicies: {
-            additional: new PolicyDocument({
-                statements: [
-                    new PolicyStatement({
-                        effect: Effect.ALLOW,
-                        actions: [
-                          //Lambda Invoke
-                          "lambda:invokeFunction",
-                        ],
-                        resources: ['arn:aws:lambda:::function:*']
-                    })
-                ]
-            }),
-        },
-    });
-
     // The layer containing the postgres library
     const postgresLayer = new lambda.LayerVersion(this, 'postgres', {
       code: lambda.Code.fromAsset('./layers/postgres.zip'),
@@ -102,6 +83,42 @@ export class AppsyncStack extends Stack {
       vpc: vpcStack.vpc,
       code: lambda.Code.fromAsset('./lambda/postgresQuery/'),
       layers: [postgresLayer]
+    });
+
+    //Create Lamabda Service role for the Appsync datasources
+    const appsyncLambdaServiceRole = new Role(this, 'appsyncLambdaServiceRole', {
+      roleName: 'appsyncLambdaServiceRole',
+        assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+        inlinePolicies: {
+            additional: new PolicyDocument({
+                statements: [
+                    new PolicyStatement({
+                        effect: Effect.ALLOW,
+                        actions: [
+                          //Lambda Invoke
+                          "lambda:invokeFunction",
+                        ],
+                        resources: [opensearchStack.opensearchFunction.functionArn, queryDbFunction.functionArn]
+                    })
+                ]
+            }),
+        },
+    });
+
+    const mergeKeywords = new lambda.Function(this, 'expertiseDashboard-mergeKeywords', {
+      functionName: "expertiseDashboard-mergeKeywords",
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'mergeKeywords.lambda_handler',
+      timeout: cdk.Duration.minutes(15),
+      role: lambdaRole,
+      memorySize: 512,
+      environment: {
+          "SM_DB_CREDENTIALS": databaseStack.secretPath,
+      },
+      securityGroups: [ defaultSecurityGroup ],
+      vpc: vpcStack.vpc,
+      code: lambda.Code.fromAsset('./lambda/mergeKeywords/'),
+      layers: [dataFetchStack.pyjarowinkler, dataFetchStack.psycopg2]
     });
 
     //Create Opensearch Appsync Data Source
@@ -184,8 +201,6 @@ export class AppsyncStack extends Stack {
         getResearcherPubsByCitations(id: ID!): [Publication]
         getResearcherPubsByTitle(id: ID!): [Publication]
         getResearcherPubsByYear(id: ID!): [Publication]
-        getResearcherImpactsByDepartment(prime_department: String!): [Impact]
-        getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
         searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
         searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]
         similarResearchers(researcher_id: String!): [ResearcherOpenSearch]
@@ -194,12 +209,8 @@ export class AppsyncStack extends Stack {
         changeScopusId(oldScopusId: String!, newScopusId: String!): Boolean
         lastUpdatedResearchersList: [lastUpdated]
         getUpdatePublicationsLogs: [updatePublicationsLogType]
-        getFlaggedIds: [[Researcher]]
-        getResearcherGrants(id: ID!): [grant]
         searchGrants(search_value: String!, grantAgenciesToFilterBy: [String]!): [grant]
         searchPatents(search_value: String!, patentClassificationFilter: [String]!): [patent]
-        getAllGrantAgencies: [String]
-        getResearcherPatents(id: ID!): [patent]
         otherResearchersWithKeyword(keyword: String!): [ResearcherOpenSearch]
       }
       
@@ -346,6 +357,7 @@ export class AppsyncStack extends Stack {
       dataSourceName: opensearchDataSource.name,
     });
     SearchResearcherResolver.addDependsOn(opensearchDataSource);
+    SearchResearcherResolver.addDependsOn(apiSchema);
 
     const SearchPublicationsResolver = new appsync.CfnResolver(this, 'searchPublications', {
       apiId: APIID,
@@ -354,6 +366,7 @@ export class AppsyncStack extends Stack {
       dataSourceName: opensearchDataSource.name,
     });
     SearchPublicationsResolver.addDependsOn(opensearchDataSource);
+    SearchPublicationsResolver.addDependsOn(apiSchema);
 
     const SearchGrantsResolver = new appsync.CfnResolver(this, 'searchGrants', {
       apiId: APIID,
@@ -362,6 +375,7 @@ export class AppsyncStack extends Stack {
       dataSourceName: opensearchDataSource.name,
     });
     SearchGrantsResolver.addDependsOn(opensearchDataSource);
+    SearchGrantsResolver.addDependsOn(apiSchema);
 
     const SearchPatentsResolver = new appsync.CfnResolver(this, 'searchPatents', {
       apiId: APIID,
@@ -370,6 +384,7 @@ export class AppsyncStack extends Stack {
       dataSourceName: opensearchDataSource.name,
     });
     SearchPatentsResolver.addDependsOn(opensearchDataSource);
+    SearchPatentsResolver.addDependsOn(apiSchema);
 
     const SimilarResearchersResolver = new appsync.CfnResolver(this, 'similarResearchers', {
       apiId: APIID,
@@ -378,6 +393,7 @@ export class AppsyncStack extends Stack {
       dataSourceName: opensearchDataSource.name,
     });
     SimilarResearchersResolver.addDependsOn(opensearchDataSource);
+    SimilarResearchersResolver.addDependsOn(apiSchema);
 
     const AdvancedSearchResearchersResolver = new appsync.CfnResolver(this, 'advancedSearchResearchers', {
       apiId: APIID,
@@ -386,6 +402,7 @@ export class AppsyncStack extends Stack {
       dataSourceName: opensearchDataSource.name,
     });
     AdvancedSearchResearchersResolver.addDependsOn(opensearchDataSource);
+    AdvancedSearchResearchersResolver.addDependsOn(apiSchema);
 
     const AdvancedSearchPublicationsResolver = new appsync.CfnResolver(this, 'advancedSearchPublications', {
       apiId: APIID,
@@ -394,6 +411,7 @@ export class AppsyncStack extends Stack {
       dataSourceName: opensearchDataSource.name,
     });
     AdvancedSearchPublicationsResolver.addDependsOn(opensearchDataSource);
+    AdvancedSearchPublicationsResolver.addDependsOn(apiSchema);
 
     const AdvancedSearchGrantsResolver = new appsync.CfnResolver(this, 'advancedSearchGrants', {
       apiId: APIID,
@@ -402,6 +420,7 @@ export class AppsyncStack extends Stack {
       dataSourceName: opensearchDataSource.name,
     });
     AdvancedSearchGrantsResolver.addDependsOn(opensearchDataSource);
+    AdvancedSearchGrantsResolver.addDependsOn(apiSchema);
 
     const OtherResearchersWithKeywordResolver = new appsync.CfnResolver(this, 'otherResearchersWithKeyword', {
       apiId: APIID,
@@ -410,6 +429,7 @@ export class AppsyncStack extends Stack {
       dataSourceName: opensearchDataSource.name,
     });
     OtherResearchersWithKeywordResolver.addDependsOn(opensearchDataSource);
+    OtherResearchersWithKeywordResolver.addDependsOn(apiSchema);
 
     //Create all the PostgreSQL resolvers
     let postgresqlDBQueryList = ["allPublicationsPerFacultyQuery", "facultyMetrics", "getAllDepartments",
@@ -428,6 +448,7 @@ export class AppsyncStack extends Stack {
         dataSourceName: postgresqlDataSource.name,
       });
       resolver.addDependsOn(postgresqlDataSource);
+      resolver.addDependsOn(apiSchema);
     }
 
     // Waf Firewall
