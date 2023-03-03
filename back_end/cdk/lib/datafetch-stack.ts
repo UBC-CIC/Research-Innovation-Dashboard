@@ -12,6 +12,9 @@ import { DatabaseStack } from './database-stack';
 import { DmsStack } from './dms-stack';
 
 export class DataFetchStack extends cdk.Stack {
+  public readonly psycopg2: lambda.LayerVersion;
+  public readonly pyjarowinkler: lambda.LayerVersion;
+
   constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, dmsStack: DmsStack, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -37,14 +40,14 @@ export class DataFetchStack extends cdk.Stack {
     });
 
     // The layer containing the psycopg2 library
-    const psycopg2 = new lambda.LayerVersion(this, 'psycopg2', {
+    this.psycopg2 = new lambda.LayerVersion(this, 'psycopg2', {
       code: lambda.Code.fromAsset('layers/psycopg2.zip'),
       compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
       description: 'Contains the psycopg2 library',
     });
 
     // The layer containing the pyjarowinler library
-    const pyjarowinkler = new lambda.LayerVersion(this, 'pyjarowinkler', {
+    this.pyjarowinkler = new lambda.LayerVersion(this, 'pyjarowinkler', {
       code: lambda.Code.fromAsset('layers/pyjarowinkler.zip'),
       compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
       description: 'Contains the pyjarowinkler library',
@@ -65,7 +68,7 @@ export class DataFetchStack extends cdk.Stack {
       functionName: 'expertiseDashboard-createTables',
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'createTables.lambda_handler',
-      layers: [psycopg2],
+      layers: [this.psycopg2],
       code: lambda.Code.fromAsset('lambda/createTables'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 512,
@@ -239,7 +242,7 @@ export class DataFetchStack extends cdk.Stack {
       runtime: lambda.Runtime.PYTHON_3_9,
       functionName: 'expertiseDashboard-compareNames',
       handler: 'compareNames.lambda_handler',
-      layers: [pyjarowinkler, numpy],
+      layers: [this.pyjarowinkler, numpy],
       code: lambda.Code.fromAsset('lambda/compareNames'),
       timeout: cdk.Duration.minutes(15),
       role: nameMatchRole,
@@ -258,7 +261,7 @@ export class DataFetchStack extends cdk.Stack {
       runtime: lambda.Runtime.PYTHON_3_9,
       functionName: 'expertiseDashboard-cleanNoMatches',
       handler: 'cleanNoMatches.lambda_handler',
-      layers: [pyjarowinkler, requests],
+      layers: [this.pyjarowinkler, requests],
       code: lambda.Code.fromAsset('lambda/cleanNoMatches'),
       timeout: cdk.Duration.minutes(15),
       role: nameMatchRole,
@@ -277,7 +280,7 @@ export class DataFetchStack extends cdk.Stack {
       runtime: lambda.Runtime.PYTHON_3_9,
       functionName: 'expertiseDashboard-identifyDuplicates',
       handler: 'identifyDuplicates.lambda_handler',
-      layers: [pyjarowinkler, requests],
+      layers: [this.pyjarowinkler, requests],
       code: lambda.Code.fromAsset('lambda/identifyDuplicates'),
       timeout: cdk.Duration.minutes(15),
       role: nameMatchRole,
@@ -298,7 +301,7 @@ export class DataFetchStack extends cdk.Stack {
       runtime: lambda.Runtime.PYTHON_3_9,
       functionName: 'expertiseDashboard-researcherFetch',
       handler: 'researcherFetch.lambda_handler',
-      layers: [psycopg2, pytz],
+      layers: [this.psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/researcherFetch'),
       timeout: cdk.Duration.minutes(15),
       role: dataFetchRole,
@@ -317,7 +320,7 @@ export class DataFetchStack extends cdk.Stack {
       runtime: lambda.Runtime.PYTHON_3_9,
       functionName: 'expertiseDashboard-elsevierFetch',
       handler: 'elsevierFetch.lambda_handler',
-      layers: [requests, psycopg2, pytz],
+      layers: [requests, this.psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/elsevierFetch'),
       timeout: cdk.Duration.minutes(15),
       role: dataFetchRole,
@@ -339,7 +342,7 @@ export class DataFetchStack extends cdk.Stack {
       runtime: lambda.Runtime.PYTHON_3_9,
       functionName: 'expertiseDashboard-orcidFetch',
       handler: 'orcidFetch.lambda_handler',
-      layers: [requests, psycopg2, pytz],
+      layers: [requests, this.psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/orcidFetch'),
       timeout: cdk.Duration.minutes(15),
       role: dataFetchRole,
@@ -358,7 +361,7 @@ export class DataFetchStack extends cdk.Stack {
       runtime: lambda.Runtime.PYTHON_3_9,
       functionName: 'expertiseDashboard-publicationFetch',
       handler: 'publicationFetch.lambda_handler',
-      layers: [requests, psycopg2, pytz],
+      layers: [requests, this.psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/publicationFetch'),
       timeout: cdk.Duration.minutes(15),
       role: dataFetchRole,
@@ -378,7 +381,7 @@ export class DataFetchStack extends cdk.Stack {
       runtime: lambda.Runtime.PYTHON_3_9,
       functionName: 'expertiseDashboard-startReplication',
       handler: 'startReplication.lambda_handler',
-      layers: [requests, psycopg2, pytz],
+      layers: [requests, this.psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/startReplication'),
       timeout: cdk.Duration.minutes(15),
       role: dataFetchRole,

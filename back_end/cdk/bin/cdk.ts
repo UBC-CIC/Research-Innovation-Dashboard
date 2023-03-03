@@ -26,9 +26,9 @@ const dmsStack = new DmsStack(app, 'DmsStack', vpcStack, openSearchStack, databa
 const dataFetchStack = new DataFetchStack(app, 'DataFetchStack', databaseStack, dmsStack, 
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 dataFetchStack.addDependency(databaseStack)
-const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseStack, dmsStack, 
+const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseStack, dmsStack,
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
-const appsyncStack = new AppsyncStack(app, 'AppsyncStack', openSearchStack, vpcStack, databaseStack, 
+const appsyncStack = new AppsyncStack(app, 'AppsyncStack', openSearchStack, vpcStack, databaseStack, dataFetchStack,
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 const grantDataStack = new GrantDataStack(app, 'GrantDataStack', vpcStack, databaseStack, dmsStack,
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
