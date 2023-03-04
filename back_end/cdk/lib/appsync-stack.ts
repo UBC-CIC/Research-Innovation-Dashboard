@@ -212,6 +212,7 @@ export class AppsyncStack extends Stack {
         searchGrants(search_value: String!, grantAgenciesToFilterBy: [String]!): [grant]
         searchPatents(search_value: String!, patentClassificationFilter: [String]!): [patent]
         otherResearchersWithKeyword(keyword: String!): [ResearcherOpenSearch]
+        getAllGrantAgencies: [String]
       }
       
       type Researcher {
@@ -320,6 +321,8 @@ export class AppsyncStack extends Stack {
       }
       
       type patent {
+        patent_title: String
+        patent_sponsors: String
         patent_classification: String
         patent_family_number: String
         patent_inventors: String
