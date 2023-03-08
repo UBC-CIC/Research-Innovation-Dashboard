@@ -243,9 +243,11 @@ def assign_ids_epo_patent():
         {
             "inventors": lambda x: ', '.join(x),
             # get rid of empty strings
-            "inventors_assigned_ids": lambda x: list(filter(None, list(x))),
+            # "inventors_assigned_ids": lambda x: list(filter(None, list(x))),
             # column contain only the matched names
-            "matched_inventors_names": lambda x: list(filter(None, list(x)))
+            # "matched_inventors_names": lambda x: list(filter(None, list(x)))
+            "inventors_assigned_ids": lambda x: ','.join(list(filter(None, list(x)))),
+            "matched_inventors_names": lambda x: ','.join(list(filter(None, list(x)))),
         }
     )
 
