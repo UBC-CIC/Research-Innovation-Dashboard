@@ -22,14 +22,48 @@ export default function Patent(props){
         );
     })
 
-    let patentStatus = "Pre-grant Publication";
+    const mappedInventorNames = props.inventors.split(', ').map((inventor, index) => {
+
+        let matchedNamesList = props.matched_inventors_names.split(',');
+        let matchedIdsList = props.inventors_assigned_ids.split(',')
+
+        let link = "";
+
+        let test = <a target="_blank" rel="noopener noreferrer">{inventor}</a>
+
+        if(matchedNamesList.includes(inventor)) {
+            // link = 
+            let index = matchedNamesList.indexOf(inventor);
+            let id = matchedIdsList[index];
+            link = "/Researchers/" + id + "/"
+        }
+
+
+        if(link != ""){
+            test = <a href={link} target="_blank" rel="noopener noreferrer">{inventor}</a>
+        }
+        let commaSpace = ", "
+        if(index + 1 == props.inventors.split(', ').length) {
+            commaSpace = ""
+        }
+
+
+        return (
+            <Box key={index} component="span" sx={{ display: 'inline' }}>
+                {test}
+                {commaSpace}
+            </Box>
+        );
+    })
+
+    let patentStatus = "Patent application document";
 
     let patentsArray = props.patentNumber.split(', ');
 
     for(let i = 0; i<patentsArray.length; i++) {
         let lastChar = patentsArray[i].at(-2);
         if(lastChar == "B"){
-            patentStatus = "Patent Publication"
+            patentStatus = "Patent document"
         }
     }
 
@@ -48,7 +82,7 @@ export default function Patent(props){
                 <Typography variant="h5">
                     <Latex>{props.title}</Latex>
                 </Typography>
-                <Typography>Inventor Names: {props.inventors}</Typography>
+                <Typography>Inventor Names: {mappedInventorNames}</Typography>
                 <Typography>Sponsors: {props.sponsors}</Typography>
                 <Typography>Patent Number: {mappedPatentNumbers}</Typography>
                 <Typography>Patent Status: {patentStatus}</Typography>

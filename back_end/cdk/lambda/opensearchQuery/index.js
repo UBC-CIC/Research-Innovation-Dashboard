@@ -66,46 +66,22 @@ switch(event.info.fieldName) {
     break;
   
   case "searchResearcher":
-    stringSplitArray = event.arguments.search_value.split(" ");
-    for(var i = 0; i<stringSplitArray.length;i++){
-      let nameQueryObject = {
-        match_phrase_prefix: {
-          preferred_name: {
-            "query": stringSplitArray[i],
-            "boost": 20
-          }
-        }
-      };
-      let departmentQueryObject = {
-        match_phrase_prefix: {
-          prime_department: {
-            "query": stringSplitArray[i],
-            "boost": 10
-          }
-        }
-      };
-      let facultyQueryObject = {
-        match_phrase_prefix: {
-          prime_faculty: {
-            "query": stringSplitArray[i],
-            "boost": 10
-          }
-        }
-      };
-      let keywordQueryObject = {
-        match: {
-          keywords: {
-            "query": stringSplitArray[i],
-            "boost": 1
-          }
-        }
-      };
-      
-      queryArray.push(nameQueryObject);
-      queryArray.push(departmentQueryObject);
-      queryArray.push(facultyQueryObject);
-      queryArray.push(keywordQueryObject);
+    let researcherMultiQuery = {
+      multi_match: {
+        "query": event.arguments.search_value,
+        "fields": ["preferred_name^20", "prime_department^10", "prime_faculty^10"],
+        "operator": "and",
+      }
     }
+    
+    let keywordQuery = {
+      match_phrase: {
+        "keywords": event.arguments.search_value
+      }
+    }
+    
+    queryArray.push(researcherMultiQuery);
+    queryArray.push(keywordQuery);
     
     //Create Researcher Filters
     let departmentsToInclude = event.arguments.departmentsToFilterBy;
@@ -158,84 +134,22 @@ switch(event.info.fieldName) {
     break;
     
   case "searchPublications":
-    stringSplitArray = event.arguments.search_value.split(" ");
-    console.log(stringSplitArray);
-    let fullPhraseMatchOnTitle = {
+    let publicationMultiQuery = {
+      multi_match: {
+        "query": event.arguments.search_value,
+        "fields": ["title^30", "journal^20", "author_names^15"],
+        "operator": "and",
+      }
+    }
+
+    let keywordQueryPublications = {
       match_phrase: {
-        title: {
-          query: event.arguments.search_value,
-          boost: 30
-        }
+        "keywords": event.arguments.search_value
       }
     }
-    let fullPhraseMatchOnJournel = {
-      match_phrase: {
-        journal: {
-          query: event.arguments.search_value,
-          boost: 20
-        }
-      }
-    }
-    let fullPhraseMatchOnAuthorNames = {
-      match_phrase: {
-        author_names: {
-          query: event.arguments.search_value,
-          boost: 15
-        }
-      }
-    }
-    let fullPhraseMatchOnKeywords = {
-      match_phrase: {
-        keywords: {
-          query: event.arguments.search_value,
-          boost: 15
-        }
-      }
-    }
-    
-    queryArray.push(fullPhraseMatchOnTitle);
-    queryArray.push(fullPhraseMatchOnJournel);
-    queryArray.push(fullPhraseMatchOnAuthorNames);
-    queryArray.push(fullPhraseMatchOnKeywords);
-    
-    for(var i = 0; i<stringSplitArray.length;i++){
-      let matchTitle = {
-        "match": {
-          "title": {
-            "query": stringSplitArray[i],
-            "boost": 4
-          }
-        }
-      }
-      let matchJournal = {
-        "match": {
-          "journal": {
-            "query": stringSplitArray[i],
-            "boost": 3
-          }
-        }
-      }
-      let matchAuthorNames = {
-        "match": {
-          "author_names": {
-            "query": stringSplitArray[i],
-            "boost": 2
-          }
-        }
-      }
-      let matchKeyword = {
-        "match": {
-          "keyword": {
-            "query": stringSplitArray[i],
-            "boost": 1
-          }
-        }
-      }
-      queryArray.push(matchTitle);
-      queryArray.push(matchJournal);
-      queryArray.push(matchAuthorNames);
-      queryArray.push(matchKeyword);
-    }
+
+    queryArray.push(publicationMultiQuery);
+    queryArray.push(keywordQueryPublications);
     
     //Create Publication Filters
     let journalsToInclude = event.arguments.journalsToFilterBy;
@@ -338,48 +252,24 @@ switch(event.info.fieldName) {
     break;
 
   case "searchGrants":
-    stringSplitArray = event.arguments.search_value.split(" ");
-    
-    for(let i = 0; i<stringSplitArray.length; i++){
-      let matchName = {
-        "match": {
-          "name": {
-            "query": stringSplitArray[i],
-            "boost": 4
-          }
-        }
+    let grantMultiQuery = {
+      multi_match: {
+        "query": event.arguments.search_value,
+        "fields": ["name^4", "project_title^3", "grant_program^2"],
+        "operator": "and",
       }
-      let matchProjectTitle = {
-        "match": {
-          "project_title": {
-            "query": stringSplitArray[i],
-            "boost": 3
-          }
-        }
+    }
+
+    let keywordQueryGrants = {
+      match_phrase: {
+        "keywords": event.arguments.search_value
       }
-      let matchGrantProgram = {
-        "match": {
-          "grant_program": {
-            "query": stringSplitArray[i],
-            "boost": 2
-          }
-        }
-      }
-      let matchKeywords = {
-        "match": {
-          "keywords": {
-            "query": stringSplitArray[i],
-            "boost": 1
-          }
-        }
-      }
-      queryArray.push(matchName);
-      queryArray.push(matchProjectTitle);
-      queryArray.push(matchGrantProgram);
-      queryArray.push(matchKeywords);
     }
     
-    //Create Publication Filters
+    queryArray.push(grantMultiQuery);
+    queryArray.push(keywordQueryGrants);
+    
+    //Create Grant Filters
     let grantsToInclude = event.arguments.grantAgenciesToFilterBy;
     
     if(grantsToInclude.length != 0){
@@ -415,55 +305,15 @@ switch(event.info.fieldName) {
     break;
   
   case "searchPatents":
-    stringSplitArray = event.arguments.search_value.split(" ");
-    
-    for(let i = 0; i<stringSplitArray.length; i++){
-      let matchFamilyNumber = {
-        "match": {
-          "patent_family_number": {
-            "query": stringSplitArray[i],
-            "boost": 100
-          }
-        }
+    let patentMultiQuery = {
+      multi_match: {
+        "query": event.arguments.search_value,
+        "fields": ["patent_family_number^100", "patent_number^100", "patent_title^10", "patent_inventors^5", "patent_sponsors"],
+        "operator": "and",
       }
-      let matchPatentNumber = {
-        "match": {
-          "patent_number": {
-            "query": stringSplitArray[i],
-            "boost": 100
-          }
-        }
-      }
-      let matchPatentTitle = {
-        "match": {
-          "patent_title": {
-            "query": stringSplitArray[i],
-            "boost": 10
-          }
-        }
-      }
-      let matchInventors = {
-        "match": {
-          "patent_inventors": {
-            "query": stringSplitArray[i],
-            "boost": 5
-          }
-        }
-      }
-      let matchSponsors = {
-        "match": {
-          "patent_sponsors": {
-            "query": stringSplitArray[i],
-            "boost": 1
-          }
-        }
-      }
-      queryArray.push(matchFamilyNumber);
-      queryArray.push(matchPatentNumber);
-      queryArray.push(matchPatentTitle);
-      queryArray.push(matchInventors);
-      queryArray.push(matchSponsors);
     }
+    
+    queryArray.push(patentMultiQuery);
     
     //Create Patent Filters
     let classificationsToInclude = event.arguments.patentClassificationFilter;

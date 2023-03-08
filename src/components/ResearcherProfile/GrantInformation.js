@@ -10,6 +10,8 @@ import Pagination from "@mui/material/Pagination";
 
 export default function GrantInformation(props){
 
+    console.log(props)
+
     const [numberOfRows, setNumberOfRows] = useState(props.initialNumberOfRows);
     const [increaseRowCountBy, setIncreaseRowCountBy] = useState(25);
     const [page, setPage] = useState(1);
@@ -45,7 +47,9 @@ export default function GrantInformation(props){
         (data, index) => paginationCallback(data, index)
       )
       .map((filteredData, index) => (
-        <Grant key={index} name={filteredData.name} projectTitle={filteredData.project_title} agency={filteredData.agency} amount={filteredData.amount} year={filteredData.year} />
+        <Grant key={index} name={filteredData.name} projectTitle={filteredData.project_title} 
+        agency={filteredData.agency} amount={filteredData.amount} year={filteredData.year} 
+        assigned_id={filteredData.assigned_id}/>
       ));
 
     return(

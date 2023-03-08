@@ -225,6 +225,7 @@ export default function Researcher_profile_overview() {
         id: researcherId,
       },
     });
+    console.log(grantResult);
     setGrantData(grantResult.data.getResearcherGrants);
     setPageLoaded(true);
   };
@@ -263,7 +264,7 @@ export default function Researcher_profile_overview() {
 
     // create weighted list of keywords
     let keywordHashmap = new Map();
-    let keyWords = researcher_data.keywords.split(", ");
+    let keyWords = researcher_data.merged_keywords.split(", ");
 
     for (let i = 0; i < keyWords.length; i++) {
       if (keywordHashmap.get(keyWords[i])) {
