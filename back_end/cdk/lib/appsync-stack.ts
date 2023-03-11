@@ -213,6 +213,11 @@ export class AppsyncStack extends Stack {
         searchPatents(search_value: String!, patentClassificationFilter: [String]!): [patent]
         otherResearchersWithKeyword(keyword: String!): [ResearcherOpenSearch]
         getAllGrantAgencies: [String]
+        getFlaggedIds: [[Researcher]]
+        getResearcherImpactsByDepartment(prime_department: String!): [Impact]
+        getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
+        getResearcherPatents(id: ID!): [patent]
+        getResearcherGrants(id: ID!): [grant]
       }
       
       type Researcher {
@@ -247,6 +252,7 @@ export class AppsyncStack extends Stack {
         email: String
         first_name: String
         h_index: Float
+        merged_keywords: String
         job_stream: String
         keywords: String!
         last_name: String
@@ -293,6 +299,7 @@ export class AppsyncStack extends Stack {
       }
       
       type grant {
+        assigned_id: String!
         agency: String!
         amount: Int
         department: String
@@ -328,6 +335,8 @@ export class AppsyncStack extends Stack {
         patent_inventors: String
         patent_number: String
         patent_publication_date: String
+        inventors_assigned_ids: String
+        matched_inventors_names: String
       }
       
       type pubsPerYear {

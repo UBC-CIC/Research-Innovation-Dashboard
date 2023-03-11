@@ -76,7 +76,7 @@ export class OpensearchStack extends Stack {
         enableVersionUpgrade: true,
         capacity: {
             dataNodes: 2,
-            dataNodeInstanceType: "t2.small.search"
+            dataNodeInstanceType: "t3.small.search"
         },
         domainName: this.domainName,
         accessPolicies: [openSearchPolicyStatement],
@@ -84,9 +84,13 @@ export class OpensearchStack extends Stack {
         vpcSubnets: [vpcStack.vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_ISOLATED})],
         securityGroups: [defaultSecurityGroup],
         zoneAwareness: {availabilityZoneCount : 2},
-        // encryptionAtRest: {
-        //     enabled: true,
-        // },
+        enforceHttps: true,
+        encryptionAtRest: {
+            enabled: true,
+        },
+        fineGrainedAccessControl: {
+            masterUserArn: lambdaRole.roleArn,
+        },
         nodeToNodeEncryption: true
     });
 

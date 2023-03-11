@@ -17,7 +17,7 @@ export default function Grant(props){
                         variant="outlined"
                         sx={{ textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
                         >
-                            {props.name}
+                            <a href={"/Researchers/" + props.assigned_id + "/"} target="_blank" rel="noopener noreferrer">{props.name}</a>
                         </Paper>
                     </Grid>
                     <Grid item xs={6}>

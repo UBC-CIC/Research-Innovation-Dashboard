@@ -51,7 +51,12 @@ function PageContainer(props) {
       const cognitoUserEntry = await Auth.currentAuthenticatedUser();
       const cognitoUserGroups =
         cognitoUserEntry.signInUserSession.idToken.payload["cognito:groups"];
-      setAdminUser(cognitoUserGroups.includes("Admins"));
+      if(cognitoUserGroups){
+        setAdminUser(cognitoUserGroups.includes("Admins"));
+      }
+      else {
+        setAdminUser(false);
+      }
     };
     getCognitoUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,3 +1,4 @@
+import sys
 from pyjarowinkler.distance import get_jaro_distance
 import psycopg2
 import json
@@ -36,19 +37,17 @@ def getCredentials():
     return credentials
 
 
-def lambda_handler(event, context):
+def mergeKeywords():
     credentials = getCredentials()
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     
-    cursor.execute("SELECT * FROM researcher_data")
+    cursor.execute("SELECT researcher_id, keywords FROM researcher_data")
     result = cursor.fetchall()
-    
-    k = 0
     
     for researcher in result:
         researcher_id = researcher[0]
-        keywords = researcher[16]
+        keywords = researcher[1]
         hashMap = createHashMap(keywords)
         keyArray = []
 
@@ -58,12 +57,12 @@ def lambda_handler(event, context):
         for i in range((len(keyArray))-1):
             j = i+1
             while j < len(keyArray):
-                if(get_jaro_distance(keyArray[i], keyArray[j]) >= 0.95):
-                    if hashMap.get(keyArray[i]) and hashMap.get(keyArray[j]):
-                        hashMap[keyArray[i]] = hashMap.get(keyArray[i]) + hashMap.pop(keyArray[j])
+                if keyArray[i] is not None and keyArray[j] is not None:
+                    if keyArray[i] != "" and keyArray[j] != "":
+                        if(get_jaro_distance(keyArray[i], keyArray[j]) >= 0.95):
+                            if hashMap.get(keyArray[i]) and hashMap.get(keyArray[j]):
+                                hashMap[keyArray[i]] = hashMap.get(keyArray[i]) + hashMap.pop(keyArray[j])
                 j = j + 1
-        
-        print(dict(sorted(hashMap.items(), key=lambda item: item[1], reverse=True)))
         
         keyWordHashMap = dict(sorted(hashMap.items(), key=lambda item: item[1], reverse=True))
         
@@ -76,7 +75,6 @@ def lambda_handler(event, context):
                 mergedKeywordsList = mergedKeywordsList + keyword + ", "
         
         mergedKeywordsList = mergedKeywordsList[:-2]
-        print(mergedKeywordsList)
         
         query = "UPDATE public.researcher_data SET merged_keywords=%s WHERE researcher_id=%s"
         data = (str(mergedKeywordsList), str(researcher_id))
@@ -84,3 +82,5 @@ def lambda_handler(event, context):
     
     cursor.close()
     connection.commit()
+
+mergeKeywords()

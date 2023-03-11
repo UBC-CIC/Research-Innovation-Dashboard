@@ -1,6 +1,35 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const advancedSearchGrants = /* GraphQL */ `
+  query AdvancedSearchGrants(
+    $includeAllTheseWords: String!
+    $includeAnyOfTheseWords: String!
+    $includeTheseExactWordsOrPhrases: String!
+    $noneOfTheseWords: String!
+    $table: String!
+  ) {
+    advancedSearchGrants(
+      includeAllTheseWords: $includeAllTheseWords
+      includeAnyOfTheseWords: $includeAnyOfTheseWords
+      includeTheseExactWordsOrPhrases: $includeTheseExactWordsOrPhrases
+      noneOfTheseWords: $noneOfTheseWords
+      table: $table
+    ) {
+      assigned_id
+      agency
+      amount
+      department
+      end_date
+      grant_program
+      keywords
+      name
+      project_title
+      start_date
+      year
+    }
+  }
+`;
 export const advancedSearchPublications = /* GraphQL */ `
   query AdvancedSearchPublications(
     $includeAllTheseWords: String!
@@ -67,34 +96,6 @@ export const advancedSearchResearchers = /* GraphQL */ `
       scopus_id
       second_department
       second_faculty
-    }
-  }
-`;
-export const advancedSearchGrants = /* GraphQL */ `
-  query AdvancedSearchGrants(
-    $includeAllTheseWords: String!
-    $includeAnyOfTheseWords: String!
-    $includeTheseExactWordsOrPhrases: String!
-    $noneOfTheseWords: String!
-    $table: String!
-  ) {
-    advancedSearchGrants(
-      includeAllTheseWords: $includeAllTheseWords
-      includeAnyOfTheseWords: $includeAnyOfTheseWords
-      includeTheseExactWordsOrPhrases: $includeTheseExactWordsOrPhrases
-      noneOfTheseWords: $noneOfTheseWords
-      table: $table
-    ) {
-      name
-      department
-      agency
-      grant_program
-      amount
-      project_title
-      keywords
-      year
-      start_date
-      end_date
     }
   }
 `;
@@ -214,8 +215,10 @@ export const getResearcherFull = /* GraphQL */ `
       first_name
       h_index
       job_stream
+      merged_keywords
       keywords
       last_name
+      last_updated
       num_citations
       num_documents
       num_patents_filed
@@ -227,7 +230,6 @@ export const getResearcherFull = /* GraphQL */ `
       scopus_id
       second_department
       second_faculty
-      last_updated
     }
   }
 `;
@@ -281,30 +283,6 @@ export const getResearcherPubsByYear = /* GraphQL */ `
       link
       title
       year_published
-    }
-  }
-`;
-export const getResearcherImpactsByDepartment = /* GraphQL */ `
-  query GetResearcherImpactsByDepartment($prime_department: String!) {
-    getResearcherImpactsByDepartment(prime_department: $prime_department) {
-      h_index
-      num_citations
-      preferred_name
-      prime_department
-      prime_faculty
-      scopus_id
-    }
-  }
-`;
-export const getResearcherImpactsByFaculty = /* GraphQL */ `
-  query GetResearcherImpactsByFaculty($prime_faculty: String!) {
-    getResearcherImpactsByFaculty(prime_faculty: $prime_faculty) {
-      h_index
-      num_citations
-      preferred_name
-      prime_department
-      prime_faculty
-      scopus_id
     }
   }
 `;
@@ -401,17 +379,86 @@ export const changeScopusId = /* GraphQL */ `
 export const lastUpdatedResearchersList = /* GraphQL */ `
   query LastUpdatedResearchersList {
     lastUpdatedResearchersList {
-      preferred_name
       last_updated
+      preferred_name
     }
   }
 `;
 export const getUpdatePublicationsLogs = /* GraphQL */ `
   query GetUpdatePublicationsLogs {
     getUpdatePublicationsLogs {
-      number_of_publications_updated
       date_updated
+      number_of_publications_updated
     }
+  }
+`;
+export const searchGrants = /* GraphQL */ `
+  query SearchGrants(
+    $search_value: String!
+    $grantAgenciesToFilterBy: [String]!
+  ) {
+    searchGrants(
+      search_value: $search_value
+      grantAgenciesToFilterBy: $grantAgenciesToFilterBy
+    ) {
+      assigned_id
+      agency
+      amount
+      department
+      end_date
+      grant_program
+      keywords
+      name
+      project_title
+      start_date
+      year
+    }
+  }
+`;
+export const searchPatents = /* GraphQL */ `
+  query SearchPatents(
+    $search_value: String!
+    $patentClassificationFilter: [String]!
+  ) {
+    searchPatents(
+      search_value: $search_value
+      patentClassificationFilter: $patentClassificationFilter
+    ) {
+      patent_title
+      patent_sponsors
+      patent_classification
+      patent_family_number
+      patent_inventors
+      patent_number
+      patent_publication_date
+      inventors_assigned_ids
+      matched_inventors_names
+    }
+  }
+`;
+export const otherResearchersWithKeyword = /* GraphQL */ `
+  query OtherResearchersWithKeyword($keyword: String!) {
+    otherResearchersWithKeyword(keyword: $keyword) {
+      researcher_id
+      campus
+      email
+      first_name
+      job_stream
+      keywords
+      last_name
+      preferred_name
+      prime_department
+      prime_faculty
+      rank
+      scopus_id
+      second_department
+      second_faculty
+    }
+  }
+`;
+export const getAllGrantAgencies = /* GraphQL */ `
+  query GetAllGrantAgencies {
+    getAllGrantAgencies
   }
 `;
 export const getFlaggedIds = /* GraphQL */ `
@@ -436,98 +483,59 @@ export const getFlaggedIds = /* GraphQL */ `
     }
   }
 `;
-export const getResearcherGrants = /* GraphQL */ `
-  query GetResearcherGrants($id: ID!) {
-    getResearcherGrants(id: $id) {
-      name
-      department
-      agency
-      grant_program
-      amount
-      project_title
-      keywords
-      year
-      start_date
-      end_date
+export const getResearcherImpactsByDepartment = /* GraphQL */ `
+  query GetResearcherImpactsByDepartment($prime_department: String!) {
+    getResearcherImpactsByDepartment(prime_department: $prime_department) {
+      h_index
+      num_citations
+      preferred_name
+      prime_department
+      prime_faculty
+      scopus_id
     }
   }
 `;
-export const searchGrants = /* GraphQL */ `
-  query SearchGrants(
-    $search_value: String!
-    $grantAgenciesToFilterBy: [String]!
-  ) {
-    searchGrants(
-      search_value: $search_value
-      grantAgenciesToFilterBy: $grantAgenciesToFilterBy
-    ) {
-      name
-      department
-      agency
-      grant_program
-      amount
-      project_title
-      keywords
-      year
-      start_date
-      end_date
+export const getResearcherImpactsByFaculty = /* GraphQL */ `
+  query GetResearcherImpactsByFaculty($prime_faculty: String!) {
+    getResearcherImpactsByFaculty(prime_faculty: $prime_faculty) {
+      h_index
+      num_citations
+      preferred_name
+      prime_department
+      prime_faculty
+      scopus_id
     }
-  }
-`;
-export const searchPatents = /* GraphQL */ `
-  query SearchPatents(
-    $search_value: String!
-    $patentClassificationFilter: [String]!
-  ) {
-    searchPatents(
-      search_value: $search_value
-      patentClassificationFilter: $patentClassificationFilter
-    ) {
-      patent_number
-      patent_title
-      patent_inventors
-      patent_sponsors
-      patent_family_number
-      patent_classification
-      patent_publication_date
-    }
-  }
-`;
-export const getAllGrantAgencies = /* GraphQL */ `
-  query GetAllGrantAgencies {
-    getAllGrantAgencies
   }
 `;
 export const getResearcherPatents = /* GraphQL */ `
   query GetResearcherPatents($id: ID!) {
     getResearcherPatents(id: $id) {
-      patent_number
       patent_title
-      patent_inventors
       patent_sponsors
-      patent_family_number
       patent_classification
+      patent_family_number
+      patent_inventors
+      patent_number
       patent_publication_date
+      inventors_assigned_ids
+      matched_inventors_names
     }
   }
 `;
-export const otherResearchersWithKeyword = /* GraphQL */ `
-  query OtherResearchersWithKeyword($keyword: String!) {
-    otherResearchersWithKeyword(keyword: $keyword) {
-      researcher_id
-      campus
-      email
-      first_name
-      job_stream
+export const getResearcherGrants = /* GraphQL */ `
+  query GetResearcherGrants($id: ID!) {
+    getResearcherGrants(id: $id) {
+      assigned_id
+      agency
+      amount
+      department
+      end_date
+      grant_program
       keywords
-      last_name
-      preferred_name
-      prime_department
-      prime_faculty
-      rank
-      scopus_id
-      second_department
-      second_faculty
+      name
+      project_title
+      start_date
+      year
     }
   }
 `;
