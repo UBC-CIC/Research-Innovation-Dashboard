@@ -16,6 +16,7 @@
 | [Admin Dashboard](#Admin-Dashboard)          | Update logs, Changing Scopus IDs, Viewing Flagged IDs |
 | [Updating Researchers](#Updating-Researchers)| Process for Updating Researcher Data                  |
 | [Updating Grant Data](#updating-grant-data)  | Process for Updating Grant Data
+| [Updating Patent Data](#updating-patent-data) | Process for Updating Patent Data 
 
 **Note:** The screenshots contained in this User Guide show some information as redacted to obscure data that is not fully up to date.
 <br>
@@ -181,32 +182,30 @@ Below that, flagged researcher entries are grouped into tables with the columns 
 2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `institution_data.csv`. Note that the `INSTITUTION_USER_ID` column could represents any types of **unique ids** (employee id from institution's HR data, uuid from the institution's external database, etc), and each ids must be associated with one person(researcher) only.
 3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
    ![alt text](images/deploymentGuide/s3_search.jpg)
-4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
-   ![alt text](images/deploymentGuide/s3_bucket_search.jpg)
+4. In the `Buckets` search bar enter `datafetchstack` and click on the name of the bucket (the name also contain the string `datas3bucket`).
+   ![alt text](images/p3/user/user-researcher-s3.png)
 5. Click on the `researcher_data` folder.
    ![alt text](images/userGuide/folder_select.jpg)
 6. Select the `institution_data.csv` and `scopus_ids.csv` files (also select the `manual_matches.csv` file if it is present) and click `Delete`
-   ![alt text](images/userGuide/file_select.jpg)
+   ![alt text](images/p3/user/user-csv-select.png)
 7. Type `permanently delete` in the text input field then click `Delete objects`.
-   ![alt text](images/userGuide/file_deletion.jpg)
+   ![alt text](images/p3/user/user-csv-delete.png)
 8. Click `Close` once the deletion is finished.
-   ![alt text](images/userGuide/deletion_close.jpg)
 9. Click `Add Files` and select the `scopus_ids.csv` file from part 1 and the `institution_data.csv` file from part 2 (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: [Example Matches File](example_data/manual_matches(example).csv)) then click `Upload`.
-   ![alt text](images/deploymentGuide/s3_upload.jpg)
+   ![alt text](images/p3/deployment/depl-researcher-data-s3.png)
 10. Once the upload is complete click `Close`
-   ![alt text](images/deploymentGuide/s3_upload_complete.jpg)
 
 ### Step 2: Run the Data Pipeline
 
 1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Step Functions` in the search bar.
    ![alt text](images/deploymentGuide/step_function_search.jpg)
-2. In the State Machine search bar enter `DataFetchStateMachine` and click the name of the top result (The exact name of the state machine may vary but it will always begin with `DataFetchStateMachine`.
+2. In the State Machine search bar enter `DataFetchStateMachine` and click the name of the top result (The exact name of the state machine may vary but it will always contain the string `DataFetchStateMachine`.
    ![alt text](images/deploymentGuide/state_machine_search.jpg)
 3. Click `Start Execution`
    ![alt text](images/deploymentGuide/state_machine_page.jpg)
 4. In the box that appears click `Start Execution`. Do not edit the text in the input field.
    ![alt text](images/deploymentGuide/start_execution.jpg)
-5. The data pipeline will now run on its own and populate the database. This process will take ~90 minutes. If you navigate to the page you visited in part 2 of this step you can view the status of the data pipeline. Once it is finished running the step function execution status will say `Succeeded`.
+5. The data pipeline will now run on its own and populate the database. This process will take ~5 hours. If you navigate to the page you visited in part 2 of this step you can view the status of the data pipeline. Once it is finished running the step function execution status will say `Succeeded`.
    ![alt text](images/deploymentGuide/state_machine_success.jpg)
 
 ## Updating Grant Data
@@ -214,8 +213,8 @@ Below that, flagged researcher entries are grouped into tables with the columns 
 **NOTE**: grant data should be updated every 6 months or so.
 
 1. Refer to the [User Guide to Grant Downloads](User%20Guide%20to%20Grant%20Downloads.pdf) for instructions on how to obtain the grant data for your institution.
-2. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar. Find the bucket whose name starts with `grantdatastack-grantdatas3bucket` (the full name will have some random alpha-numeric letter after that initial identifier).
-3. There are a folder called `raw` already created for you at deployment, and it contains 4 subfolders (`cihr`, `cfi`, `nserc`, `sshrc`). Inside each of the subfolder, put the corresponding CSV file for that grant there. For SSHRC, please also remember to include the `sshrc_program_codes.csv` file along with the SSHRC grant data CSV file. The resulting folder structure should look like this:
+2. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar. Find the bucket whose name contains the string `grantdatas3` (the full name will have some random alpha-numeric letter after that initial identifier).
+3. There is a folder called `raw` already created for you at deployment, and it contains 4 subfolders (`cihr`, `cfi`, `nserc`, `sshrc`). Inside each of the subfolder, put the corresponding CSV file for that grant there. For SSHRC, please also remember to include the `sshrc_program_codes.csv` file along with the SSHRC grant data CSV file. The resulting folder structure should look like this:
    ![alt text](images/deploymentGuide/grant-data-folder-structure.png)
 
 **NOTE**:
@@ -234,3 +233,8 @@ Below that, flagged researcher entries are grouped into tables with the columns 
 
 7.  If you see that a folder(s) is missing. Please wait for another 10 or so minutes because this could be a latency issue. If you came back and check and that missing folder still has not show up, then it is possible that a wrong file was uploaded in **raw** folder. Please double check your **raw** folder and follow the instructions above to reupload accordingly.
 
+## Updating Patent Data
+
+You only need to manually execute the Patent Data Pipeline for first time deployment. Subsequent runs will be automatically scheduled and executed on day 1st and 15th of every month (twice a month).
+
+You could also manually execute the pipeline if you wish. Refer to [Step 7](DeploymentGuide.md/#step-7-starting-patent-data-pipeline) for detail on how to manually run the pipeline.
