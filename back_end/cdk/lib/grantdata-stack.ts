@@ -25,6 +25,8 @@ export class GrantDataStack extends Stack {
   public readonly secretPath: string;
   public readonly glueS3Bucket: s3.Bucket;
   public readonly dmsTaskArn: string;
+  public readonly mergeKeywordsJob: glue.CfnJob;
+  public readonly mergeKeywordsJobName: string;
 
   constructor(
     scope: Construct,
@@ -613,11 +615,52 @@ export class GrantDataStack extends Stack {
       defaultArguments: defaultArguments,
     });
 
+    // Glue Job: start dms replication task
+    const mergeKeywordsJobName = "expertiseDashboard-mergeKeywords";
+    const mergeKeywordsJob = new glue.CfnJob(this, mergeKeywordsJobName, {
+      name: mergeKeywordsJobName,
+      role: glueRole.roleArn,
+      command: {
+        name: "pythonshell",
+        pythonVersion: PYTHON_VER,
+        scriptLocation:
+          "s3://" +
+          this.glueS3Bucket.bucketName +
+          "/scripts/researchers-etl/" +
+          "mergeKeywords"+
+          ".py",
+      },
+      executionProperty: {
+        maxConcurrentRuns: MAX_CONCURRENT_RUNS,
+      },
+      connections: {
+        connections: [this.glueConnectionName],
+      },
+      maxRetries: MAX_RETRIES,
+      maxCapacity: MAX_CAPACITY,
+      timeout: TIMEOUT, // 120 min timeout duration
+      glueVersion: GLUE_VER,
+      defaultArguments: {
+        "--extra-py-files": `s3://${this.glueS3Bucket.bucketName}/extra-python-libs/pyjarowinkler-1.8-py2.py3-none-any.whl,s3://${this.glueS3Bucket.bucketName}/extra-python-libs/custom_utils-0.1-py3-none-any.whl`,
+        "library-set": "analytics",
+        "--SECRET_NAME": databaseStack.secretPath,
+      }
+    });
+    this.mergeKeywordsJob = mergeKeywordsJob;
+    this.mergeKeywordsJobName = mergeKeywordsJobName;
+
     // Deploy glue job to glue S3 bucket
     new s3deploy.BucketDeployment(this, "DeployGlueJobFiles", {
       sources: [s3deploy.Source.asset("./glue/scripts/grants-etl")],
       destinationBucket: this.glueS3Bucket,
       destinationKeyPrefix: "scripts/grants-etl",
+    });
+
+    // Deploy mergeKeywords glue job to glue S3 bucket
+    new s3deploy.BucketDeployment(this, "DeployGlueJobFiles-ResearcherETL", {
+      sources: [s3deploy.Source.asset("./glue/scripts/researchers-etl")],
+      destinationBucket: this.glueS3Bucket,
+      destinationKeyPrefix: "scripts/researchers-etl",
     });
 
     // Grant S3 read/write role to Glue
@@ -631,7 +674,8 @@ export class GrantDataStack extends Stack {
     cleanCfiJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     assignIdsJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     storeDataJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
-    startDmsReplicationTaskJob.applyRemovalPolicy(RemovalPolicy.DESTROY)
+    startDmsReplicationTaskJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    mergeKeywordsJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     createFolders.applyRemovalPolicy(RemovalPolicy.DESTROY);
     glueTrigger.applyRemovalPolicy(RemovalPolicy.DESTROY);
     this.glueConnection.applyRemovalPolicy(RemovalPolicy.DESTROY);

@@ -10,12 +10,13 @@ import { aws_logs as logs } from 'aws-cdk-lib';
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { DatabaseStack } from './database-stack';
 import { DmsStack } from './dms-stack';
+import { GrantDataStack } from './grantdata-stack';
 
 export class DataFetchStack extends cdk.Stack {
   public readonly psycopg2: lambda.LayerVersion;
   public readonly pyjarowinkler: lambda.LayerVersion;
 
-  constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, dmsStack: DmsStack, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, dmsStack: DmsStack, grantDataStack: GrantDataStack, props?: cdk.StackProps) {
     super(scope, id, props);
 
     // Create the S3 Bucket
@@ -461,12 +462,16 @@ export class DataFetchStack extends cdk.Stack {
     const publicationMap = new sfn.Map(this, 'Publication Map', {
       maxConcurrency: 1,
       itemsPath: '$'
-    })
+    });
     publicationMap.iterator(publicationFetchInvoke);
 
     const replicationStartInvoke = new tasks.LambdaInvoke(this, 'Start DMS Replication', {
       lambdaFunction: startReplication,
       outputPath: '$.Payload',
+    });
+
+    const mergeKeywordsInvoke = new tasks.GlueStartJobRun(this, 'Create Merged Keywords', {
+      glueJobName: grantDataStack.mergeKeywordsJobName,
     });
 
     const dataFetchDefinition = scopusCleanInvoke
@@ -478,6 +483,7 @@ export class DataFetchStack extends cdk.Stack {
       .next(elsevierFetchInvoke)
       .next(orcidFetchInvoke)
       .next(publicationMap)
+      .next(mergeKeywordsInvoke)
       .next(replicationStartInvoke);
     
     const dataFetch = new sfn.StateMachine(this, 'expertiseDashboard-DataFetchStateMachine', {
