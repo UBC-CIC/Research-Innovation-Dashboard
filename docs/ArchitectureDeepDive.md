@@ -2,11 +2,11 @@
 
 ## Architecture
 
-![Architecture diagram](../docs/images/VPRI_Architechture_Phase_II.drawio.png?raw=true)
+![Architecture diagram](../docs/images/p3/ExpertiseDashboard_Architecture_Phase_III.drawio.png?raw=true)
 
 ## Description
 ### Back End Flow (1-15)
-![Architecture diagram](../docs/images/VPRI_Architecture_Back_End_Phase_II.drawio.png?raw=true)
+![Architecture diagram](.docs/images/../../images/p3/ExpertiseDashboard_Architecture_Back_End_Phase_III.drawio.png)
 
 #### NOTE: "Institution" in this document refers to the institution that deploys this solution.
 
@@ -28,22 +28,32 @@
 14. When queried, Lambda connects to the RDS PostgreSQL database and gets the data requested by AppSync.
 15. AWS AppSync triggers the PostgreSQL Lambda and passes the correct variables needed to get the required data.
 
-#### Step A-D are explored in more detail as part of the [Grant Data Pipeline Deep Dive](/docs/GrantDataPipelineDeepDive.md)
+#### Step 16-20 are explored in more detail as part of the [Grant Data Pipeline Deep Dive](/docs/GrantDataPipelineDeepDive.md)
 
-<ol type="A">
-  <li>When files are uploaded to the S3 bucket, an Object upload event notification will be sent out to the Lambda function. The Function will filter the event received and in turns will invoke the correct Glue job. Some Glue jobs (clean-...-pythonshell, assign-ids-pythonshell) will create temporary subfolders and files in the same bucket, and the bucket will in turns create corresponding event notification to the Lambda function again, and again to invoke Glue jobs downstream of the pipeline, until the grant data is put in the PostgreSQL database.</li>
-  <li>Raw grant data (currently CIHR, NSERC, SSHRC, CFI) are fetched from an Amazon S3 bucket in the form of comma separated values (CSV) files. The datasets are cleaned which involves standardizing the researcher names, modifying date encoding format, remove special characters. The researcher names are separated into First Name and Last Name for name matching in the next step. The results are stored in a temporary folder called <strong>clean</strong> in the same S3 bucket. A bucket event notification will be issued to the handling Lambda function to invoke the <strong>assign-ids-pythonshell</strong> job</li>
-  <li>The standardized names are then compare with the researcher names that are already in the database. The name strings are compared using a string metric called <a href="https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance" target="_blank">Jaro-Winkler distance</a> to see if the two names are similar enough to be considered belonging to the same person (see <a href="https://en.wikipedia.org/wiki/Approximate_string_matching" target="_blank">fuzzy string matching</a>). If the Jaro-Winkler distance is above a certain threshold then it is a complete match, otherwise the name is ignored (not processed). For each complete match, it also include the researcher_id from our database associated with that person. The results are stored again in a temporary folder called <strong>ids-assigned</strong> in the same S3 bucket. A bucket event notification will be issued to the handling Lambda function to invoke the <strong>store-data-pythonshell</strong></li>
-  <li>This job will filtered out only the grant entries with an associated researcher id from earlier, and put the data into the PostgreSQL database. The pipeline is finished after this step.</li>
-</ol>
+16. When files are uploaded to the S3 bucket, an Object upload event notification will be sent out to the Lambda function. The Function will filter the event received and in turns will invoke the correct Glue job. Some Glue jobs (clean-...-pythonshell, assign-ids-pythonshell) will create temporary subfolders and files in the same bucket, and the bucket will in turns create corresponding event notification to the Lambda function again, and again to invoke Glue jobs downstream of the pipeline, until the grant data is put in the PostgreSQL database.
+17. Raw grant data (currently CIHR, NSERC, SSHRC, CFI) are fetched from an Amazon S3 bucket in the form of comma separated values (CSV) files. The datasets are cleaned which involves standardizing the researcher names, modifying date encoding format, remove special characters. The researcher names are separated into First Name and Last Name for name matching in the next step. The results are stored in a temporary folder called <strong>clean</strong> in the same S3 bucket. A bucket event notification will be issued to the handling Lambda function to invoke the <strong>assign-ids-pythonshell</strong> job
+18. The standardized names are then compare with the researcher names that are already in the database. The name strings are compared using a string metric called <a href="https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance" target="_blank">Jaro-Winkler distance</a> to see if the two names are similar enough to be considered belonging to the same person (see <a href="https://en.wikipedia.org/wiki/Approximate_string_matching" target="_blank">fuzzy string matching</a>). If the Jaro-Winkler distance is above a certain threshold then it is a complete match, otherwise the name is ignored (not processed). For each complete match, it also include the researcher_id from our database associated with that person. The results are stored again in a temporary folder called <strong>ids-assigned</strong> in the same S3 bucket. A bucket event notification will be issued to the handling Lambda function to invoke the <strong>store-data-pythonshell</strong>
+19. This job will filtered out only the grant entries with an associated researcher id from earlier, and put the data into the PostgreSQL database. The pipeline is finished after this step.
+20. This job will start a Replication Task on Database Migration Service (DMS) to replicate the new grant data into AWS OpenSearch so that it is searchable on the web app.
 
-### Front End Flow (16-19)
+#### Step 21-25 are explored in more detail as part of the [Patent Data Pipeline Deep Dive](/docs/PatentDataPipelineDeepDive.md)
+
+1.  This step fetches raw data from the API and stores it inside an S3 bucket as a CSV. This is achieved by making a GET request to the specific API endpoint that returns bibliographic data for patent publications. The query will retrieve all patent publications from the year 2001 up to the date on which the patent pipeline is invoked. Patent publication data includes both patent application documents (kind code A1, A2) and patent documents (kind code B1, B2, C) for both Canada (country code CA) and the United States (country code US).
+2.  This step will get the raw data from S3 and perform the necessary cleaning steps. Data processing steps include: eliminating special characters, trimming white spaces, and modifying the date format. Additionally, inventors' names will be capitalized and split into first and last names for further processing downstream.
+3.  With the first and last names separated, this step will match the names with the researcher names in the RDS PostgreSQL database. This process uses a string metric called Jaro-Winkler distance (see above) to determine if two names are the same. The match that has the highest Jaro-Winkler distance is considered to be the closest match:
+    * If the Jaro-Winkler distance is above a certain threshold, the match is considered final and the name will be assigned a unique ID associated with that researcher from the PostgreSQL database. 
+    * After each CSV file has the IDs assigned, every First and Last name pair will be recombined into a single name.
+4.   After each patent entry is name-matched, this step will insert the processed patent data into the RDS PostgreSQL under the patent_data table. Only patents with at least one matched researcher as an inventor will be inserted into the database.
+5.   This step will start a data Replication Task on AWS Data Migration Service (DMS) to replicate the new patent data into AWS Opensearch Service. After this process is done, the data will be searchable on the front-end web app.
+
+
+### Front End Flow (26-29)
 ![Architecture diagram](../docs/images/architecture-diagram-front-end.png)
 
-16. All queries approved by AWS Web Application Firewall (WAF) are passed to AppSync.
-17. All queries are first sent to AWS WAF. This helps prevent malicious users from getting data or breaking the website with DDOS attacks.
-18. Users connect to the webpage, where access to AWS resources is done through authentication using AWS Cognito.
-19. Users navigate to the VPRI application in their web browser.
+26. All queries approved by AWS Web Application Firewall (WAF) are passed to AppSync.
+27. All queries are first sent to AWS WAF. This helps prevent malicious users from getting data or breaking the website with DDOS attacks.
+28. Users connect to the webpage, where access to AWS resources is done through authentication using AWS Cognito.
+29. Users navigate to the VPRI application in their web browser.
 
 # Update Publications Deep Dive (10)
 

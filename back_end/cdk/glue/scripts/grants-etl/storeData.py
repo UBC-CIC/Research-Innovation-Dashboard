@@ -6,6 +6,7 @@ import numpy as np
 import psycopg2
 import psycopg2.extras as extras
 import boto3
+from datetime import datetime
 from awsglue.utils import getResolvedOptions
 from custom_utils.utils import fetchFromS3, putToS3
 
@@ -72,6 +73,23 @@ def storeData():
     query = "INSERT INTO grant_data (assigned_id, name, department, agency, grant_program, amount, project_title, keywords, year, start_date, end_date) VALUES %s"
     extras.execute_values(cursor, query, listOfValuesToInsert)
 
+    connection.commit()
+
+    # log the rows that are inserted
+    # datetime object containing current date and time
+    now = datetime.now()
+    print("now =", now)
+    # dd/mm/YY H:M:S
+    dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+    print("date and time =", dt_string)
+
+    query = """INSERT INTO data_update_logs (table_name, last_updated)
+               VALUES %s
+               ON CONFLICT (table_name)
+               DO UPDATE SET last_updated = EXCLUDED.last_updated   
+    """
+    data = ("grant_data", dt_string)
+    cursor.execute(query, data)
     connection.commit()
 
     # For testing purposes

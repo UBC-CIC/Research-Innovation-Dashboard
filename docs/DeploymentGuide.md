@@ -118,7 +118,6 @@ aws secretsmanager create-secret \
     --secret-string "{\"consumer_key\":\"CONSUMER_KEY\",\"consumer_secret_key\":\"CONSUMER_SECRET_KEY\"}"
 ```
 
-
 ## Step 3: CDK Deployment
 
 Initialize the CDK stacks (required only if you have not deployed this stack before). Note the CDK deployment assumes you are deploying in ca-central-1
@@ -129,46 +128,6 @@ cdk bootstrap aws://YOUR_AWS_ACCOUNT_ID/ca-central-1 --profile your-profile-name
 ```
 
 Deploy the CDK stacks (this will take ~ 60 minutes):
-
-If you run into any issues while deploying, refer to [Troubleshooting](#troubleshooting) for solutions.
-
-You must also deploy the stacks individually (it is important to deploy the stack listed in the order below):
-
-```
-cdk deploy VpcStack  --profile your-profile-name
-```
-
-```
-cdk deploy DatabaseStack  --profile your-profile-name
-```
-
-```
-cdk deploy OpensearchStack --profile your-profile-name
-```
-
-```
-cdk deploy DmsStack --profile your-profile-name
-```
-
-```
-cdk deploy AppsyncStack --profile your-profile-name
-```
-
-```
-cdk deploy FargateStack --profile your-profile-name
-```
-
-```
-cdk deploy DataFetchStack --profile your-profile-name
-```
-
-```
-cdk deploy GrantDataStack --parameters GrantDataStack:cfiInstitutionName="Your Institution Name" --profile your-profile-name
-```
-
-```
-cdk deploy PatentDataStack --parameters PatentDataStack:epoInstitutionName="Your Institution Name" --profile your-profile-name
-```
 
 **Note for deploying the GrantDataStack**: when you obtain the CSV file for the **CFI** grant data, you must make a note of the name of your institution that appears under the `Institution / Établissement` column. For example: if your institution name is *The University of British Columbia*,
 then you would do:
@@ -187,6 +146,65 @@ cdk deploy PatentDataStack --parameters PatentDataStack:epoInstitutionName="UNIV
 ```
 
 Note that the two name `"UNIV BRITISH COLUMBIA,UNIVERSITY OF BRITISH COLUMBIA"`  is sepated by a comma, and **no space between comma**.
+
+If you run into any issues while deploying, refer to [Troubleshooting](#troubleshooting) for solutions.
+
+- You may choose to run the following command to deploy the stacks all at once:
+
+```
+cdk deploy --all --parameters GrantDataStack:cfiInstitutionName="Your Institution Name" --parameters PatentDataStack:epoInstitutionName="Your Institution Name" --profile your-profile-name
+```
+
+* Example:
+   ```
+   cdk deploy --all --parameters GrantDataStack:cfiInstitutionName="The University of British Columbia" --parameters PatentDataStack:epoInstitutionName="UNIV BRITISH COLUMBIA,UNIVERSITY OF BRITISH COLUMBIA" --profile myprofile
+   ```
+
+
+- You can also deploy the stacks individually (it is important to deploy the stack listed in the order below):
+
+```
+cdk deploy VpcStack  --profile your-profile-name
+```
+
+```
+cdk deploy DatabaseStack  --profile your-profile-name
+```
+
+```
+cdk deploy OpensearchStack --profile your-profile-name
+```
+
+```
+cdk deploy DmsStack --profile your-profile-name
+```
+
+```
+cdk deploy GrantDataStack --parameters GrantDataStack:cfiInstitutionName="Your Institution Name" --profile your-profile-name
+```
+
+```
+cdk deploy PatentDataStack --parameters PatentDataStack:epoInstitutionName="Your Institution Name" --profile your-profile-name
+```
+
+```
+cdk deploy DataFetchStack --profile your-profile-name
+```
+
+```
+cdk deploy AppsyncStack --profile your-profile-name
+```
+
+```
+cdk deploy FargateStack --profile your-profile-name
+```
+
+### Taking down the deployed stacks
+
+To take down the deployed stack, navigate to AWS Cloudformation, click on the stack(s) and hit Delete.
+Please delete the stacks in the opposite order of when you deployed them.
+
+![alt text](images/p3/deployment/cloudformation-take-down.png)
 
 # Step 4: Upload Data to S3 for the DataPipeline
 

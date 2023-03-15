@@ -114,12 +114,22 @@ def storePatentData():
 
     # log the rows that are inserted
     # datetime object containing current date and time
-    # now = datetime.now()
-    # print("now =", now)
-    # # dd/mm/YY H:M:S
-    # dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-    # print("date and time =", dt_string)
-    # saving file with some datetime information for logging/debugging purpose
+    now = datetime.now()
+    print("now =", now)
+    # dd/mm/YY H:M:S
+    dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+    print("date and time =", dt_string)
+
+    query = """INSERT INTO data_update_logs (table_name, last_updated)
+               VALUES %s
+               ON CONFLICT (table_name)
+               DO UPDATE SET last_updated = EXCLUDED.last_updated   
+    """
+    data = ("patent_data", dt_string)
+    cursor.execute(query, data)
+    connection.commit()
+
+    
     if EQUIVALENT == "true":
         FILE_PATH = f"epo/patent_data_insert/equivalent/patents_equivalent_insert.csv"
     else:
