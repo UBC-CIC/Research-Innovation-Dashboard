@@ -358,7 +358,7 @@ export class GrantDataStack extends Stack {
       KAFKA_SSL_ENABLED: "false",
     };
     const publicSubnetId = vpcStack.vpc.publicSubnets[0].subnetId;
-    const securityGroup = vpcStack.vpc.vpcDefaultSecurityGroup;
+    const securityGroup = vpcStack.glueSecurityGroup.securityGroupId;
     this.glueConnection = new glue.CfnConnection(
       this,
       this.glueConnectionName,

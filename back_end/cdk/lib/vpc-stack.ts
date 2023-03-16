@@ -5,10 +5,13 @@ import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as iam from 'aws-cdk-lib/aws-iam'
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { NatProvider } from 'aws-cdk-lib/aws-ec2';
-
+import { triggers } from "aws-cdk-lib";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as cdk from "aws-cdk-lib";
 export class VpcStack extends Stack {
     public readonly vpc: ec2.Vpc;
-    public readonly openSearchVPCPermissions: iam.CfnServiceLinkedRole
+    public readonly openSearchVPCPermissions: iam.CfnServiceLinkedRole;
+    public readonly glueSecurityGroup: ec2.SecurityGroup;
 
     constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
@@ -41,8 +44,62 @@ export class VpcStack extends Stack {
     });
     this.vpc.addFlowLog('expertiseDashboard-vpcFlowLog');
 
+    // Create a Self-referencing security group for Glue
+    // https://docs.aws.amazon.com/glue/latest/dg/setup-vpc-for-glue-access.html
+    this.glueSecurityGroup = new ec2.SecurityGroup(this, "glueSecurityGroup", {
+        vpc: this.vpc,
+        allowAllOutbound: true,
+        description: "Self-referencing security group for Glue",
+        securityGroupName: "default-glue-security-group"
+      }
+    )
+    // add self-referencing ingress rule
+    this.glueSecurityGroup.addIngressRule(this.glueSecurityGroup, ec2.Port.allTcp(), "self-referencing security group rule");
+
     // Get default security group for VPC
     const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, this.vpc.vpcDefaultSecurityGroup);
+
+    // Trigger Function to revoke the default ingress rule that allows ALL TRAFFIC
+    // Don't know why CDK did that by default
+    const revokeIngressDefaultSG = new triggers.TriggerFunction(this, "expertiseDashboard-revokeIngressDefaultSG", {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      functionName: "expertiseDashboard-revokeIngressDefaultSG",
+      handler: "revokeIngressDefaultSG.lambda_handler",
+      code: lambda.Code.fromAsset("lambda/revokeIngressDefaultSG"),
+      timeout: cdk.Duration.seconds(7),
+      vpc: this.vpc,
+      environment: {
+        SG_ID: defaultSecurityGroup.securityGroupId,
+        ACCOUNT_ID: this.account
+      },
+    });
+    revokeIngressDefaultSG.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["ec2:RevokeSecurityGroupIngress"],
+        resources: [`arn:aws:ec2:ca-central-1:${this.account}:security-group/${defaultSecurityGroup.securityGroupId}`],
+      })
+    );
+    revokeIngressDefaultSG.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["ec2:DescribeSecurityGroups"],
+        resources: ["*"],
+      })
+    );
+    revokeIngressDefaultSG.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          // CloudWatch Logs
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ],
+        resources: ["arn:aws:logs:*:*:*"],
+      })
+    );
+    revokeIngressDefaultSG.executeAfter(defaultSecurityGroup)
 
     // Add SSM endpoint to VPC
     this.vpc.addInterfaceEndpoint("SSM Endpoint", {
