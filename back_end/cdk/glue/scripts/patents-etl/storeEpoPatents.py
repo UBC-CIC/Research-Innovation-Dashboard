@@ -121,11 +121,11 @@ def storePatentData():
     print("date and time =", dt_string)
 
     query = """INSERT INTO data_update_logs (table_name, last_updated)
-               VALUES %s
+               VALUES (%s, %s)
                ON CONFLICT (table_name)
                DO UPDATE SET last_updated = EXCLUDED.last_updated   
     """
-    data = ("patent_data", dt_string)
+    data = ("patent_data", str(dt_string))
     cursor.execute(query, data)
     connection.commit()
 

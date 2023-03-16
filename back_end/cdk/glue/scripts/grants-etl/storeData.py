@@ -81,10 +81,10 @@ def storeData():
     print("now =", now)
     # dd/mm/YY H:M:S
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-    print("date and time =", dt_string)
+    print("date and time =", str(dt_string))
 
     query = """INSERT INTO data_update_logs (table_name, last_updated)
-               VALUES %s
+               VALUES (%s, %s)
                ON CONFLICT (table_name)
                DO UPDATE SET last_updated = EXCLUDED.last_updated   
     """
