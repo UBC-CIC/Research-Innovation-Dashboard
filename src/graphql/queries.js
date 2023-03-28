@@ -214,8 +214,8 @@ export const getResearcherFull = /* GraphQL */ `
       email
       first_name
       h_index
-      job_stream
       merged_keywords
+      job_stream
       keywords
       last_name
       last_updated

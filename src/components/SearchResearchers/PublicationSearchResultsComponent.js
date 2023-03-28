@@ -9,7 +9,7 @@ import Pagination from "@mui/material/Pagination";
 import Box from "@mui/material/Box";
 
 export default function PublicationSearchResultsComponent(props) {
-  const { publicationSearchResults } = props;
+  const { publicationSearchResults, searchYet } = props;
 
   let numberOfResearcherPerPage = 5;
 
@@ -89,7 +89,7 @@ export default function PublicationSearchResultsComponent(props) {
   }
 
   const publications =
-    publicationSearchResults &&
+    publicationSearchResults &&//.sort((pub1, pub2) => pub1.year_published > pub2.year_published ? -1 : 1) &&
     publicationSearchResults
       .filter((data, index) => PaginationCallback(data, index))
       .map((publication) => {
@@ -98,7 +98,7 @@ export default function PublicationSearchResultsComponent(props) {
         );
       });
 
-  return (
+  return (searchYet &&
     publicationSearchResults && (
       <Grid container>
         {publicationSearchResults.length === 0 && (

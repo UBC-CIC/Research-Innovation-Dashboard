@@ -10,7 +10,7 @@ import { useParams } from "react-router-dom";
 
 import { API } from "aws-amplify";
 
-import { searchResearcher, searchPublications, searchGrants, searchPatents } from "../../../graphql/queries";
+import { searchResearcher, searchPublications, searchGrants, searchPatents, getResearcherFull } from "../../../graphql/queries";
 
 export default function Search_Bar(props) {
   const {
@@ -27,6 +27,8 @@ export default function Search_Bar(props) {
     grantPath,
     patentClassificationPath,
     selectedPatentClassification,
+    searchYet,
+    setSearchYet
   } = props;
 
   let { searchValue } = useParams();
@@ -41,6 +43,9 @@ export default function Search_Bar(props) {
   }, []);
 
   function search() {
+    if (searchBarValue !== "") {
+      setSearchYet(true)
+    }
     if (whatToSearch === "Everything") {
       searchResearchersQuery();
       searchPublicationsQuery();
@@ -60,7 +65,8 @@ export default function Search_Bar(props) {
   }
 
   const searchResearchersQuery = async () => {
-    const researcherSearchResult = await API.graphql({
+    // this query is from ResearcherOpenSearch
+    let researcherSearchResult = await API.graphql({
       query: searchResearcher,
       variables: {
         search_value: searchBarValue,
@@ -68,10 +74,20 @@ export default function Search_Bar(props) {
         facultiesToFilterBy: selectedFaculties,
       },
     });
+    
+    // await Promise.all(researcherSearchResult.data.searchResearcher.map(async (researcher) => {
+    //   let h_index = await API.graphql({
+    //     query: getResearcherFull,
+    //     variables: { id: researcher.researcher_id },
+    //   })
+    //   researcher.h_index = h_index.data.getResearcherFull.h_index
+    // }));
+
     props.setResearcherSearchResults(
+      //researcherSearchResult.data.searchResearcher
       researcherSearchResult.data.searchResearcher
     );
-
+    console.log(researcherSearchResult.data.searchResearcher.length)
     console.log(researcherSearchResult.data.searchResearcher)
   };
 

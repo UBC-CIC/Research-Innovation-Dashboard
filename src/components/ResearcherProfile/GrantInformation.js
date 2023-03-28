@@ -42,7 +42,7 @@ export default function GrantInformation(props){
     }
 
     const mappedData =
-    props.grantData
+    props.grantData//.sort((grant1, grant2) => grant1.year > grant2.year ? -1 : 1)
       .filter(
         (data, index) => paginationCallback(data, index)
       )
@@ -52,12 +52,13 @@ export default function GrantInformation(props){
         assigned_id={filteredData.assigned_id}/>
       ));
 
-    return(
+    return(props.searchYet &&
         <Box sx={{ml: "2%", mr: "2%", width: "96%"}}>
             <Box>
+                {
                 <Box sx={{}} id="header_text">
                     Grants
-                </Box>
+                </Box>}
                 <Box sx={{}}>
                     <Grid container>
                         <Grid item xs={2}>

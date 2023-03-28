@@ -60,7 +60,7 @@ function App(props) {
               type={"image"}
               themeColor={"standard"}
               animateTitle={false}
-              title={"Expertise Dashboard"}
+              title={"Research Expertise Portal"}
               darkMode={true}
               disableSignUp={true}
             />

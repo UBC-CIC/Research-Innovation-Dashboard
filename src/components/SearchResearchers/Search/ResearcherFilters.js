@@ -17,6 +17,7 @@ const ResearcherFilters = ({
   setSelectedDeparments,
   selectedFaculties,
   setSelectedFaculties,
+  searchYet
 }) => {
   const [departmentOptions, setDepartmentOptions] = useState();
   const [facultyOptions, setFacultyOptions] = useState();
@@ -128,7 +129,7 @@ const ResearcherFilters = ({
     );
   };
 
-  return (
+  return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
       <Typography variant="h6">Filter for Researchers:</Typography>
       <Typography sx={{ my: "1em", color: "#0055B7" }}>Department</Typography>

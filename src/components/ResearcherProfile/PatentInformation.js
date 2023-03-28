@@ -40,7 +40,8 @@ export default function PatentInformation(props){
     }
 
     const mappedData =
-    props.researcherPatents
+    props.researcherPatents//.sort((patent1, patent2) => patent1.patent_publication_date > patent2.patent_publication_date ? -1 : 1) // descending year
+      //.sort((patent1, patent2) => new Date(patent2.patent_publication_date) - new Date(patent1.patent_publication_date))
       .filter(
         (data, index) => paginationCallback(data, index)
       )
@@ -51,7 +52,7 @@ export default function PatentInformation(props){
         inventors_assigned_ids={filteredData.inventors_assigned_ids} matched_inventors_names={filteredData.matched_inventors_names}/>
       ));
 
-    return(
+    return(props.searchYet && 
         <Box >
         <Box sx={{ ml: "2%", mr: "2%" }} id="header_text">
             Patents
@@ -107,7 +108,7 @@ export default function PatentInformation(props){
                         direction={sortByYearDirection}
                     > */}
                         <Typography align="center" variant="h6">
-                            Year Filed
+                            Year Published
                         </Typography>
                     {/* </TableSortLabel> */}
                     </Paper>

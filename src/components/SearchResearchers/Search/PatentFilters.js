@@ -14,6 +14,7 @@ import PatentFiltersDialog from "./PatentFiltersDialog";
 const PatentFilters = ({
     selectedPatentClassification,
     setSelectedPatentClassification,
+    searchYet
 }) => {
   const [patentOptions, setPatentOptions] = useState([
     "Human necessities", 
@@ -71,7 +72,7 @@ const PatentFilters = ({
     );
   };
 
-  return (
+  return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
       <Typography variant="h6">Filter for Patents:</Typography>
       <Typography sx={{ my: "1em", color: "#0055B7" }}>Patent Classifications</Typography>

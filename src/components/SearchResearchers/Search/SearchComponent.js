@@ -24,6 +24,7 @@ export default function SearchComponent(props) {
     useState(1);
   const [publicationsSearchResultPage, setPublicationsSearchResultPage] =
     useState(1);
+  const [searchYet, setSearchYet] = useState(false) //indicate whether the user entered a search string and search
 
   let { anyDepartmentFilter, anyFacultyFilter, journalFilter, grantFilter, patentClassifications } = useParams();
 
@@ -158,6 +159,7 @@ export default function SearchComponent(props) {
                   setResearcherSearchResults={setResearcherSearchResults}
                   setPublicationSearchResults={setPublicationSearchResults}
                   whatToSearch={props.whatToSearch}
+                  searchYet={props.searchYet}
                   selectedDepartments={selectedDepartments}
                   selectedFaculties={selectedFaculties}
                   selectedJournals={selectedJournals}
@@ -172,6 +174,7 @@ export default function SearchComponent(props) {
                   setPublicationsSearchResultPage={setPublicationsSearchResultPage}
                   setGrantsSearchResults={setGrantsSearchResults}
                   setPatentSearchResults={setPatentSearchResults}
+                  setSearchYet={setSearchYet}
                 />
                 <Paper
                   square={true}
@@ -210,15 +213,16 @@ export default function SearchComponent(props) {
                 setSelectedDeparments={setSelectedDeparments}
                 selectedFaculties={selectedFaculties}
                 setSelectedFaculties={setSelectedFaculties}
+                searchYet={searchYet}
               />
             </Grid>
             <Grid item xs={10}>
               <ResearcherSearchResultsComponent
                 researchSearchResults={researchSearchResults}
                 researcherSearchResultPage={researcherSearchResultPage}
-                resultTitle={"Research Search Results"}
                 errorTitle={"No Researcher Search Results"}
                 setResearcherSearchResultPage={setResearcherSearchResultPage}
+                searchYet={searchYet}
               />
             </Grid>
           </Grid>
@@ -230,6 +234,7 @@ export default function SearchComponent(props) {
               <PublicationFilters
                 selectedJournals={selectedJournals}
                 setSelectedJournals={setSelectedJournals}
+                searchYet={searchYet}
               />
             </Grid>
             <Grid item xs={10}>
@@ -239,6 +244,7 @@ export default function SearchComponent(props) {
                 setPublicationsSearchResultPage={
                   setPublicationsSearchResultPage
                 }
+                searchYet={searchYet}
               />
             </Grid>
           </Grid>
@@ -248,10 +254,16 @@ export default function SearchComponent(props) {
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
             <Grid item xs={2}>
               <GrantFilters selectedGrants={selectedGrantAgency}
-                setSelectedGrants={setSelectedGrantAgency} />
+                setSelectedGrants={setSelectedGrantAgency}
+                searchYet={searchYet} />
             </Grid>
             <Grid item xs={10}>
-              <GrantInformation grantData={grantsSearchResults} tabOpened={false} initialNumberOfRows={50}/>
+              <GrantInformation 
+                grantData={grantsSearchResults} 
+                tabOpened={false} 
+                initialNumberOfRows={50}
+                searchYet={searchYet}
+              />
             </Grid>
           </Grid>
         )}
@@ -260,10 +272,16 @@ export default function SearchComponent(props) {
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
             <Grid item xs={2}>
               <PatentFilters selectedPatentClassification={selectedPatentClassification}
-              setSelectedPatentClassification={setSelectedPatentClassification}/>
+              setSelectedPatentClassification={setSelectedPatentClassification}
+              searchYet={searchYet}/>
             </Grid>
             <Grid item xs={10}>
-              <PatentInformation tabOpened={false} researcherPatents={patentsSearchResults} initialNumberOfRows={10}/>
+              <PatentInformation 
+                tabOpened={false} 
+                researcherPatents={patentsSearchResults} 
+                initialNumberOfRows={10}
+                searchYet={searchYet}
+              />
             </Grid>
           </Grid>
         )}

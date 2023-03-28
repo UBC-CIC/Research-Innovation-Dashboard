@@ -13,7 +13,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import Popper from "@mui/material/Popper";
 import { useTheme, styled } from "@mui/material/styles";
 
-const PublicationFilters = ({ selectedJournals, setSelectedJournals }) => {
+const PublicationFilters = ({ selectedJournals, setSelectedJournals, searchYet }) => {
   const [journalOptions, setJournalOptions] = useState();
 
   const LISTBOX_PADDING = 8; // px
@@ -160,7 +160,7 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals }) => {
     );
   };
 
-  return (
+  return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
       <Typography variant="h6">Filter for Publications:</Typography>
       <Typography sx={{ my: "1em", color: "#0055B7" }}>Journal</Typography>

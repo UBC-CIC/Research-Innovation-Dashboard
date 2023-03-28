@@ -388,6 +388,7 @@ export default function Researcher_profile_overview() {
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
   }
+
   function showPatentsFunction() {
     setShowOverview(false);
     setShowAreasOfInterest(false);
@@ -400,6 +401,7 @@ export default function Researcher_profile_overview() {
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
   }
+
   function showResearchersWithSimlarKeyword(keyWord) {
     keyWord = keyWord
     setShowOverview(false);
@@ -551,7 +553,12 @@ export default function Researcher_profile_overview() {
               </Grid>
               <Grid item xs={12}>
                 <Paper square={true} elevation={0} variant="outlined">
-                    <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={2}/>
+                    <GrantInformation 
+                      grantData={grantData} 
+                      tabOpened={showGrants} 
+                      initialNumberOfRows={2}
+                      searchYet={true}
+                    />
                     <Box textAlign="center">
                       {/* <Button
                         onClick={showGrantsFunction}
@@ -569,7 +576,11 @@ export default function Researcher_profile_overview() {
               </Grid>
               <Grid item xs={12}>
                 <Paper square={true} elevation={0} variant="outlined">
-                  <PatentInformation  researcherPatents={researcherPatents} initialNumberOfRows={2}/>
+                  <PatentInformation  
+                    researcherPatents={researcherPatents} 
+                    initialNumberOfRows={2}
+                    searchYet={true}
+                  />
                   <Box textAlign="center">
                       {/* <Button
                         onClick={showPatentsFunction}
@@ -629,11 +640,21 @@ export default function Researcher_profile_overview() {
             />
           )}
           {showGrants && (
-            <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={25}/>
+            <GrantInformation 
+              grantData={grantData} 
+              tabOpened={showGrants} 
+              initialNumberOfRows={25}
+              searchYet={true}
+            />
           )}
           {showPatents && (
             <Grid item xs={12}>
-            <PatentInformation tabOpened={showPatents} researcherPatents={researcherPatents} initialNumberOfRows={2}/>
+            <PatentInformation 
+              tabOpened={showPatents} 
+              researcherPatents={researcherPatents} 
+              initialNumberOfRows={2}
+              searchYet={true}
+            />
             </Grid>
           )}
           {showResearchersWithSimilarKeyword && (

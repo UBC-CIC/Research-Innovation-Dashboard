@@ -10,9 +10,9 @@ import Box from "@mui/material/Box";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 export default function ResearcherSearchResultsComponent(props) {
-  const { researchSearchResults } = props;
+  const { researchSearchResults, searchYet } = props;
 
-  let numberOfResearcherPerPage = 6;
+  let numberOfResearcherPerPage = 10;
 
   function researcherPaginationCallback(data, index) {
     if (
@@ -25,6 +25,9 @@ export default function ResearcherSearchResultsComponent(props) {
   }
 
   const ResearchResultsElement =
+    // currently ordered by descending h_index
+    // researchSearchResults.sort((researcher1, researcher2) => researcher1.h_index > researcher2.h_index ? -1 : 1) &&
+    // researchSearchResults&&//.sort((researcher1, researcher2) => researcher1.preferred_name > researcher2.preferred_name ? 1 : -1) &&
     researchSearchResults &&
     researchSearchResults
       .filter((data, index) => researcherPaginationCallback(data, index))
@@ -61,7 +64,7 @@ export default function ResearcherSearchResultsComponent(props) {
         );
       });
 
-  return researchSearchResults ? (
+  return searchYet && researchSearchResults ? (
     <Grid container>
       {researchSearchResults.length === 0 && (
         <Paper elevation={0} square={true} sx={{ width: "100%" }}>
@@ -95,6 +98,7 @@ export default function ResearcherSearchResultsComponent(props) {
       </Grid>
     </Grid>
   ) : (
-    <Typography>No Researcher Results Available</Typography>
+    //<Typography>No Researcher Results Available</Typography>
+    <div></div>
   );
 }

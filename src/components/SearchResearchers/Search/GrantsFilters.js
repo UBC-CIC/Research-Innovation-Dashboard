@@ -14,6 +14,7 @@ import GrantFiltersDialog from "./GrantFiltersDialog";
 const GrantsFilters = ({
   selectedGrants,
   setSelectedGrants,
+  searchYet
 }) => {
   const [grantsOptions, setGrantsOptions] = useState();
   const [openGrantFiltersDialog, setOpenGrantFiltersDialog] = useState(false);
@@ -74,7 +75,7 @@ const GrantsFilters = ({
     );
   };
 
-  return (
+  return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
       <Typography variant="h6">Filter for Grants:</Typography>
       <Typography sx={{ my: "1em", color: "#0055B7" }}>Grants</Typography>
