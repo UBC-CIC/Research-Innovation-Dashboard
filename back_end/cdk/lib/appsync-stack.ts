@@ -163,6 +163,8 @@ export class AppsyncStack extends Stack {
         prime_department: String
         prime_faculty: String
         scopus_id: String
+        total_grant_amount: Int
+        researcher_id: String
       }
       
       type Mutation {

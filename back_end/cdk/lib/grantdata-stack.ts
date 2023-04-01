@@ -69,9 +69,15 @@ export class GrantDataStack extends Stack {
       effect: Effect.ALLOW,
       actions: [
         "dms:StartReplicationTask",
-        "dms:DescribeReplicationTasks"
       ],
       resources: [this.dmsTaskArn]
+    }));
+    glueRole.addToPolicy(new iam.PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        "dms:DescribeReplicationTasks"
+      ],
+      resources: ["*"]
     }));
 
     // Create S3 bucket for Glue Job scripts/data

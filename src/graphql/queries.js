@@ -140,6 +140,8 @@ export const getAllResearchersImpacts = /* GraphQL */ `
       prime_department
       prime_faculty
       scopus_id
+      total_grant_amount
+      researcher_id
     }
   }
 `;
@@ -492,6 +494,8 @@ export const getResearcherImpactsByDepartment = /* GraphQL */ `
       prime_department
       prime_faculty
       scopus_id
+      total_grant_amount
+      researcher_id
     }
   }
 `;
@@ -504,6 +508,8 @@ export const getResearcherImpactsByFaculty = /* GraphQL */ `
       prime_department
       prime_faculty
       scopus_id
+      total_grant_amount
+      researcher_id
     }
   }
 `;

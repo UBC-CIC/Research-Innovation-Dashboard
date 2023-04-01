@@ -74,7 +74,7 @@ export default function ResearcherImpactByDepartment(props) {
       {department}
     </option>
   ));
-
+  console.log(props.researcherImpactsByDepartment.total_grant_amount)
   const impacts_element = props.researcherImpactsByDepartment
     .filter((data, index) => index < numberOfImpactsToShow)
     .map((prof_data, index) => (
@@ -103,7 +103,7 @@ export default function ResearcherImpactByDepartment(props) {
             <Typography
               variant="body1"
               component={Link}
-              to={"/Researchers/" + prof_data.scopus_id + "/"}
+              to={"/Researchers/" + prof_data.researcher_id + "/"}
               align="center"
             >
               {prof_data.preferred_name}
@@ -145,7 +145,7 @@ export default function ResearcherImpactByDepartment(props) {
             sx={{ textAlign: "center" }}
           >
             <Typography variant="body1" align="center">
-              {}
+              {prof_data.total_grant_amount ? prof_data.total_grant_amount.toLocaleString() : 0}
             </Typography>
           </Paper>
         </Grid>
@@ -195,10 +195,10 @@ export default function ResearcherImpactByDepartment(props) {
                 <Grid item xs={6}>
                   <Typography
                     align="left"
-                    variant="h3"
+                    variant="h4"
                     justifyContent={"center"}
                   >
-                    Impact By Department
+                    Impact By Department (last 5 years)
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
@@ -263,7 +263,7 @@ export default function ResearcherImpactByDepartment(props) {
                     sx={{ textAlign: "center" }}
                   >
                     <Typography variant="body1" align="center">
-                      H Index (5 Years)
+                      H Index
                     </Typography>
                   </Paper>
                 </Grid>

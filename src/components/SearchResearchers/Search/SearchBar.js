@@ -43,24 +43,29 @@ export default function Search_Bar(props) {
   }, []);
 
   function search() {
-    if (searchBarValue !== "") {
-      setSearchYet(true)
-    }
+    
     if (whatToSearch === "Everything") {
       searchResearchersQuery();
       searchPublicationsQuery();
       searchGrantsQuery();
       searchPatentsQuery();
+      if (searchBarValue !== "") {
+        setSearchYet(true)
+      }
     } else if (whatToSearch === "Researchers") {
       searchResearchersQuery();
       setPublicationSearchResults([]);
+      setSearchYet(true)
     } else if (whatToSearch === "Publications") {
       setResearcherSearchResults([]);
       searchPublicationsQuery();
+      setSearchYet(true)
     } else if (whatToSearch === "Grants") {
       searchGrantsQuery();
+      setSearchYet(true)
     } else if (whatToSearch === "Patents") {
       searchPatentsQuery();
+      setSearchYet(true)
     }
   }
 
@@ -74,14 +79,6 @@ export default function Search_Bar(props) {
         facultiesToFilterBy: selectedFaculties,
       },
     });
-    
-    // await Promise.all(researcherSearchResult.data.searchResearcher.map(async (researcher) => {
-    //   let h_index = await API.graphql({
-    //     query: getResearcherFull,
-    //     variables: { id: researcher.researcher_id },
-    //   })
-    //   researcher.h_index = h_index.data.getResearcherFull.h_index
-    // }));
 
     props.setResearcherSearchResults(
       //researcherSearchResult.data.searchResearcher

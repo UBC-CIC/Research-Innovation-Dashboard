@@ -125,6 +125,7 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals, searchYet }
       });
       const allJournals = res.data.getAllDistinctJournals;
       setJournalOptions(allJournals);
+      console.log(allJournals.length)
     };
     getFilterOptions();
   }, []);
