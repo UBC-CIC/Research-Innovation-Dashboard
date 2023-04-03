@@ -177,6 +177,7 @@ export default function Researcher_profile_overview() {
         year_published: publication_data_sorted_by_ciation[i].year_published,
         journal: publication_data_sorted_by_ciation[i].journal,
         link: publication_data_sorted_by_ciation[i].link,
+        keywords: publication_data_sorted_by_ciation[i].keywords
       };
       descendingPublicationsCitation.push(publicationCitation);
       ascendingPublicationsCitation.unshift(publicationCitation);
@@ -190,6 +191,7 @@ export default function Researcher_profile_overview() {
         year_published: publication_data_sorted_by_year[i].year_published,
         journal: publication_data_sorted_by_year[i].journal,
         link: publication_data_sorted_by_year[i].link,
+        keywords: publication_data_sorted_by_year[i].keywords
       };
       descendingPublicationsYear.push(publicationYear);
       ascendingPublicationsYear.unshift(publicationYear);
@@ -203,6 +205,7 @@ export default function Researcher_profile_overview() {
         year_published: publication_data_sorted_by_title[i].year_published,
         journal: publication_data_sorted_by_title[i].journal,
         link: publication_data_sorted_by_title[i].link,
+        keywords: publication_data_sorted_by_title[i].keywords
       };
       descendingPublicationsTitle.push(publicationTitle);
       ascendingPublicationsTitle.unshift(publicationTitle);

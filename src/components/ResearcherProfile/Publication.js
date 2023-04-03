@@ -6,6 +6,9 @@ import Grid from "@mui/material/Grid";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import 'katex/dist/katex.min.css'
 import Latex from 'react-latex-next'
+import {useState, useEffect} from 'react'
+import { API } from "aws-amplify";
+import {changeScopusId, getResearcher} from "../../graphql/queries";
 
 const gridStyling = {
   height: "100%",
@@ -14,6 +17,32 @@ const gridStyling = {
 export default function PUBLICATION({ publication_data }) {
   let array = publication_data.author_names.split(",");
   let authorNamesString = "";
+
+  // to match publication with the author
+  // const [researcher, setResearcher] = useState([])
+  // useEffect(() => {
+  //   let researcherList = null;
+  //   if (publication_data.author_ids) {
+  //     researcherList = Promise.all(publication_data.author_ids.map(scopusID => matchingResearcher(scopusID)));
+  //   }
+  //   setResearcher(researcherList)
+  //   console.log(researcher)
+  // } , [])
+
+  // const matchingResearcher = async (scopusID) => {
+    
+  //   const result = await API.graphql({
+  //     query: getResearcher,
+  //     variables: {id: scopusID}
+  //   });
+
+  //   if (result.data.getResearcherQuery.scopus_id === scopusID) {
+  //     return {
+  //       preferred_name : result.data.getResearcherQuery.preferred_name, 
+  //       researcher_id : result.data.getResearcherQuery.researcher_id
+  //     }
+  //   }
+  // }
 
   for (let i = 0; i < array.length && i < 5; i++) {
     if (i == 4) {
@@ -25,7 +54,7 @@ export default function PUBLICATION({ publication_data }) {
 
   publication_data.title = publication_data.title.replaceAll("<inf>", "<sub>");
   publication_data.title = publication_data.title.replaceAll("</inf>", "</sub>");
-
+  // console.log(publication_data)
   return (
     <Grid
       key={publication_data.id}
@@ -45,6 +74,8 @@ export default function PUBLICATION({ publication_data }) {
           </Typography>
           <Typography>{authorNamesString}</Typography>
           <Typography>Journal Of {publication_data.journal}</Typography>
+          <Typography>Number of citation(s): {publication_data.cited_by}</Typography>
+          <Typography>Keywords: {publication_data.keywords ? publication_data.keywords : 'n/a'}</Typography>
         </Paper>
       </Grid>
       <Grid item xs={2}>

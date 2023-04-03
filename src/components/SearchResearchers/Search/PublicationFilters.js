@@ -163,7 +163,7 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals, searchYet }
 
   return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
-      <Typography variant="h6">Filter for Publications:</Typography>
+      <Typography variant="h6">Filters for Publications:</Typography>
       <Typography sx={{ my: "1em", color: "#0055B7" }}>Journal</Typography>
       {renderJournalOptions()}
     </Box>

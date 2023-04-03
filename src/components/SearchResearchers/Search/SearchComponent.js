@@ -150,9 +150,18 @@ export default function SearchComponent(props) {
           <Paper square={true} variant="outlined" elevation={0}>
             <Grid container>
               <Grid item xs={12}>
-                <Typography align="center" variant="h5" sx={{ margin: "8px" }}>
-                  {"Search " + props.whatToSearch}
-                </Typography>
+                {
+                  (props.whatToSearch === "Everything" && searchYet === false) ?
+                    (<Typography align="center" variant="h4" sx={{ margin: "8px", pt: "1.5%", pb: "1.5%" }}>
+                      {"Welcome to the UBC Research Expertise Portal"}
+                    </Typography>) : (props.whatToSearch === "Researchers") ? 
+                      (<Typography align="center" variant="h4" sx={{ margin: "8px", pt: "1.5%", pb: "1.5%" }}>
+                        {"Find Researchers"}
+                      </Typography>) :
+                      (<Typography align="center" variant="h4" sx={{ margin: "8px", pt: "1.5%", pb: "1.5%" }}>
+                        {"Find " + props.whatToSearch}
+                      </Typography>)
+                }
               </Grid>
               <Grid item xs={12} align="center">
                 <SearchBar

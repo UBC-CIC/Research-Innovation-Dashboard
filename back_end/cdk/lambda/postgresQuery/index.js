@@ -494,6 +494,9 @@ async function handler(event) {
       payload = patenetResults
       
       break;
+
+    default:
+      console.log("Unexpected Query!")
   }
 
   await sql.end({ timeout: 0 });

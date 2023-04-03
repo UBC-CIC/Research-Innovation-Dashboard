@@ -103,7 +103,8 @@ function Navbar(props) {
               style={{ textDecoration: "none" }}
               component={Link}
               to="/"
-              onClick={() => navigate("/")}
+              // onClick={() => navigate("/")}
+              onClick={() => window.location.href = "/ / / / / / /"}
               variant="h3"
               color="#002145"
             >

@@ -10,7 +10,7 @@ import { useParams } from "react-router-dom";
 
 import { API } from "aws-amplify";
 
-import { searchResearcher, searchPublications, searchGrants, searchPatents, getResearcherFull } from "../../../graphql/queries";
+import { searchResearcher, searchPublications, searchGrants, searchPatents, getResearcher } from "../../../graphql/queries";
 
 export default function Search_Bar(props) {
   const {

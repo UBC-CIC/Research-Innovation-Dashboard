@@ -10,7 +10,7 @@ import Pagination from "@mui/material/Pagination";
 
 export default function GrantInformation(props){
 
-    console.log(props)
+    console.log(props.grantData)
 
     const [numberOfRows, setNumberOfRows] = useState(props.initialNumberOfRows);
     const [increaseRowCountBy, setIncreaseRowCountBy] = useState(25);
