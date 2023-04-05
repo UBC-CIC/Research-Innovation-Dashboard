@@ -4,12 +4,12 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import React from "react";
 import SearchBar from "./SearchBar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ResearcherSearchResultsComponent from "../ResearcherSearchResultsComponent";
 import PublicationSearchResultsComponent from "../PublicationSearchResultsComponent";
 import ResearcherFilters from "./ResearcherFilters";
 import PublicationFilters from "./PublicationFilters";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import GrantInformation from "../../ResearcherProfile/GrantInformation"
 import GrantFilters from "../Search/GrantsFilters"
 import PatentInformation from "../../ResearcherProfile/PatentInformation"
@@ -85,6 +85,10 @@ export default function SearchComponent(props) {
   const [selectedPatentClassification, setSelectedPatentClassification] = useState(selectedClassification)
   const [grantPath, setGrantPath] = useState("");
   const [patentClassificationPath, setPatentClassificationPath] = useState("")
+  
+  let navigate = useNavigate()
+  const initialMount = useRef(true)
+  const searchBarValueRef = useRef(" ")
 
   useEffect(() => {
     //if there are selected departments, join items in array to create 1 string (different departments separated by &&), replace all spaces with %20
@@ -143,6 +147,89 @@ export default function SearchComponent(props) {
     }
   }, [selectedPatentClassification])
 
+  useEffect(() => {
+    if (initialMount.current) {
+
+      initialMount.current = false
+
+    } else {
+
+      let selectedFacultiesPath = " "
+      let selectedDepartmentsPath = " "
+      let selectedGrantAgenciesPath = " "
+      let selectedPatentClfsPath = " "
+      let selectedJournalsPath = " "
+      let url = "/ / / / / / /"
+
+      if (selectedFaculties.length !== 0) {
+        selectedFacultiesPath = selectedFaculties.join("&&")
+      }
+      if (selectedDepartments.length !== 0) {
+        selectedDepartmentsPath = selectedDepartments.join("&&")
+      }
+      if (selectedGrantAgency.length !== 0) {
+        selectedGrantAgenciesPath = selectedGrantAgency.join("&&")
+      }
+      if (selectedPatentClassification.length !== 0) {
+        selectedPatentClfsPath = selectedPatentClassification.join("&&")
+      }
+      if (selectedJournals.length !== 0) {
+        selectedJournalsPath = selectedJournals.join("&&")
+      }
+      
+      if (props.whatToSearch === "Researchers") {
+        
+        // if (searchBarValueRef === "") {
+        //   searchBarValueRef.current = " "
+        // }
+
+        url = "/Search/Researchers/" +
+        selectedDepartmentsPath +
+        "/" +
+        selectedFacultiesPath +
+        "/" +
+        searchBarValueRef.current +
+        "/";
+
+      } else if (props.whatToSearch === "Grants") {
+
+        url = "/Search/Grants/" + selectedGrantAgenciesPath + "/" + searchBarValueRef.current + "/";
+      
+      } else if  (props.whatToSearch === "Patents") {
+
+        url = "/Search/Patents/" + selectedPatentClfsPath + "/" + searchBarValueRef.current + "/";
+      
+      } else if (props.whatToSearch === "Publications") {
+        
+        url = "/Search/Publications/".concat(selectedJournalsPath, "/", searchBarValueRef.current, "/");
+
+      } else if (props.whatToSearch === "Everything"){
+        
+        url =
+        "/" +
+        selectedDepartmentsPath +
+        "/" +
+        selectedFacultiesPath +
+        "/" +
+        selectedJournalsPath +
+        "/" +
+        selectedGrantAgenciesPath +
+        "/" +
+        selectedPatentClfsPath +
+        "/" +
+        searchBarValueRef.current +
+        "/";
+      }
+
+      console.log(searchBarValueRef)
+      console.log(url)
+      navigate(url);
+      window.location.reload();
+      
+    }
+
+  }, [selectedFaculties, selectedDepartments, props.whatToSearch, selectedGrantAgency, selectedPatentClassification, selectedJournals])
+
   return (
     <div>
       <Grid container>
@@ -184,6 +271,7 @@ export default function SearchComponent(props) {
                   setGrantsSearchResults={setGrantsSearchResults}
                   setPatentSearchResults={setPatentSearchResults}
                   setSearchYet={setSearchYet}
+                  searchBarValueRef={searchBarValueRef}
                 />
                 <Paper
                   square={true}

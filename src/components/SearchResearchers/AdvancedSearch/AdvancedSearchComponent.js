@@ -254,7 +254,7 @@ export default function Advanced_Search(props) {
         table: "grant_data",
       },
     });
-    console.log(grantsSearchResult)
+    //console.log(grantsSearchResult)
     setGrantsSearchResults(
       grantsSearchResult.data.advancedSearchGrants
     );

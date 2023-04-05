@@ -4,7 +4,7 @@ import InputBase from "@mui/material/InputBase";
 import Stack from "@mui/material/Stack";
 import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
@@ -28,18 +28,27 @@ export default function Search_Bar(props) {
     patentClassificationPath,
     selectedPatentClassification,
     searchYet,
-    setSearchYet
+    setSearchYet,
+    searchIconRef,
+    searchBarValueRef
   } = props;
 
   let { searchValue } = useParams();
+  let initialSearchValue = useRef(" ") // for the filters to refresh the search 
+
   if (!searchValue || searchValue === " ") {
     searchValue = "";
+    initialSearchValue.current = " "
+  } else {
+    initialSearchValue.current = searchValue
   }
+
   const [searchBarValue, setSearchBarValue] = useState(searchValue);
   let navigate = useNavigate();
 
   useEffect(() => {
     search();
+    searchBarValueRef.current = initialSearchValue.current
   }, []);
 
   function search() {
@@ -85,7 +94,7 @@ export default function Search_Bar(props) {
       researcherSearchResult.data.searchResearcher
     );
     console.log(researcherSearchResult.data.searchResearcher.length)
-    console.log(researcherSearchResult.data.searchResearcher)
+    // console.log(researcherSearchResult.data.searchResearcher)
   };
 
   const searchPublicationsQuery = async () => {
@@ -170,7 +179,7 @@ export default function Search_Bar(props) {
         searchPath +
         "/";
     }
-
+  
     navigate(path);
     window.location.reload();
     props.setResearcherSearchResultPage(1);

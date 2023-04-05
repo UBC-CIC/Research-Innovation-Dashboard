@@ -89,7 +89,7 @@ const ResearcherFilters = ({
         </FormGroup>
         <Button
           onClick={() => setOpenDepartmentFiltersDialog(true)}
-          sx={{ color: "#0055B7", justifyContent: "flex-start" }}
+          sx={{ color: "#666666", justifyContent: "flex-start" }}
         >
           Show All
         </Button>
@@ -121,7 +121,7 @@ const ResearcherFilters = ({
         </FormGroup>
         <Button
           onClick={() => setOpenFacultyFiltersDialog(true)}
-          sx={{ color: "#0055B7", justifyContent: "flex-start" }}
+          sx={{ color: "#666666", justifyContent: "flex-start" }}
         >
           Show All
         </Button>
@@ -131,24 +131,24 @@ const ResearcherFilters = ({
 
   return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
-      <Typography variant="h6">Filter for Researchers:</Typography>
-      <Typography sx={{ my: "1em", color: "#0055B7" }}>Department</Typography>
-      {renderDepartmentOptions()}
-      <Typography sx={{ my: "1em", color: "#0055B7" }}>Faculty</Typography>
+      <Typography variant="h6" sx={{fontWeight: "bold"}}>Filters for Researchers:</Typography>
+      <Typography variant="h6" sx={{ my: "1em", color: "#666666" }}>{"Faculty (" + selectedFaculties.length + " selected)"}</Typography>
       {renderFacultyOptions()}
-      <DepartmentFiltersDialog
-        open={openDepartmentFiltersDialog}
-        handleClose={handleClose}
-        allDepartments={departmentOptions}
-        selectedDepartments={selectedDepartments}
-        handleCheckDepartment={handleCheckDepartment}
-      />
+      <Typography variant="h6" sx={{ my: "1em", color: "#666666" }}>{"Department (" + selectedDepartments.length + " selected)" }</Typography>
+      {renderDepartmentOptions()}
       <FacultyFiltersDialog
         open={openFacultyFiltersDialog}
         handleClose={handleClose}
         allFaculties={facultyOptions}
         selectedFaculties={selectedFaculties}
         handleCheckFaculty={handleCheckFaculty}
+      />
+      <DepartmentFiltersDialog
+        open={openDepartmentFiltersDialog}
+        handleClose={handleClose}
+        allDepartments={departmentOptions}
+        selectedDepartments={selectedDepartments}
+        handleCheckDepartment={handleCheckDepartment}
       />
     </Box>
   );

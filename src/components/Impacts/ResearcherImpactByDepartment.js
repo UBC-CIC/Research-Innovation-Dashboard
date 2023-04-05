@@ -74,7 +74,7 @@ export default function ResearcherImpactByDepartment(props) {
       {department}
     </option>
   ));
-  console.log(props.researcherImpactsByDepartment.total_grant_amount)
+  //console.log(props.researcherImpactsByDepartment.total_grant_amount)
   const impacts_element = props.researcherImpactsByDepartment
     .filter((data, index) => index < numberOfImpactsToShow)
     .map((prof_data, index) => (

@@ -125,7 +125,7 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals, searchYet }
       });
       const allJournals = res.data.getAllDistinctJournals;
       setJournalOptions(allJournals);
-      console.log(allJournals.length)
+      //console.log(allJournals.length)
     };
     getFilterOptions();
   }, []);
@@ -151,7 +151,7 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals, searchYet }
               {...params}
               variant="standard"
               label="All Journals"
-              placeholder="Selected"
+              placeholder="Type the journal name"
             />
           )}
           renderOption={(props, option) => [props, option]}
@@ -163,8 +163,8 @@ const PublicationFilters = ({ selectedJournals, setSelectedJournals, searchYet }
 
   return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
-      <Typography variant="h6">Filters for Publications:</Typography>
-      <Typography sx={{ my: "1em", color: "#0055B7" }}>Journal</Typography>
+      <Typography variant="h6" sx={{fontWeight: "bold"}}>Filters for Publications:</Typography>
+      <Typography variant="h6" sx={{ my: "1em", color: "#666666" }}>{"Journal (" + selectedJournals.length + " selected)"}</Typography>
       {renderJournalOptions()}
     </Box>
   );

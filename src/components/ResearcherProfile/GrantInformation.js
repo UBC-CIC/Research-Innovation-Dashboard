@@ -10,7 +10,7 @@ import Pagination from "@mui/material/Pagination";
 
 export default function GrantInformation(props){
 
-    console.log(props.grantData)
+    // console.log(props.grantData)
 
     const [numberOfRows, setNumberOfRows] = useState(props.initialNumberOfRows);
     const [increaseRowCountBy, setIncreaseRowCountBy] = useState(25);
@@ -55,10 +55,13 @@ export default function GrantInformation(props){
     return(props.searchYet &&
         <Box sx={{ml: "2%", mr: "2%", width: "96%"}}>
             <Box>
-                {
-                <Box sx={{}} id="header_text">
-                    Grants
-                </Box>}
+                {props.grantData.length > 1 ? 
+                (<Box sx={{}} id="header_text">
+                    {"Grants (" +  props.grantData.length + " results)"}
+                </Box>) :
+                ((<Box sx={{}} id="header_text">
+                    Grant
+                </Box>))}
                 <Box sx={{}}>
                     <Grid container>
                         <Grid item xs={2}>

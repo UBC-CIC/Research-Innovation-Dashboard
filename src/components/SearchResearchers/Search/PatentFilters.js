@@ -64,7 +64,7 @@ const PatentFilters = ({
         </FormGroup>
         <Button
           onClick={() => setOpenPatentFiltersDialog(true)}
-          sx={{ color: "#0055B7", justifyContent: "flex-start" }}
+          sx={{ color: "#666666", justifyContent: "flex-start" }}
         >
           Show All
         </Button>
@@ -74,8 +74,8 @@ const PatentFilters = ({
 
   return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
-      <Typography variant="h6">Filter for Patents:</Typography>
-      <Typography sx={{ my: "1em", color: "#0055B7" }}>Patent Classifications</Typography>
+      <Typography variant="h6" sx={{fontWeight: "bold"}}>Filters for Patents:</Typography>
+      <Typography sx={{ my: "1em", color: "#666666", fontSize: 20}}>{"Patent Classifications (" + selectedPatentClassification.length + " selected)"}</Typography>
       {renderClassificationsOptions()}
       <PatentFiltersDialog
         open={openPatentFiltersDialog}

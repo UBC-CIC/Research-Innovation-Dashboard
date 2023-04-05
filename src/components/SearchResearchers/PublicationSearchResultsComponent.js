@@ -111,7 +111,7 @@ export default function PublicationSearchResultsComponent(props) {
         {publicationSearchResults.length !== 0 && (
           <Paper elevation={0} square={true} sx={{ width: "100%" }}>
             <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}>
-              Publication: {publicationSearchResults.length} Results
+              {"Publications (" + publicationSearchResults.length + " results)"}
             </Typography>
           </Paper>
         )}

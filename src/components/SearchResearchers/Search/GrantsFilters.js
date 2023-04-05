@@ -30,7 +30,7 @@ const GrantsFilters = ({
         })
       ]);
       const allGrants = grantResults[0].data.getAllGrantAgencies;
-      console.log(allGrants)
+      //console.log(allGrants)
       setGrantsOptions(allGrants);
     };
     getFilterOptions();
@@ -67,7 +67,7 @@ const GrantsFilters = ({
         </FormGroup>
         <Button
           onClick={() => setOpenGrantFiltersDialog(true)}
-          sx={{ color: "#0055B7", justifyContent: "flex-start" }}
+          sx={{ color: "##666666", justifyContent: "flex-start" }}
         >
           Show All
         </Button>
@@ -77,8 +77,8 @@ const GrantsFilters = ({
 
   return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
-      <Typography variant="h6">Filter for Grants:</Typography>
-      <Typography sx={{ my: "1em", color: "#0055B7" }}>Grants</Typography>
+      <Typography variant="h6" sx={{fontWeight: "bold"}}>Filters for Grants:</Typography>
+      <Typography sx={{ my: "1em", color: "#666666", fontSize: 20}}>{"Grants (" + selectedGrants.length + " selected)"}</Typography>
       {renderDepartmentOptions()}
       <GrantFiltersDialog
         open={openGrantFiltersDialog}

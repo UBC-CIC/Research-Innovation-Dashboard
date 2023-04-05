@@ -73,7 +73,9 @@ export default function ResearcherSearchResultsComponent(props) {
       )}
       {researchSearchResults.length !== 0 && (
         <Paper elevation={0} square={true} sx={{ width: "100%" , }}>
-          <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}>{props.resultTitle}</Typography>
+          <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}
+            > {"Researchers (" + researchSearchResults.length + " results)"}
+          </Typography>
         </Paper>
       )}
       {ResearchResultsElement}

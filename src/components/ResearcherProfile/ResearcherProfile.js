@@ -228,7 +228,7 @@ export default function Researcher_profile_overview() {
         id: researcherId,
       },
     });
-    console.log(grantResult);
+    //console.log(grantResult);
     setGrantData(grantResult.data.getResearcherGrants);
     setPageLoaded(true);
   };

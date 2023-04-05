@@ -54,9 +54,13 @@ export default function PatentInformation(props){
 
     return(props.searchYet && 
         <Box >
-        <Box sx={{ ml: "2%", mr: "2%" }} id="header_text">
-            Patents
-        </Box>
+        {props.researcherPatents.length > 1 ?
+        (<Box sx={{ ml: "2%", mr: "2%" }} id="header_text">
+            {"Patents (" + props.researcherPatents.length + " results)"}
+        </Box>) :
+        (<Box sx={{ ml: "2%", mr: "2%" }} id="header_text">
+            Patent
+        </Box>)}
         <Box sx={{ ml: "2%", mr: "2%" }}>
             <Grid container>
                 <Grid item xs={8}>
