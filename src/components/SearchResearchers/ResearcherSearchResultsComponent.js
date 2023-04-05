@@ -52,7 +52,7 @@ export default function ResearcherSearchResultsComponent(props) {
                 style={{ fontSize: "24px" }}
                 to={"/Researchers/" + researcher.researcher_id + "/"}
               >
-                {researcher.preferred_name} {(researcher.rank === "Adjunct Professor") && "*"} <OpenInNewIcon fontSize="small" /><br />
+                {researcher.preferred_name} {(researcher.rank === "Adjunct Professor") && "*"} <br />
               </Link>
               <Typography> {researcher.prime_faculty}</Typography>
               <Typography>

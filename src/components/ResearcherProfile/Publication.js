@@ -70,7 +70,7 @@ export default function PUBLICATION({ publication_data }) {
           sx={{ textAlign: "left" }}
         >
           <Typography variant="h5">
-            <a href={publication_data.link} target="_blank" rel="noopener noreferrer">   <Latex>{publication_data.title}</Latex> <OpenInNewIcon fontSize="small" /></a>
+            <a href={publication_data.link} target="_blank" rel="noopener noreferrer">   <Latex>{publication_data.title}</Latex> </a>
           </Typography>
           <Typography>{authorNamesString}</Typography>
           <Typography>Journal Of {publication_data.journal}</Typography>
