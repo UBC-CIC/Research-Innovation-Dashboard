@@ -120,7 +120,7 @@ function Navbar(props) {
           justifyContent: menuView ? "flex-end" : "space-between",
           backgroundColor: "#002145",
           flexGrow: 1,
-          "& > *": { ml: "2%" },
+          "& > *": { ml: "0%" },
           py: "0.5em",
           height: navMenuOpen ? "auto" : "50px",
           pr: "4%",
@@ -154,12 +154,13 @@ function Navbar(props) {
             aria-label="navbar button group"
           >
             <NavButton
-              sx={{ paddingLeft: "0%" }}
+              sx={{ paddingLeft: "28px", paddingRight: "28px" }}
               onClick={() => (window.location.href = "/ / / / / / /")}
             >
               Home
             </NavButton>
             <NavButton
+              sx={{paddingLeft: "28px", paddingRight: "28px"}}
               onClick={() =>
                 (window.location.href = "/Search/Researchers/ / / /")
               }
@@ -167,6 +168,7 @@ function Navbar(props) {
               Researchers
             </NavButton>
             <NavButton
+              sx={{paddingLeft: "28px", paddingRight: "28px"}}
               onClick={() =>
                 (window.location.href = "/Search/Publications/ / /")
               }
@@ -174,6 +176,7 @@ function Navbar(props) {
               Publications
             </NavButton>
             <NavButton
+              sx={{paddingLeft: "28px", paddingRight: "28px"}}
               onClick={() =>
                 (window.location.href = "/Search/Grants/ / /")
               }
@@ -181,16 +184,27 @@ function Navbar(props) {
               Grants
             </NavButton>
             <NavButton
+              sx={{paddingLeft: "28px", paddingRight: "28px"}}
               onClick={() =>
                 (window.location.href = "/Search/Patents/ / /")
               }
             >
               Patents
             </NavButton>
-            <NavButton onClick={() => navigate("/Impact/")}>Impact</NavButton>
-            <NavButton onClick={() => navigate("/Metrics/")}>Metrics</NavButton>
+            <NavButton 
+              sx={{paddingLeft: "28px", paddingRight: "28px"}}
+              onClick={() => navigate("/Impact/")}>
+                Impact
+            </NavButton>
+            <NavButton 
+              sx={{paddingLeft: "28px", paddingRight: "28px"}}
+              onClick={() => navigate("/Metrics/")}>
+                Metrics
+            </NavButton>
             {adminUser && (
-              <NavButton onClick={() => navigate("/AdminDashboard/")}>
+              <NavButton 
+                sx={{paddingLeft: "28px", paddingRight: "28px"}}
+                onClick={() => navigate("/AdminDashboard/")}>
                 Admin Dashboard
               </NavButton>
             )}

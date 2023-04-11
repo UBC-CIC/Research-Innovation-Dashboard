@@ -41,12 +41,12 @@ export default function ResearcherSearchResultsComponent(props) {
             component={Stack}
             direction="row"
           >
-            <img
+            {/* <img
               alt="professor"
               style={{ width: "20%", height: "fit-content", margin: "4%" }}
               src={placeholderResearchPhoto}
-            />
-            <Paper elevation={0} sx={{ width: "72%", marginTop: "4%" }}>
+            /> */}
+            <Paper elevation={0} sx={{ width: "72%", marginTop: "4%", marginLeft: "17%",}}>
               <Link
                 target="_blank" rel="noopener noreferrer"
                 style={{ fontSize: "24px" }}
@@ -73,7 +73,7 @@ export default function ResearcherSearchResultsComponent(props) {
       )}
       {researchSearchResults.length !== 0 && (
         <Paper elevation={0} square={true} sx={{ width: "100%" , }}>
-          <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}
+          <Typography variant="h4" sx={{ marginLeft: "7%", marginTop: "1%", marginBottom: "2%" }}
             > {"Researchers (" + researchSearchResults.length + " results)"}
           </Typography>
         </Paper>

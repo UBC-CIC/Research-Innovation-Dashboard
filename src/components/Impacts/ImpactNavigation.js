@@ -29,16 +29,16 @@ export default function ImpactNavigation(props) {
     return (
       <ButtonGroup size="large" variant="text" aria-label="text button group">
         <Button
-          sx={{ fontSize: buttonFontSize, paddingLeft: "0%" }}
-          onClick={props.onClickFunctions.byDepartmentButton}
-        >
-          Impact By Department
-        </Button>
-        <Button
-          sx={{ fontSize: buttonFontSize }}
+          sx={{ fontSize: buttonFontSize, paddingLeft: "0%", paddingRight: "20px" }}
           onClick={props.onClickFunctions.byFacultyButton}
         >
           Impact By Faculty
+        </Button>
+        <Button
+          sx={{ fontSize: buttonFontSize, paddingLeft: "20px", paddingRight: "20px" }}
+          onClick={props.onClickFunctions.byDepartmentButton}
+        >
+          Impact By Department
         </Button>
         {props.enableOverallImpacts && (
           <Button

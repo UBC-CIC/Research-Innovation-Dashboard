@@ -133,7 +133,7 @@ export default function Researcher_profile_overview() {
       variables: { id: researcherId },
     });
 
-    console.log(researcherPatentData.data.getResearcherPatents);
+    //console.log(researcherPatentData.data.getResearcherPatents);
 
     setResearcherPatents(researcherPatentData.data.getResearcherPatents);
   }
@@ -286,6 +286,7 @@ export default function Researcher_profile_overview() {
     }
     // save weighted list of keywords to state variable
     setSortedAreasOfInterest(sortedKeywordHashmap);
+    console.log(sortedAreasOfInterest)
   };
   const getResearcherBarGraphData = async () => {
     const bar_graph_data_response = await API.graphql({

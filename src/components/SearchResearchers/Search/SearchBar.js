@@ -213,7 +213,7 @@ export default function Search_Bar(props) {
           routeChange();
         }}
       >
-        <SearchIcon sx={{ padding: "8px" }} />
+        <SearchIcon sx={{ padding: "8px", boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.25)', borderRadius: '70%', width: "28px", height: "28px"}} />
       </IconButton>
     </Paper>
   );

@@ -14,6 +14,7 @@ import GrantInformation from "../../ResearcherProfile/GrantInformation"
 import GrantFilters from "../Search/GrantsFilters"
 import PatentInformation from "../../ResearcherProfile/PatentInformation"
 import PatentFilters from "../Search/PatentFilters"
+import Link from '@mui/material/Link';
 
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
@@ -89,6 +90,12 @@ export default function SearchComponent(props) {
   let navigate = useNavigate()
   const initialMount = useRef(true)
   const searchBarValueRef = useRef(" ")
+
+  // refs to scroll to result when clicking the numbers
+  const researcherResRef = useRef(null)
+  const pubResRef = useRef(null)
+  const grantResRef = useRef(null)
+  const patentResRef = useRef(null)
 
   useEffect(() => {
     //if there are selected departments, join items in array to create 1 string (different departments separated by &&), replace all spaces with %20
@@ -234,8 +241,12 @@ export default function SearchComponent(props) {
     <div>
       <Grid container>
         <Grid item xs={12}>
-          <Paper square={true} variant="outlined" elevation={0}>
-            <Grid container>
+          <Paper
+            //variant="outlined"
+            square={true} 
+            elevation={0}
+          >
+            <Grid container sx={{ border: '0px' }}>
               <Grid item xs={12}>
                 {
                   (props.whatToSearch === "Everything" && searchYet === false) ?
@@ -274,6 +285,7 @@ export default function SearchComponent(props) {
                   searchBarValueRef={searchBarValueRef}
                 />
                 <Paper
+                  variant="elevation"
                   square={true}
                   elevation={0}
                   sx={{
@@ -301,6 +313,68 @@ export default function SearchComponent(props) {
         </Grid>
       </Grid>
       <Grid container>
+        {(props.whatToSearch === "Everything" && searchYet === true) && (
+          <Grid container 
+            spacing={4} 
+            sx={{justifyContent: "right", alignSelf: "center", paddingTop: "2%", paddingRight: "2%"}}
+          >
+            <Grid item >
+              <Typography
+                variant="h5"
+                sx={{color: "#666666", fontFamily: "Roboto"}}
+              >
+                {"Researchers: "}  
+                <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
+                  onClick={() => {researcherResRef.current.scrollIntoView()}}
+                >
+                  {researchSearchResults.length}
+                </Link>
+              </Typography>
+            </Grid>
+
+            <Grid item >
+              <Typography
+                variant="h5"
+                sx={{color: "#666666", fontFamily: "Roboto"}}
+              >
+                {"Publications: "}
+                <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
+                  onClick={() => {pubResRef.current.scrollIntoView()}}
+                >
+                  {publicationSearchResults.length}
+                </Link>
+              </Typography>
+            </Grid>
+
+            <Grid item >
+              <Typography
+                variant="h5"
+                sx={{color: "#666666", fontFamily: "Roboto"}}
+              >
+                {"Grants: "}
+                <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
+                  onClick={() => {grantResRef.current.scrollIntoView()}}
+                >
+                  {grantsSearchResults.length}
+                </Link>
+              </Typography>
+            </Grid>
+
+            <Grid item >
+              <Typography
+                variant="h5"
+                sx={{color: "#666666", fontFamily: "Roboto"}}
+              >
+                {"Patents: "}
+                <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
+                  onClick={() => {patentResRef.current.scrollIntoView()}}
+                >
+                  {patentsSearchResults.length}
+                </Link>
+              </Typography>
+            </Grid>
+          </Grid>
+        )}
         {(props.whatToSearch === "Everything" ||
           props.whatToSearch === "Researchers") && (
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
@@ -313,7 +387,7 @@ export default function SearchComponent(props) {
                 searchYet={searchYet}
               />
             </Grid>
-            <Grid item xs={10}>
+            <Grid item xs={10} ref={researcherResRef}>
               <ResearcherSearchResultsComponent
                 researchSearchResults={researchSearchResults}
                 researcherSearchResultPage={researcherSearchResultPage}
@@ -334,7 +408,7 @@ export default function SearchComponent(props) {
                 searchYet={searchYet}
               />
             </Grid>
-            <Grid item xs={10}>
+            <Grid item xs={10} ref={pubResRef}>
               <PublicationSearchResultsComponent
                 publicationSearchResults={publicationSearchResults}
                 publicationsSearchResultPage={publicationsSearchResultPage}
@@ -354,7 +428,7 @@ export default function SearchComponent(props) {
                 setSelectedGrants={setSelectedGrantAgency}
                 searchYet={searchYet} />
             </Grid>
-            <Grid item xs={10}>
+            <Grid item xs={10} ref={grantResRef}>
               <GrantInformation 
                 grantData={grantsSearchResults} 
                 tabOpened={false} 
@@ -372,7 +446,7 @@ export default function SearchComponent(props) {
               setSelectedPatentClassification={setSelectedPatentClassification}
               searchYet={searchYet}/>
             </Grid>
-            <Grid item xs={10}>
+            <Grid item xs={10} ref={patentResRef}>
               <PatentInformation 
                 tabOpened={false} 
                 researcherPatents={patentsSearchResults} 
