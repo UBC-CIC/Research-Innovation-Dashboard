@@ -53,99 +53,101 @@ export default function PatentInformation(props){
       ));
 
     return(props.searchYet && 
-        <Box >
-        {props.researcherPatents.length > 1 ?
-        (<Box sx={{ ml: "2%", mr: "2%" }} id="header_text">
-            {"Patents (" + props.researcherPatents.length + " results)"}
-        </Box>) :
-        (<Box sx={{ ml: "2%", mr: "2%" }} id="header_text">
-            Patent
-        </Box>)}
-        <Box sx={{ ml: "2%", mr: "2%" }}>
-            <Grid container>
-                <Grid item xs={8}>
-                    <Paper
-                    square={true}
-                    elevation={0}
-                    variant="outlined"
-                    sx={{ textAlign: "center" }}
-                    >
-                    {/* <TableSortLabel
-                        onClick={sortHandler("title")}
-                        active={sortByTitle}
-                        direction={sortByTitleDirection}
-                    > */}
-                        <Typography align="center" variant="h6">
-                            General Information
-                        </Typography>
-                    {/* </TableSortLabel> */}
-                    </Paper>
+        <Grid sx={{ml: "1%"}}>
+            <Box >
+            {props.researcherPatents.length > 1 ?
+            (<Box sx={{ ml: "2%", mr: "2%" }} id="header_text">
+                {"Patents (" + props.researcherPatents.length + " results)"}
+            </Box>) :
+            (<Box sx={{ ml: "2%", mr: "2%" }} id="header_text">
+                Patent
+            </Box>)}
+            <Box sx={{ ml: "2%", mr: "2%" }}>
+                <Grid container>
+                    <Grid item xs={8}>
+                        <Paper
+                        square={true}
+                        elevation={0}
+                        variant="outlined"
+                        sx={{ textAlign: "center" }}
+                        >
+                        {/* <TableSortLabel
+                            onClick={sortHandler("title")}
+                            active={sortByTitle}
+                            direction={sortByTitleDirection}
+                        > */}
+                            <Typography align="center" variant="h6">
+                                General Information
+                            </Typography>
+                        {/* </TableSortLabel> */}
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={2}>
+                        <Paper
+                        square={true}
+                        elevation={0}
+                        variant="outlined"
+                        sx={{ textAlign: "center" }}
+                        >
+                        {/* <TableSortLabel
+                            onClick={sortHandler("year")}
+                            active={sortByYear}
+                            direction={sortByYearDirection}
+                        > */}
+                            <Typography align="center" variant="h6">
+                                Family Number
+                            </Typography>
+                        {/* </TableSortLabel> */}
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={2}>
+                        <Paper
+                        square={true}
+                        elevation={0}
+                        variant="outlined"
+                        sx={{ textAlign: "center" }}
+                        >
+                        {/* <TableSortLabel
+                            onClick={sortHandler("year")}
+                            active={sortByYear}
+                            direction={sortByYearDirection}
+                        > */}
+                            <Typography align="center" variant="h6">
+                                Year Published
+                            </Typography>
+                        {/* </TableSortLabel> */}
+                        </Paper>
+                    </Grid>
                 </Grid>
-                <Grid item xs={2}>
-                    <Paper
-                    square={true}
-                    elevation={0}
-                    variant="outlined"
-                    sx={{ textAlign: "center" }}
-                    >
-                    {/* <TableSortLabel
-                        onClick={sortHandler("year")}
-                        active={sortByYear}
-                        direction={sortByYearDirection}
-                    > */}
-                        <Typography align="center" variant="h6">
-                            Family Number
-                        </Typography>
-                    {/* </TableSortLabel> */}
-                    </Paper>
+            </Box>
+            <Box sx={{ m: "0%" }}>
+                <Grid container>
+                    {mappedData}
                 </Grid>
-                <Grid item xs={2}>
-                    <Paper
-                    square={true}
-                    elevation={0}
-                    variant="outlined"
-                    sx={{ textAlign: "center" }}
-                    >
-                    {/* <TableSortLabel
-                        onClick={sortHandler("year")}
-                        active={sortByYear}
-                        direction={sortByYearDirection}
-                    > */}
-                        <Typography align="center" variant="h6">
-                            Year Published
-                        </Typography>
-                    {/* </TableSortLabel> */}
-                    </Paper>
-                </Grid>
-            </Grid>
-        </Box>
-        <Box sx={{ m: "0%" }}>
-            <Grid container>
-                {mappedData}
-            </Grid>
-            {true && 
-            <Grid container>
-                <Grid item xs={12} sx={{ m: "2%" }}>
-                    <Box display="flex" alignItems="center" justifyContent="center">
-                        <Pagination
-                            size="large"
-                            defaultPage={1}
-                            page={page}
-                            count={Math.ceil(
-                                props.researcherPatents.length / numberOfPatentsPerPage
-                            )}
-                        onChange={(event, value) => {
-                            setPage(value);
-                        }}
-                        />
+                {true && 
+                <Grid container>
+                    <Grid item xs={12} sx={{ m: "2%" }}>
+                        <Box display="flex" alignItems="center" justifyContent="center">
+                            <Pagination
+                                size="large"
+                                defaultPage={1}
+                                page={page}
+                                count={Math.ceil(
+                                    props.researcherPatents.length / numberOfPatentsPerPage
+                                )}
+                            onChange={(event, value) => {
+                                setPage(value);
+                            }}
+                            />
+                        </Box>
+                    </Grid>
+                </Grid>}
+                {props.tabOpened && 
+                    <Box textAlign="center">
+                        <ShowMorePatentsButton />
                     </Box>
-                </Grid>
-            </Grid>}
-            {props.tabOpened && 
-                <Box textAlign="center">
-                    <ShowMorePatentsButton />
-                </Box>
-            }
-        </Box>
-        </Box>
+                }
+            </Box>
+            </Box>
+        </Grid>
     );}

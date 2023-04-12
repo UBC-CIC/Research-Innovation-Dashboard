@@ -10,6 +10,12 @@ import {
 import { API } from "aws-amplify";
 import { getAllGrantAgencies } from "../../../graphql/queries";
 import PatentFiltersDialog from "./PatentFiltersDialog";
+import InfoIcon from '@mui/icons-material/Info';
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import { styled } from '@mui/material/styles';
 
 const PatentFilters = ({
     selectedPatentClassification,
@@ -25,8 +31,91 @@ const PatentFilters = ({
     "Mechanical engineering; lighting; heating; weapons; blasting engines or pumps",
     "Physics",
     "Electricity",
-    "General tagging of new technological developments; general tagging of cross-sectional technologies spanning over several sections of the IPC; technical subjects covered by former USPC cross-reference art collections [XRACs] and digests"
+    "General tagging of new technological developments" // ;general tagging of cross-sectional technologies spanning over several sections of the IPC; technical subjects covered by former USPC cross-reference art collections [XRACs] and digests"
     ]);
+
+  const LightTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.white,
+      color: 'rgba(0, 0, 0, 0.87)',
+      boxShadow: theme.shadows[1],
+      maxWidth: 700,
+      maxHeight: 500
+    },
+  }));
+
+  const tooltipContent = () => {
+    return (
+      <div style={{width: "500px", height: "500px", overflow: "auto"}}>
+        <Typography variant="h1" sx={{fontSize: 17, fontWeight: 700}}>Human necessities (A):</Typography>
+        <Typography variant="h5" sx={{fontSize: 14}}>
+          You can expect to find patents that are related to human necessities, such as <em> food, clothing, 
+          housing, medical or surgical equipment/devices, and more.</em>
+        </Typography>
+        <br></br>
+        <Typography variant="h1" sx={{fontSize: 17, fontWeight: 700}}>Performing operations;transporting (B):</Typography>
+        <Typography variant="h5" sx={{fontSize: 14}}>
+          You can expect to find patents related to physical and chemical phenomena. This classification 
+          includes a variety of fields, such as <em>mechanics (tools, machineries, etc), optics, 
+          electrical engineering, transporting/vehicles, aeronautics, and more.</em>
+        </Typography>
+        <br></br>
+        <Typography variant="h1" sx={{fontSize: 17, fontWeight: 700}}>Chemistry;metallurgy (C):</Typography>
+        <Typography variant="h5" sx={{fontSize: 14}}>
+          You can expect to find patents that covers chemistry-related technologies. This category includes a wide 
+          range of fields, such as <em>organic chemistry, inorganic chemistry, biochemistry, 
+          materials chemistry/metallurgy, and more.</em>
+        </Typography>
+        <br></br>
+        <Typography variant="h1" sx={{fontSize: 17, fontWeight: 700}}>Textiles; paper (D):</Typography>
+        <Typography variant="h5" sx={{fontSize: 14}}>
+          You can expect to find patents that are related to <em>textile and paper production.</em>
+        </Typography>
+        <br></br>
+        <Typography variant="h1" sx={{fontSize: 17, fontWeight: 700}}>Fixed constructions (E):</Typography>
+        <Typography variant="h5" sx={{fontSize: 14}}>
+          You can expect to find patents related to infrastructure and constructions, 
+          such as <em> specific types of structures, such as bridges or tunnels. Additionally, you might find patents 
+          related to earth drilling/mining.</em>
+        </Typography>
+        <br></br>
+        <Typography variant="h1" sx={{fontSize: 17, fontWeight: 700}}>
+          Mechanical engineering; lighting; heating; weapons; blasting engines or pumps (F):
+        </Typography>
+        <Typography variant="h5" sx={{fontSize: 14}}>
+          You can expect to find patents related to mechanical engineering designs and methods. This 
+          classification includes a variety of categories, such as <em>engines/pumps, fluid mechanics, 
+          lighting/heating/combustion, weapons/blastings and other engineering fields.</em>
+        </Typography>
+        <br></br>
+        <Typography variant="h1" sx={{fontSize: 17, fontWeight: 700}}>Physics (G):</Typography>
+        <Typography variant="h5" sx={{fontSize: 14}}>
+          You can expect to find patents related to <em>electronics, optics, semiconductor devices, 
+          computer hardware, telecommunication systems, and other related technologies.</em>
+          You may also find patents that cover <em>nuclear physics and nuclear engineering.</em>
+        </Typography>
+        <br></br>
+        <Typography variant="h1" sx={{fontSize: 17, fontWeight: 700}}>Electricity (H):</Typography>
+        <Typography variant="h5" sx={{fontSize: 14}}>
+          This classification covers a broad range of fields related to electricity, including 
+          <em>electric power generation, transmission, distribution, and storage, as well as electric 
+          lighting and related applications. </em>
+        </Typography>
+        <br></br>
+        <Typography variant="h1" sx={{fontSize: 17, fontWeight: 700}}>
+          General tagging of new technological developments (Y):
+        </Typography>
+        <Typography variant="h5" sx={{fontSize: 14}}>
+          It includes technologies that cannot be classified under any other CPC classification or 
+          technologies that cover more than one CPC class. It may also includes emerging 
+          technologies and green technologies (climate change mitigation/adaptation).
+        </Typography>
+        <br></br>
+      </div>)
+  }
+
   const [openPatentFiltersDialog, setOpenPatentFiltersDialog] = useState(false);
 
   const handleClose = () => {
@@ -52,15 +141,17 @@ const PatentFilters = ({
           {patentOptions &&
             patentOptions
               .slice(0, 5)
-              .map((classification, index) => (
-                <FormControlLabel
-                  key={index}
-                  control={<Checkbox />}
-                  checked={selectedPatentClassification.includes(classification)}
-                  label={<Typography variant="body2">{classification}</Typography>}
-                  onChange={(e) => handleCheckPatentClassifications(e, classification)}
-                />
-              ))}
+              .map((classification, index) => {
+                return (
+                    <FormControlLabel
+                      key={index}
+                      control={<Checkbox />}
+                      checked={selectedPatentClassification.includes(classification)}
+                      label={<Typography variant="body2">{classification}</Typography>}
+                      onChange={(e) => handleCheckPatentClassifications(e, classification)}
+                    />
+                )})
+            }
         </FormGroup>
         <Button
           onClick={() => setOpenPatentFiltersDialog(true)}
@@ -73,9 +164,27 @@ const PatentFilters = ({
   };
 
   return (searchYet &&
-    <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", ml: "1.5em"}}>
       <Typography variant="h6" sx={{fontWeight: "bold"}}>Filters for Patents:</Typography>
-      <Typography sx={{ my: "1em", color: "#666666", fontSize: 20}}>{"Patent Classifications (" + selectedPatentClassification.length + " selected)"}</Typography>
+      <Grid container sx={{justifyContent: "left"}} spacing={2}>
+        <Grid item sx={{p: "0%"}}>
+          <Typography sx={{ my: "1em", color: "#666666", fontSize: 20, marginBottom: "7px"}}>
+            {"Patent Classifications"}
+          </Typography>
+        </Grid>
+        <Grid item sx={{p: "0%"}}>
+          <LightTooltip
+            placement="right"
+            sx={{bgColor: "white", maxWidth: 540}}
+            title={tooltipContent()}
+          >
+            <InfoOutlinedIcon sx={{marginTop: "1px", fontSize: "28px"}}></InfoOutlinedIcon>
+          </LightTooltip>
+        </Grid>
+      </Grid>
+      <Typography sx={{ my: "1em", color: "#666666", fontSize: 20, marginTop: "7%"}}>{
+        "(" + selectedPatentClassification.length + " selected)"}
+      </Typography>
       {renderClassificationsOptions()}
       <PatentFiltersDialog
         open={openPatentFiltersDialog}

@@ -57,7 +57,7 @@ const DepartmentFiltersDialog = ({
         <CloseIcon />
       </IconButton>
       <Box sx={{ p: "2em", display: "flex", flexDirection: "column" }}>
-        <Typography>All Departments</Typography>
+        <Typography>All Granting Agencies</Typography>
         {renderAllDepartments()}
         <Button
           variant="outlined"

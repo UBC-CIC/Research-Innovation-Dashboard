@@ -46,7 +46,7 @@ export default function ResearcherSearchResultsComponent(props) {
               style={{ width: "20%", height: "fit-content", margin: "4%" }}
               src={placeholderResearchPhoto}
             /> */}
-            <Paper elevation={0} sx={{ width: "72%", marginTop: "4%", marginLeft: "17%",}}>
+            <Paper elevation={0} sx={{ width: "72%", marginTop: "4%", marginLeft: "28%",}}>
               <Link
                 target="_blank" rel="noopener noreferrer"
                 style={{ fontSize: "24px" }}
