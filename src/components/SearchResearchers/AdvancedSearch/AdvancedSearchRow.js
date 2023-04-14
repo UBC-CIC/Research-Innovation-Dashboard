@@ -25,7 +25,7 @@ export default function AdvancedSearchRow(props) {
         >
           <Typography variant="h7">{props.whatDoesSearchBoxDo}</Typography>
         </Paper>
-        <Paper square={true} elevation={0} sx={{ width: "50%", border: 1 }}>
+        <Paper square={true} elevation={0} sx={{ width: "70%", border: 1 }}>
           <InputBase
             onKeyDown={(e) => {
               if (e.key === "Enter") {
