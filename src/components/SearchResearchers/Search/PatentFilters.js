@@ -16,6 +16,7 @@ import Paper from "@mui/material/Paper";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
+import { BorderColor } from "@mui/icons-material";
 
 const PatentFilters = ({
     selectedPatentClassification,
@@ -40,15 +41,24 @@ const PatentFilters = ({
     [`& .${tooltipClasses.tooltip}`]: {
       backgroundColor: theme.palette.common.white,
       color: 'rgba(0, 0, 0, 0.87)',
-      boxShadow: theme.shadows[1],
+      boxShadow: theme.shadows[2],
       maxWidth: 700,
-      maxHeight: 500
+      maxHeight: 700,
+      border: "solid grey 7px",
+      fontSize: "2rem"
     },
+    // customize the tooltip arrow
+    [`& .${tooltipClasses.arrow}`]: {
+      "&::before": {
+          color: 'grey', 
+        },
+      
+    }
   }));
 
   const tooltipContent = () => {
     return (
-      <div style={{width: "500px", height: "500px", overflow: "auto"}}>
+      <Box style={{ width: "500px", height: "500px", overflow: "auto", border: 4 }}>
         <Typography variant="h1" sx={{fontSize: 17, fontWeight: 700}}>Human necessities (A):</Typography>
         <Typography variant="h5" sx={{fontSize: 14}}>
           You can expect to find patents that are related to human necessities, such as <em> food, clothing, 
@@ -113,7 +123,7 @@ const PatentFilters = ({
           technologies and green technologies (climate change mitigation/adaptation).
         </Typography>
         <br></br>
-      </div>)
+      </Box>)
   }
 
   const [openPatentFiltersDialog, setOpenPatentFiltersDialog] = useState(false);
@@ -166,19 +176,20 @@ const PatentFilters = ({
   return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1.5em"}}>
       <Typography variant="h6" sx={{fontWeight: "bold"}}>Filters for Patents:</Typography>
-      <Grid container sx={{justifyContent: "left"}} spacing={2}>
-        <Grid item sx={{p: "0%"}}>
+      <Grid container sx={{flexDirection: "row", alignItems: "center"}} spacing={1}>
+        <Grid item sx={{p: "0%", m: "0%"}}>
           <Typography sx={{ my: "1em", color: "#666666", fontSize: 20, marginBottom: "7px"}}>
-            {"Patent Classifications"}
+            {"Patent Classification"}
           </Typography>
         </Grid>
-        <Grid item sx={{p: "0%"}}>
+        <Grid item sx={{paddingLeft: "0px"}}>
           <LightTooltip
             placement="right"
             sx={{bgColor: "white", maxWidth: 540}}
             title={tooltipContent()}
+            arrow
           >
-            <InfoOutlinedIcon sx={{marginTop: "1px", fontSize: "28px"}}></InfoOutlinedIcon>
+            <InfoOutlinedIcon sx={{m: "0px", fontSize: "28px", verticalAlign: "baseline"}}></InfoOutlinedIcon>
           </LightTooltip>
         </Grid>
       </Grid>

@@ -316,12 +316,12 @@ export default function SearchComponent(props) {
         {(props.whatToSearch === "Everything" && searchYet === true) && (
           <Grid container 
             spacing={4} 
-            sx={{justifyContent: "right", alignSelf: "center", paddingTop: "2%", paddingRight: "2%"}}
+            sx={{justifyContent: "right", alignSelf: "center", marginTop: "2%", paddingRight: "2%"}}
           >
             <Grid item >
               <Typography
                 variant="h5"
-                sx={{color: "#666666", fontFamily: "Roboto"}}
+                sx={{color: "#666666"}}
               >
                 {"Researchers: "}  
                 <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
@@ -335,7 +335,7 @@ export default function SearchComponent(props) {
             <Grid item >
               <Typography
                 variant="h5"
-                sx={{color: "#666666", fontFamily: "Roboto"}}
+                sx={{color: "#666666"}}
               >
                 {"Publications: "}
                 <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
@@ -349,7 +349,7 @@ export default function SearchComponent(props) {
             <Grid item >
               <Typography
                 variant="h5"
-                sx={{color: "#666666", fontFamily: "Roboto"}}
+                sx={{color: "#666666"}}
               >
                 {"Grants: "}
                 <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
@@ -363,7 +363,7 @@ export default function SearchComponent(props) {
             <Grid item >
               <Typography
                 variant="h5"
-                sx={{color: "#666666", fontFamily: "Roboto"}}
+                sx={{color: "#666666"}}
               >
                 {"Patents: "}
                 <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
@@ -441,12 +441,12 @@ export default function SearchComponent(props) {
         {(props.whatToSearch === "Everything" ||
          props.whatToSearch === "Patents") && (
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
-            <Grid item xs={2}>
+            <Grid item xs={2.4} sx={{}}>
               <PatentFilters selectedPatentClassification={selectedPatentClassification}
               setSelectedPatentClassification={setSelectedPatentClassification}
               searchYet={searchYet}/>
             </Grid>
-            <Grid item xs={10} ref={patentResRef}>
+            <Grid item xs={9.6} ref={patentResRef}>
               <PatentInformation 
                 tabOpened={false} 
                 researcherPatents={patentsSearchResults} 

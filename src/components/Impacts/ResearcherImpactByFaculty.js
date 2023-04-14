@@ -73,12 +73,16 @@ export default function ImpactByFaculty(props) {
       {faculty}
     </option>
   ));
+
+  const ALIGN_TEXT = "left"
+  const ALIGN_TEXT_BY = "2%" // pl of typography
+
   //console.log(props.researcherImpactsByFaculty.total_grant_amount)  
   const impacts_element = props.researcherImpactsByFaculty
     .filter((data, index) => index < numberOfImpactsToShow)
     .map((prof_data, index) => (
       <Grid container key={prof_data.preferred_name}>
-        <Grid item xs={1}>
+        {/* <Grid item xs={1}>
           <Paper
             style={heightMatch}
             square={true}
@@ -90,20 +94,21 @@ export default function ImpactByFaculty(props) {
               {index + 1}
             </Typography>
           </Paper>
-        </Grid>
+        </Grid> */}
         <Grid item xs={3}>
           <Paper
             style={heightMatch}
             square={true}
             elevation={0}
             variant="outlined"
-            sx={{ textAlign: "center" }}
+            sx={{ textAlign: ALIGN_TEXT }}
           >
             <Typography
               component={Link}
               to={"/Researchers/" + prof_data.researcher_id + "/"}
-              align="center"
+              align="left"
               variant="body1"
+              sx={{pl: ALIGN_TEXT_BY}}
             >
               {prof_data.preferred_name}
             </Typography>
@@ -115,9 +120,9 @@ export default function ImpactByFaculty(props) {
             square={true}
             elevation={0}
             variant="outlined"
-            sx={{ textAlign: "center" }}
+            sx={{ textAlign: ALIGN_TEXT}}
           >
-            <Typography align="center" variant="body1">
+            <Typography align={ALIGN_TEXT_BY} variant="body1" sx={{pl: ALIGN_TEXT_BY}}>
               {prof_data.prime_faculty}
             </Typography>
           </Paper>
@@ -128,14 +133,14 @@ export default function ImpactByFaculty(props) {
             square={true}
             elevation={0}
             variant="outlined"
-            sx={{ textAlign: "center" }}
+            sx={{ textAlign: ALIGN_TEXT }}
           >
-            <Typography align="center" variant="body1">
+            <Typography align={ALIGN_TEXT} variant="body1" sx={{pl: ALIGN_TEXT_BY}}>
               {prof_data.prime_department}
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={1}>
+        <Grid item xs={1.5}>
           <Paper
             style={heightMatch}
             square={true}
@@ -148,7 +153,7 @@ export default function ImpactByFaculty(props) {
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={1}>
+        <Grid item xs={1.5}>
           <Paper
             style={heightMatch}
             square={true}
@@ -217,7 +222,7 @@ export default function ImpactByFaculty(props) {
                     </FormControl>
                   </Stack>
                 </Grid>
-                <Grid item xs={1}>
+                {/* <Grid item xs={1}>
                   <Paper
                     style={heightMatch}
                     square={true}
@@ -229,7 +234,7 @@ export default function ImpactByFaculty(props) {
                       Impact
                     </Typography>
                   </Paper>
-                </Grid>
+                </Grid> */}
                 <Grid item xs={3}>
                   <Paper
                     style={heightMatch}
@@ -269,7 +274,7 @@ export default function ImpactByFaculty(props) {
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={1}>
+                <Grid item xs={1.5}>
                   <Paper
                     style={heightMatch}
                     square={true}
@@ -282,7 +287,7 @@ export default function ImpactByFaculty(props) {
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={1}>
+                <Grid item xs={1.5}>
                   <Paper
                     style={heightMatch}
                     square={true}
