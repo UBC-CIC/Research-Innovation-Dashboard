@@ -530,33 +530,6 @@ export default function Advanced_Search(props) {
                   title={"Type Of Content To Search For"}
                   DropDownArray={["Everything", "Researchers", "Publications", "Grants"]}
                 /> */}
-                <Paper
-                  square={true}
-                  elevation={0}
-                  sx={{
-                    width: "100%",
-                    p: "2%",
-                    borderBottom: 1,
-                    borderColor: "rgba(0, 0, 0, 0.12)",
-                  }}
-                  component={Stack}
-                  direction="row"
-                >
-                  <Paper
-                    elevation={0}
-                    sx={{ width: "20%", paddingRight: "2%" }}
-                    component={Stack}
-                    direction="column"
-                    justifyContent="center"
-                  ></Paper>
-                  <Paper
-                    elevation={0}
-                    sx={{ width: "30%", paddingLeft: "2%" }}
-                    component={Stack}
-                    direction="column"
-                    justifyContent="center"
-                  ></Paper>
-                </Paper>
               </Grid>
             </AccordionDetails>
           </Accordion>

@@ -65,12 +65,12 @@ const GrantsFilters = ({
                 />
               ))}
         </FormGroup>
-        <Button
+        {/* <Button
           onClick={() => setOpenGrantFiltersDialog(true)}
           sx={{ color: "##666666", justifyContent: "flex-start" }}
         >
           Show All
-        </Button>
+        </Button> */}
       </Box>
     );
   };

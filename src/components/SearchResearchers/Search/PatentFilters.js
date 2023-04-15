@@ -150,7 +150,7 @@ const PatentFilters = ({
         <FormGroup>
           {patentOptions &&
             patentOptions
-              .slice(0, 5)
+              .slice(0, 10)
               .map((classification, index) => {
                 return (
                     <FormControlLabel
@@ -163,12 +163,12 @@ const PatentFilters = ({
                 )})
             }
         </FormGroup>
-        <Button
+        {/* <Button
           onClick={() => setOpenPatentFiltersDialog(true)}
           sx={{ color: "#666666", justifyContent: "flex-start" }}
         >
           Show All
-        </Button>
+        </Button> */}
       </Box>
     );
   };
