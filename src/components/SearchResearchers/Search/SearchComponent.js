@@ -100,8 +100,6 @@ export default function SearchComponent(props) {
   const grantResRef = useRef(null)
   const patentResRef = useRef(null)
 
-  //const [currentFacultyOptions, setCurrentFacultyOptions] = useState([]);
-
   useEffect(() => {
     //if there are selected departments, join items in array to create 1 string (different departments separated by &&), replace all spaces with %20
     if (selectedDepartments.length > 0) {
@@ -245,6 +243,40 @@ export default function SearchComponent(props) {
     }
 
   }, [selectedFaculties, selectedDepartments, props.whatToSearch, selectedGrantAgency, selectedPatentClassification, selectedJournals, openDepartmentFiltersDialog])
+  
+  const [currentFacultyOptions, setCurrentFacultyOptions] = useState([]);
+  const [currentDepartmentOptions, setCurrentDepartmentOptions] = useState([]);
+
+  useEffect(() => {
+    const getFilterOptions = async () => {
+      const [departmentRes, facultyRes] = await Promise.all([
+        API.graphql({
+          query: getAllDepartments,
+        }),
+        API.graphql({
+          query: getAllFaculty,
+        }),
+      ]);
+
+      // create an initial list of json objects that contains the departments and an integer
+      // e.g. {'department': 'Department of Statistics', 'checked': 0} with 0 means unchecked and 1 means checked
+      let allDepartments = departmentRes.data.getAllDepartments.map((item, index) => ({"department": item, "checked": 0}));
+      selectedDepartments.forEach((department) => {
+        const currentIndex = allDepartments.findIndex((obj) => obj["department"] === department);
+        allDepartments[currentIndex]["checked"] = 1
+      });
+      setCurrentDepartmentOptions(allDepartments);
+      // create an initial list of json objects that contains the faculty and an integer
+      // e.g. {'faculty': 'Faculty of Science', 'checked': 0} with 0 means unchecked and 1 means checked
+      let allFaculties = facultyRes.data.getAllFaculty.map((item, index) => ({"faculty": item, "checked": 0}));
+      selectedFaculties.forEach((faculty) => {
+        const currentIndex = allFaculties.findIndex((obj) => obj["faculty"] === faculty);
+        allFaculties[currentIndex]["checked"] = 1
+      });
+      setCurrentFacultyOptions(allFaculties);
+    };
+    getFilterOptions();
+  }, []);
 
   return (
     <div>
@@ -396,8 +428,10 @@ export default function SearchComponent(props) {
                 searchYet={searchYet}
                 openDepartmentFiltersDialog={openDepartmentFiltersDialog}
                 setOpenDepartmentFiltersDialog={setOpenDepartmentFiltersDialog}
-                //currentFacultyOptions={currentFacultyOptions}
-                //setCurrentFacultyOptions={setCurrentFacultyOptions}
+                currentFacultyOptions={currentFacultyOptions}
+                setCurrentFacultyOptions={setCurrentFacultyOptions}
+                currentDepartmentOptions={currentDepartmentOptions}
+                setCurrentDepartmentOptions={setCurrentDepartmentOptions}
               />
             </Grid>
             <Grid item xs={10} ref={researcherResRef}>

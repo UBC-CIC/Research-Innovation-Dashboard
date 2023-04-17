@@ -20,12 +20,12 @@ const ResearcherFilters = ({
   searchYet,
   openDepartmentFiltersDialog,
   setOpenDepartmentFiltersDialog,
-  //currentFacultyOptions,
-  //setCurrentFacultyOptions
+  currentFacultyOptions,
+  setCurrentFacultyOptions,
+  currentDepartmentOptions,
+  setCurrentDepartmentOptions
 }) => {
-  const [departmentOptions, setDepartmentOptions] = useState();
-  const [facultyOptions, setFacultyOptions] = useState();
-  // const [openFacultyFiltersDialog, setOpenFacultyFiltersDialog] = useState(false);
+  
   const [optionsToShow, setOptionsToShow] = useState(7)
 
   const OPTIONS_TO_SHOW = 7
@@ -33,29 +33,7 @@ const ResearcherFilters = ({
 
   const handleClose = () => {
     setOpenDepartmentFiltersDialog(false);
-    //setOpenFacultyFiltersDialog(false);
   };
-  
-  useEffect(() => {
-    const getFilterOptions = async () => {
-      const [departmentRes, facultyRes] = await Promise.all([
-        API.graphql({
-          query: getAllDepartments,
-        }),
-        API.graphql({
-          query: getAllFaculty,
-        }),
-      ]);
-      const allDepartments = departmentRes.data.getAllDepartments;
-      const allFaculties = facultyRes.data.getAllFaculty;
-      //console.log(allFaculties)
-      setDepartmentOptions(allDepartments);
-      // create an initial list of json objects that contains the faculty and an integer
-      // e.g. {'faculty': 'Faculty of Science', 'checked': 0} with 0 means unchecked and 1 means checked
-      setFacultyOptions(allFaculties.map((item, index) => ({"faculty": item, "checked": 0})));
-    };
-    getFilterOptions();
-  }, []);
 
   const handleCheckDepartment = (e, department) => {
     // when checked
@@ -75,14 +53,6 @@ const ResearcherFilters = ({
     if (e.target.checked) {
       // checked
       setSelectedFaculties((prev) => {return [...prev, faculty]});
-
-      let facultyOptionsTemp = facultyOptions
-      const currentIndex = facultyOptions.findIndex((obj) => obj["faculty"] === faculty);
-      facultyOptionsTemp[currentIndex]["checked"] = 1
-      //setFacultyOptions(facultyOptionsTemp);
-      setFacultyOptions(facultyOptionsTemp)
-      console.log(facultyOptionsTemp)
-
     } else {
       // unchecked
       setSelectedFaculties(
@@ -90,31 +60,25 @@ const ResearcherFilters = ({
           (selectedFaculty) => selectedFaculty !== faculty
         )
       );
-        
-      let facultyOptionsTemp = facultyOptions
-      const currentIndex = facultyOptions.findIndex((obj) => obj["faculty"] === faculty);
-      facultyOptionsTemp[currentIndex]["checked"] = 0
-      //setFacultyOptions(facultyOptionsTemp);
-      setFacultyOptions(facultyOptionsTemp)
-      console.log(facultyOptionsTemp)
     }
-    //console.log(selectedFaculties)
   };
 
   const renderDepartmentOptions = () => {
     return (
       <Box sx={{ display: "flex", flexDirection: "column" }}>
         <FormGroup>
-          {departmentOptions &&
-            departmentOptions
+          {currentDepartmentOptions &&
+            currentDepartmentOptions
+              // sort the options based on descending checked value and then based on ascending alphabetical order
+              .sort((f1, f2) => f2['checked'] - f1['checked'] || f1['department'].localeCompare(f2['department']))
               .slice(0, 5)
               .map((department, index) => (
                 <FormControlLabel
                   key={index}
                   control={<Checkbox />}
-                  checked={selectedDepartments.includes(department)}
-                  label={<Typography variant="body2">{department}</Typography>}
-                  onChange={(e) => handleCheckDepartment(e, department)}
+                  checked={selectedDepartments.includes(department['department'])}
+                  label={<Typography variant="body2">{department['department']}</Typography>}
+                  onChange={(e) => handleCheckDepartment(e, department['department'])}
                 />
               ))}
         </FormGroup>
@@ -137,10 +101,10 @@ const ResearcherFilters = ({
         }}
       >
         <FormGroup>
-          {facultyOptions &&
-            facultyOptions
+          {currentFacultyOptions &&
+            currentFacultyOptions
               // sort the options based on descending checked value and then based on ascending alphabetical order
-              //.sort((f1, f2) => f2['checked'] - f1['checked'] || f1['faculty'].localeCompare(f2['faculty']))
+              .sort((f1, f2) => f2['checked'] - f1['checked'] || f1['faculty'].localeCompare(f2['faculty']))
               .slice(0, optionsToShow)
               .map((faculty, index) => (
                 <FormControlLabel
@@ -152,10 +116,10 @@ const ResearcherFilters = ({
                 />
               ))}
         </FormGroup>
-        {facultyOptions && (optionsToShow < facultyOptions.length) ? 
+        {currentFacultyOptions && (optionsToShow < currentFacultyOptions.length) ? 
         (<Button
           //onClick={() => setOpenFacultyFiltersDialog(true)}
-          onClick={() => setOptionsToShow(facultyOptions.length)}
+          onClick={() => setOptionsToShow(currentFacultyOptions.length)}
           sx={{ color: "#666666", justifyContent: "flex-start" }}
         >
           Show more
@@ -179,17 +143,10 @@ const ResearcherFilters = ({
       {renderFacultyOptions()}
       <Typography variant="h6" sx={{ my: "1em", color: "#666666" }}>{"Department (" + selectedDepartments.length + " selected)" }</Typography>
       {renderDepartmentOptions()}
-      {/* <FacultyFiltersDialog
-        open={openFacultyFiltersDialog}
-        handleClose={handleClose}
-        allFaculties={facultyOptions}
-        selectedFaculties={selectedFaculties}
-        handleCheckFaculty={handleCheckFaculty}
-      /> */}
       <DepartmentFiltersDialog
         open={openDepartmentFiltersDialog}
         handleClose={handleClose}
-        allDepartments={departmentOptions}
+        allDepartments={currentDepartmentOptions.map((department) => department['department'])}
         selectedDepartments={selectedDepartments}
         handleCheckDepartment={handleCheckDepartment}
       />
