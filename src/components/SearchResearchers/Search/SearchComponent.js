@@ -15,6 +15,8 @@ import GrantFilters from "../Search/GrantsFilters"
 import PatentInformation from "../../ResearcherProfile/PatentInformation"
 import PatentFilters from "../Search/PatentFilters"
 import Link from '@mui/material/Link';
+import { getAllDepartments, getAllFaculty } from "../../../graphql/queries";
+import { API } from "aws-amplify";
 
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
@@ -26,6 +28,7 @@ export default function SearchComponent(props) {
   const [publicationsSearchResultPage, setPublicationsSearchResultPage] =
     useState(1);
   const [searchYet, setSearchYet] = useState(false) //indicate whether the user entered a search string and search
+  const [openDepartmentFiltersDialog, setOpenDepartmentFiltersDialog] = useState(false);
 
   let { anyDepartmentFilter, anyFacultyFilter, journalFilter, grantFilter, patentClassifications } = useParams();
 
@@ -66,7 +69,7 @@ export default function SearchComponent(props) {
     selectedClassification = patentClassifications.split("&&");
   }
   
-  console.log(props.whatToSearch)
+  // console.log(props.whatToSearch)
 
   //for researcher filters
   const [selectedDepartments, setSelectedDeparments] = useState(
@@ -96,6 +99,8 @@ export default function SearchComponent(props) {
   const pubResRef = useRef(null)
   const grantResRef = useRef(null)
   const patentResRef = useRef(null)
+
+  //const [currentFacultyOptions, setCurrentFacultyOptions] = useState([]);
 
   useEffect(() => {
     //if there are selected departments, join items in array to create 1 string (different departments separated by &&), replace all spaces with %20
@@ -207,7 +212,8 @@ export default function SearchComponent(props) {
         url = "/Search/Patents/" + selectedPatentClfsPath + "/" + searchBarValueRef.current + "/";
       
       } else if (props.whatToSearch === "Publications") {
-        
+
+        console.log(openDepartmentFiltersDialog)
         url = "/Search/Publications/".concat(selectedJournalsPath, "/", searchBarValueRef.current, "/");
 
       } else if (props.whatToSearch === "Everything"){
@@ -228,14 +234,17 @@ export default function SearchComponent(props) {
         "/";
       }
 
-      console.log(searchBarValueRef)
-      console.log(url)
-      navigate(url);
-      window.location.reload();
-      
+      //console.log(searchBarValueRef)
+      // console.log(url)
+      if (openDepartmentFiltersDialog === false) {
+        // don't refresh until the department filter dialogs is closed
+        navigate(url);
+        window.location.reload();
+        //console.log(selectedFaculties)
+      }
     }
 
-  }, [selectedFaculties, selectedDepartments, props.whatToSearch, selectedGrantAgency, selectedPatentClassification, selectedJournals])
+  }, [selectedFaculties, selectedDepartments, props.whatToSearch, selectedGrantAgency, selectedPatentClassification, selectedJournals, openDepartmentFiltersDialog])
 
   return (
     <div>
@@ -385,6 +394,10 @@ export default function SearchComponent(props) {
                 selectedFaculties={selectedFaculties}
                 setSelectedFaculties={setSelectedFaculties}
                 searchYet={searchYet}
+                openDepartmentFiltersDialog={openDepartmentFiltersDialog}
+                setOpenDepartmentFiltersDialog={setOpenDepartmentFiltersDialog}
+                //currentFacultyOptions={currentFacultyOptions}
+                //setCurrentFacultyOptions={setCurrentFacultyOptions}
               />
             </Grid>
             <Grid item xs={10} ref={researcherResRef}>
