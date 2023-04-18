@@ -15,29 +15,17 @@ The last name can have multiple spaces
 '''
 def cleanName(name):
     #Split the name on comma.
-    #Last name is the first part of the array. First name is the second part of the array.
-    nameParts = name.split(",")
+    nameParts = name.split(", ")
 
+    #If the name is not in the correct format return None
     if len(nameParts) < 2:
-        print("This is not possible")
+        return None, None
 
+    #If the name is in the correct format return the first and last name
     last = nameParts[0]
     first = nameParts[1]
 
     return first, last
-
-    # name_arr = name
-    # last_name = name_arr[0].replace('-', ' ').split()[0]
-    # first_name_arr = name_arr[1].replace('-', ' ').split()
-    # if first_name_arr:
-    #     first_name = first_name_arr[0]
-    # else:
-    #     first_name = ''
-
-    # first_name_clean = "".join(c for c in first_name if c.isalpha())
-    # first_name_clean = first_name_clean.lower()
-    # last_name_clean = "".join(c for c in last_name if c.isalpha())
-    # last_name_clean = last_name_clean.lower()
 
 '''
 Fetches a .csv file of Scopus data from S3 then cleans the name data by setting 
@@ -46,24 +34,40 @@ Requires no input
 '''
 def lambda_handler(event, context):
     
+    #Get the bucket name from the environment variables
     bucket_name = os.environ.get('S3_BUCKET_NAME')
+    
     key = 'researcher_data/scopus_ids.csv'
+    
+    #Get the data from s3
     data = s3_client.get_object(Bucket=bucket_name, Key=key)
+
+    #Read the data from s3
     csv_file = codecs.getreader("utf-8-sig")(data["Body"])
+
+    #Skip the first 9 rows of the csv file
     for i in range (9):
         next(csv_file)
+
+    #Read the csv file into a list of dictionaries
     csv_reader = csv.DictReader(csv_file)
     scopus_id_rows = list(csv_reader)
+
+    #Remove the last two rows of the csv file
     del scopus_id_rows[-1]
     del scopus_id_rows[-1]
 
+    #Clean the name data and write it to a new csv file
     with open('/tmp/scopus_clean.csv', mode='w', newline='', encoding='utf-8-sig') as scopus_clean:
         writer = csv.writer(scopus_clean, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        #Write the headers to the csv file
         file_headers = ['NAME', 'SCOPUS_ID', 'CLEANED_FIRST_NAME', 'CLEANED_LAST_NAME']
         writer.writerow(file_headers)
+        
+        #Clean the name data and write it to the csv file
         for row in scopus_id_rows:
             firstNameClean, lastNameClean = cleanName(row['Name'])
-
+            
             writer.writerow([row['Name'], row['Scopus author ID'], firstNameClean, lastNameClean])
 
     #upload the data into s3
