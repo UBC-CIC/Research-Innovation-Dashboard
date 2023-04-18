@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { Auth } from "aws-amplify";
 import { connect } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { updateLoginState } from "../actions/loginActions";
 
 const headerTheme = createTheme({
@@ -55,6 +55,7 @@ function Navbar(props) {
   const [loadingBackdrop, setLoadingBackdrop] = useState(false);
 
   const menuView = useMediaQuery((theme) => theme.breakpoints.down("md"));
+  const [activeButton, setActiveButton] = useState("");
 
   const handleLogout = async () => {
     setLoadingBackdrop(true);
@@ -78,6 +79,45 @@ function Navbar(props) {
     navigate("/");
     await Auth.signOut();
   }
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const currentPath = location.pathname;
+    if(currentPath.includes("/Search/Researchers/")){
+      setActiveButton("Researchers")
+    }
+    else if(currentPath.includes("/Search/Publications/")){
+      setActiveButton("Publications")
+    }
+    else if(currentPath.includes("/Search/Grants/")){
+      setActiveButton("Grants")
+    }
+    else if(currentPath.includes("/Search/Patents/")){
+      setActiveButton("Patents")
+    }
+    else if(currentPath.includes("/Impact/")){
+      setActiveButton("Impact")
+    }
+    else if(currentPath.includes("/Metrics/")){
+      setActiveButton("Metrics")
+    }
+    else if(currentPath.includes("AdminDashboard")){
+      setActiveButton("AdminDashboard")
+    }
+    else if(currentPath.includes("Researchers")) {
+      setActiveButton("ResearchersTab") // No tab highlighted for researchers page
+    }
+    else {
+      setActiveButton("Home")
+    }
+
+    // setActiveButton(currentPath);
+  }, [location]);
+
+  const activeButtonStyle = {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+  };
 
   return (
     <ThemeProvider theme={headerTheme}>
@@ -144,13 +184,21 @@ function Navbar(props) {
             aria-label="navbar button group"
           >
             <NavButton
-              sx={{ paddingLeft: "28px", paddingRight: "28px" }}
+              sx={{
+                paddingLeft: "28px",
+                paddingRight: "28px",
+                ...(activeButton === "Home" && activeButtonStyle),
+              }}
               onClick={() => (window.location.href = "/ / / / / / /")}
             >
               Home
             </NavButton>
             <NavButton
-              sx={{paddingLeft: "28px", paddingRight: "28px"}}
+              sx={{
+                paddingLeft: "28px",
+                paddingRight: "28px",
+                ...(activeButton === "Researchers" && activeButtonStyle),
+              }}
               onClick={() =>
                 (window.location.href = "/Search/Researchers/ / / /")
               }
@@ -158,7 +206,11 @@ function Navbar(props) {
               Researchers
             </NavButton>
             <NavButton
-              sx={{paddingLeft: "28px", paddingRight: "28px"}}
+              sx={{
+                paddingLeft: "28px",
+                paddingRight: "28px",
+                ...(activeButton === "Publications" && activeButtonStyle),
+              }}
               onClick={() =>
                 (window.location.href = "/Search/Publications/ / /")
               }
@@ -166,7 +218,11 @@ function Navbar(props) {
               Publications
             </NavButton>
             <NavButton
-              sx={{paddingLeft: "28px", paddingRight: "28px"}}
+              sx={{
+                paddingLeft: "28px",
+                paddingRight: "28px",
+                ...(activeButton === "Grants" && activeButtonStyle),
+              }}
               onClick={() =>
                 (window.location.href = "/Search/Grants/ / /")
               }
@@ -174,7 +230,11 @@ function Navbar(props) {
               Grants
             </NavButton>
             <NavButton
-              sx={{paddingLeft: "28px", paddingRight: "28px"}}
+              sx={{
+                paddingLeft: "28px",
+                paddingRight: "28px",
+                ...(activeButton === "Patents" && activeButtonStyle),
+              }}
               onClick={() =>
                 (window.location.href = "/Search/Patents/ / /")
               }
@@ -182,18 +242,30 @@ function Navbar(props) {
               Patents
             </NavButton>
             <NavButton 
-              sx={{paddingLeft: "28px", paddingRight: "28px"}}
+              sx={{
+                paddingLeft: "28px",
+                paddingRight: "28px",
+                ...(activeButton === "Impact" && activeButtonStyle),
+              }}
               onClick={() => navigate("/Impact/")}>
                 Impact
             </NavButton>
             <NavButton 
-              sx={{paddingLeft: "28px", paddingRight: "28px"}}
+              sx={{
+                paddingLeft: "28px",
+                paddingRight: "28px",
+                ...(activeButton === "Metrics" && activeButtonStyle),
+              }}
               onClick={() => navigate("/Metrics/")}>
                 Metrics
             </NavButton>
             {adminUser && (
               <NavButton 
-                sx={{paddingLeft: "28px", paddingRight: "28px"}}
+              sx={{
+                paddingLeft: "28px",
+                paddingRight: "28px",
+                ...(activeButton === "AdminDashboard" && activeButtonStyle),
+              }}
                 onClick={() => navigate("/AdminDashboard/")}>
                 Admin Dashboard
               </NavButton>

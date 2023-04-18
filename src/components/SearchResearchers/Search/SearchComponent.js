@@ -461,7 +461,7 @@ export default function SearchComponent(props) {
               <ResearcherSearchResultsComponent
                 researchSearchResults={researchSearchResults}
                 researcherSearchResultPage={researcherSearchResultPage}
-                errorTitle={"No Researcher Search Results"}
+                errorTitle={'No Researcher Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
                 setResearcherSearchResultPage={setResearcherSearchResultPage}
                 searchYet={searchYet}
               />
@@ -471,20 +471,21 @@ export default function SearchComponent(props) {
         {(props.whatToSearch === "Everything" ||
           props.whatToSearch === "Publications") && (
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
-            <Grid item xs={2}>
+            {/* <Grid item xs={2}>
               <PublicationFilters
                 selectedJournals={selectedJournals}
                 setSelectedJournals={setSelectedJournals}
                 searchYet={searchYet}
               />
-            </Grid>
-            <Grid item xs={10} ref={pubResRef}>
+            </Grid> */}
+            <Grid item xs={12} ref={pubResRef}>
               <PublicationSearchResultsComponent
                 publicationSearchResults={publicationSearchResults}
                 publicationsSearchResultPage={publicationsSearchResultPage}
                 setPublicationsSearchResultPage={
                   setPublicationsSearchResultPage
                 }
+                errorTitle={'No Publication Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
                 searchYet={searchYet}
               />
             </Grid>
@@ -504,6 +505,7 @@ export default function SearchComponent(props) {
                 tabOpened={false} 
                 initialNumberOfRows={50}
                 searchYet={searchYet}
+                errorTitle={'No Grant Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
               />
             </Grid>
           </Grid>
@@ -522,6 +524,7 @@ export default function SearchComponent(props) {
                 researcherPatents={patentsSearchResults} 
                 initialNumberOfRows={10}
                 searchYet={searchYet}
+                errorTitle={'No Patent Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
               />
             </Grid>
           </Grid>

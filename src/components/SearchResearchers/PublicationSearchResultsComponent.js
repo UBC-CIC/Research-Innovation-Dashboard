@@ -13,36 +13,6 @@ export default function PublicationSearchResultsComponent(props) {
 
   let numberOfResearcherPerPage = 5;
 
-  function ShowAllPublicationsResultsButton() {
-    return (
-      <Paper
-        square={true}
-        elevation={0}
-        sx={{
-          width: "100%",
-          justifyContent: "center",
-          marginTop: "1%",
-          marginBottom: "1%",
-        }}
-        component={Stack}
-        direction="row"
-      >
-        <Button
-          sx={{
-            m: 1,
-            border: "2px solid Black",
-            color: "black",
-            backgroundColor: "white",
-          }}
-        >
-          {"Show All " +
-            props.publicationSearchResults.length +
-            " Publication Results"}
-        </Button>
-      </Paper>
-    );
-  }
-
   function PublicationsHeader() {
     return (
       <Grid
@@ -103,14 +73,14 @@ export default function PublicationSearchResultsComponent(props) {
       <Grid container>
         {publicationSearchResults.length === 0 && (
           <Paper elevation={0} square={true} sx={{ width: "100%" }}>
-            <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}>
-              No Publication Search Results
+            <Typography variant="h4" sx={{ marginLeft: "2%" }}>
+              {props.errorTitle}
             </Typography>
           </Paper>
         )}
         {publicationSearchResults.length !== 0 && (
           <Paper elevation={0} square={true} sx={{ width: "100%" }}>
-            <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}>
+            <Typography variant="h4" sx={{ marginLeft: "2%"}}>
               {"Publications (" + publicationSearchResults.length + " results)"}
             </Typography>
           </Paper>
