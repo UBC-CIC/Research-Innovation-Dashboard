@@ -148,6 +148,13 @@ export class AppsyncStack extends Stack {
       apiId: APIID,
 
       definition: `
+      type Catagories {
+        researcherCount: Int
+        publicationCount: Int
+        grantCount: Int
+        patentCount: Int
+      }
+      
       type Department {
         prime_department: String
       }
@@ -168,7 +175,13 @@ export class AppsyncStack extends Stack {
       }
       
       type Mutation {
-        putPub(authors: [String!], id: ID!, journal: String, keywords: [String], title: String!): Publication
+        putPub(
+          authors: [String!],
+          id: ID!,
+          journal: String,
+          keywords: [String],
+          title: String!
+        ): Publication
       }
       
       type Publication {
@@ -181,12 +194,36 @@ export class AppsyncStack extends Stack {
         link: String
         title: String!
         year_published: String
+        author_ids_string: String
       }
       
       type Query {
-        advancedSearchGrants(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, table: String!): [grant]
-        advancedSearchPublications(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, journal: String!, noneOfTheseWords: String!, table: String!, year_gte: Int!, year_lte: Int!): [Publication]
-        advancedSearchResearchers(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, prime_department: String!, prime_faculty: String!, table: String!): [ResearcherOpenSearch]
+        advancedSearchGrants(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          noneOfTheseWords: String!,
+          table: String!
+        ): [grant]
+        advancedSearchPublications(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          journal: String!,
+          noneOfTheseWords: String!,
+          table: String!,
+          year_gte: Int!,
+          year_lte: Int!
+        ): [Publication]
+        advancedSearchResearchers(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          noneOfTheseWords: String!,
+          prime_department: String!,
+          prime_faculty: String!,
+          table: String!
+        ): [ResearcherOpenSearch]
         allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
         facultyMetrics(faculty: String!): [facultyMetric]
         getAllDepartments: [String]
@@ -220,6 +257,7 @@ export class AppsyncStack extends Stack {
         getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
         getResearcherPatents(id: ID!): [patent]
         getResearcherGrants(id: ID!): [grant]
+        getCatagoriesCount: Catagories
       }
       
       type Researcher {

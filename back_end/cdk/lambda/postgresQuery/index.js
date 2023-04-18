@@ -434,6 +434,21 @@ async function handler(event) {
         payload.push(agencies[i].agency);
       }
       break;
+
+    case "getCatagoriesCount":
+      let researcherCount = await sql`SELECT COUNT(researcher_id) FROM researcher_data`
+      let publicationCount = await sql`SELECT COUNT(id) FROM publication_data`
+      let grantCount = await sql`SELECT COUNT(grant_id) FROM grant_data`
+      let patentCount = await sql`SELECT COUNT(patent_id) FROM patent_data`
+
+      payload = {
+        researcherCount: researcherCount[0].count,
+        publicationCount: publicationCount[0].count,
+        grantCount: grantCount[0].count,
+        patentCount: patentCount[0].count
+      }
+
+      break;
     
     case "getResearcherPatents":
       researcher_id = await sql`SELECT researcher_id FROM researcher_data WHERE researcher_id=${event.arguments.id}`
@@ -494,7 +509,7 @@ async function handler(event) {
       payload = patenetResults
       
       break;
-
+  
     default:
       console.log("Unexpected Query!")
   }

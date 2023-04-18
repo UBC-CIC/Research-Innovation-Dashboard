@@ -60,6 +60,7 @@ export const advancedSearchPublications = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -173,6 +174,7 @@ export const getPub = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -255,6 +257,7 @@ export const getResearcherPubsByCitations = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -270,6 +273,7 @@ export const getResearcherPubsByTitle = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -285,6 +289,7 @@ export const getResearcherPubsByYear = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -306,6 +311,7 @@ export const searchPublications = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -542,6 +548,16 @@ export const getResearcherGrants = /* GraphQL */ `
       project_title
       start_date
       year
+    }
+  }
+`;
+export const getCatagoriesCount = /* GraphQL */ `
+  query GetCatagoriesCount {
+    getCatagoriesCount {
+      researcherCount
+      publicationCount
+      grantCount
+      patentCount
     }
   }
 `;

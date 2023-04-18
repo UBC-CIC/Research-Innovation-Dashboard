@@ -89,16 +89,6 @@ function Navbar(props) {
           variant="outlined"
         >
           <Toolbar style={{ paddingLeft: "2%" }} sx={{ height: 10 }}>
-            <img
-              style={{
-                height: "80%",
-                paddingRight: "1%",
-                justifyContent: "center",
-                marginTop: "5px",
-              }}
-              src={require("../assets/images/ubc-logo.png")}
-              alt=""
-            ></img>
             <Typography
               style={{ textDecoration: "none" }}
               component={Link}

@@ -15,8 +15,9 @@ import GrantFilters from "../Search/GrantsFilters"
 import PatentInformation from "../../ResearcherProfile/PatentInformation"
 import PatentFilters from "../Search/PatentFilters"
 import Link from '@mui/material/Link';
-import { getAllDepartments, getAllFaculty } from "../../../graphql/queries";
+import { getAllDepartments, getAllFaculty, getCatagoriesCount } from "../../../graphql/queries";
 import { API } from "aws-amplify";
+import HomePageBar from "../../HomePage/HomePageBar";
 
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
@@ -29,6 +30,7 @@ export default function SearchComponent(props) {
     useState(1);
   const [searchYet, setSearchYet] = useState(false) //indicate whether the user entered a search string and search
   const [openDepartmentFiltersDialog, setOpenDepartmentFiltersDialog] = useState(false);
+  const [catagoiresCount, setCatagoriesCount] = useState({researcherCount: 0, publicationCount: 0, grantCount: 0, patentCount: 0})
 
   let { anyDepartmentFilter, anyFacultyFilter, journalFilter, grantFilter, patentClassifications } = useParams();
 
@@ -278,6 +280,21 @@ export default function SearchComponent(props) {
     getFilterOptions();
   }, []);
 
+  useEffect(() => {
+    const getCatagoriesCountFunction = async () => {
+      const catagoriesCount = await API.graphql({
+        query: getCatagoriesCount,
+      });
+
+      console.log("Hereee")
+
+      console.log(catagoriesCount.data.getCatagoriesCount)
+      setCatagoriesCount(catagoriesCount.data.getCatagoriesCount);
+    };
+    console.log("HEREEE")
+    getCatagoriesCountFunction();
+  }, []);
+
   return (
     <div>
       <Grid container>
@@ -292,7 +309,7 @@ export default function SearchComponent(props) {
                 {
                   (props.whatToSearch === "Everything" && searchYet === false) ?
                     (<Typography align="center" variant="h4" sx={{ margin: "8px", pt: "1.5%", pb: "1.5%" }}>
-                      {"Welcome to the UBC Research Expertise Portal"}
+                      {"Welcome to the Expertise Dashboard"}
                     </Typography>) : (props.whatToSearch === "Researchers") ? 
                       (<Typography align="center" variant="h4" sx={{ margin: "8px", pt: "1.5%", pb: "1.5%" }}>
                         {"Find Researchers"}
@@ -302,7 +319,7 @@ export default function SearchComponent(props) {
                       </Typography>)
                 }
               </Grid>
-              <Grid item xs={12} align="center">
+              <Grid item xs={12} sx={{paddingBottom: 3}} align="center">
                 <SearchBar
                   setResearcherSearchResults={setResearcherSearchResults}
                   setPublicationSearchResults={setPublicationSearchResults}
@@ -353,6 +370,12 @@ export default function SearchComponent(props) {
           </Paper>
         </Grid>
       </Grid>
+      {searchYet === false && <HomePageBar 
+        researchersCount={catagoiresCount.researcherCount} 
+        publicationsCount={catagoiresCount.publicationCount} 
+        grantsCount={catagoiresCount.grantCount} 
+        patentsCount={catagoiresCount.patentCount} />}
+
       <Grid container>
         {(props.whatToSearch === "Everything" && searchYet === true) && (
           <Grid container 

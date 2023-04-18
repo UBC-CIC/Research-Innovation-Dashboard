@@ -183,6 +183,7 @@ switch(event.info.fieldName) {
     };
 
     searchResult = await search(query, "publication_data", 200);
+    console.log(searchResult)
     break;
     
   case "similarResearchers":
