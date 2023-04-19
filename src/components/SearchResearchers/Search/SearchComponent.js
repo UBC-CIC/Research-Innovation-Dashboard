@@ -286,12 +286,12 @@ export default function SearchComponent(props) {
         query: getCatagoriesCount,
       });
 
-      console.log("Hereee")
+      //console.log("Hereee")
 
       console.log(catagoriesCount.data.getCatagoriesCount)
       setCatagoriesCount(catagoriesCount.data.getCatagoriesCount);
     };
-    console.log("HEREEE")
+    //console.log("HEREEE")
     getCatagoriesCountFunction();
   }, []);
 

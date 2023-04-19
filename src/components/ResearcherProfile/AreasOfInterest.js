@@ -65,13 +65,13 @@ export default function AreasOfInterest(props){
                     {props.areasOfInterest.slice(0, 5).map((areasOfInterest) => {
                         if (areasOfInterest[0] !== "") {
                             return ( // get the top 5 keywords
-                                <Paper onClick={() => {props.showResearchersWithSimlarKeyword(areasOfInterest[0])}} square={true} elevation={0} sx={{flexGrow: 1, ml: 0, mt: 1, mr: 1, mb: 1, border: 1, '&:hover': {cursor: 'pointer'}}} component={Stack} direction="column" justifyContent="space-between" ml={0}>
+                                <Paper key={"key of " + areasOfInterest} onClick={() => {props.showResearchersWithSimlarKeyword(areasOfInterest[0])}} square={true} elevation={0} sx={{flexGrow: 1, ml: 0, mt: 1, mr: 1, mb: 1, border: 1, '&:hover': {cursor: 'pointer'}}} component={Stack} direction="column" justifyContent="space-between" ml={0}>
                                     <Paper sx={{height: "90%"}} elevation={0} component={Stack} direction="column" justifyContent="center">
                                         <Typography align='center' variant='h5'>
                                             {areasOfInterest[0] ? areasOfInterest[0] : <div></div>}
                                         </Typography>
                                     </Paper>
-                                    <Paper sx={{height: "10%"}} elevation={0} component={Stack} direction="column" justifyContent="end">
+                                    <Paper key={"val of " + areasOfInterest} sx={{height: "10%"}} elevation={0} component={Stack} direction="column" justifyContent="end">
                                         <Typography align='right' sx={{mr: "2%"}}>
                                             {areasOfInterest[1] ? areasOfInterest[1] : <div></div>}
                                         </Typography>

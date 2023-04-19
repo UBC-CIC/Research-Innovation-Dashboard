@@ -286,7 +286,7 @@ export default function Researcher_profile_overview() {
     }
     // save weighted list of keywords to state variable
     setSortedAreasOfInterest(sortedKeywordHashmap);
-    console.log(sortedAreasOfInterest)
+    //console.log(sortedAreasOfInterest)
   };
   const getResearcherBarGraphData = async () => {
     const bar_graph_data_response = await API.graphql({
@@ -407,7 +407,6 @@ export default function Researcher_profile_overview() {
   }
 
   function showResearchersWithSimlarKeyword(keyWord) {
-    keyWord = keyWord
     setShowOverview(false);
     setShowAreasOfInterest(false);
     setShowPublications(false);
@@ -418,7 +417,6 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(true);
-
     setKeywordToSearchFor(keyWord);
     getSimilarResearcherBasedOnKeyword(keyWord);
   }
@@ -430,7 +428,7 @@ export default function Researcher_profile_overview() {
         keyword: keyWord
       },
     });
-
+    console.log(keyWord)
     let results = searchResults.data.otherResearchersWithKeyword;
     console.log(results);
     for(let i = 0; i<results.length; i++) {
@@ -663,6 +661,7 @@ export default function Researcher_profile_overview() {
           )}
           {showResearchersWithSimilarKeyword && (
             <ResearcherSearchResultsComponent
+              searchYet={true}
               researchSearchResults={researchersWithClickedKeyword}
               researcherSearchResultPage={researcherSearchResultPage}
               setResearcherSearchResultPage={setResearcherSearchResultPage}

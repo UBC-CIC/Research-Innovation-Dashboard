@@ -10,7 +10,7 @@ import Box from "@mui/material/Box";
 export default function ResearcherSearchResultsComponent(props) {
   const { researchSearchResults, searchYet } = props;
 
-  let numberOfResearcherPerPage = 10;
+  let numberOfResearcherPerPage = 12;
 
   function researcherPaginationCallback(data, index) {
     if (
