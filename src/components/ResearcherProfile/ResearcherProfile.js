@@ -435,20 +435,20 @@ export default function Researcher_profile_overview() {
         keyword: keyWord
       },
     });
-    console.log(keyWord)
+    // console.log(keyWord)
     let results = searchResults.data.otherResearchersWithKeyword;
-    console.log(results);
+    // console.log(results);
     for(let i = 0; i<results.length; i++) {
       //Remove the researcher the keyword came from
       if(results[i].researcher_id == researcherId) {
-        console.log("removed researcher you got keyword from");
+        // console.log("removed researcher you got keyword from");
         results.splice(i, 1);
         break;
       }
     }
     setResearchersWithClickedKeyword(results);
   };
-
+  
   return (
     <Box>
       {!pageLoaded && <LoadingWheel />}
@@ -504,6 +504,7 @@ export default function Researcher_profile_overview() {
               showPatentsFunction,
             }}
             navButtonSelected={navButtonSelected}
+            dataLength={{grants: grantData.length, patents: researcherPatents.length}}
           />
           {showOverview && (
             <Grid container>
@@ -673,8 +674,9 @@ export default function Researcher_profile_overview() {
               researchSearchResults={researchersWithClickedKeyword}
               researcherSearchResultPage={researcherSearchResultPage}
               setResearcherSearchResultPage={setResearcherSearchResultPage}
-              resultTitle={"Other researchers with the Keyword: "+keywordToSearchFor}
+              //resultTitle={"Other researchers with the Keyword: "+keywordToSearchFor}
               errorTitle={"No Other Researchers with the keyword: "+keywordToSearchFor}
+              keywordToSearchFor={keywordToSearchFor}
             />
           )}
         </Grid>

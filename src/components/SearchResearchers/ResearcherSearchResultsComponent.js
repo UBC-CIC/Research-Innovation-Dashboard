@@ -64,10 +64,17 @@ export default function ResearcherSearchResultsComponent(props) {
           <Typography variant="h4" sx={{ marginLeft: "2%"}}>{props.errorTitle}</Typography>
         </Paper>
       )}
-      {researchSearchResults.length !== 0 && (
+      {researchSearchResults.length !== 0 && (!props.keywordToSearchFor) && (
         <Paper elevation={0} square={true} sx={{width: "100%"}}>
           <Typography variant="h4" sx={{ marginLeft: "7%", marginBottom: "2%" }}
             > {"Researchers (" + researchSearchResults.length + " results)"}
+          </Typography>
+        </Paper>
+      )}
+      {researchSearchResults.length !== 0 && (props.keywordToSearchFor) && (
+        <Paper elevation={0} square={true} sx={{width: "100%"}}>
+          <Typography variant="h4" sx={{ marginLeft: "7%", mb: "0.5%", mt: "1%"}}
+            > {researchSearchResults.length + ' Researchers with the keyword "' + props.keywordToSearchFor + '"'}
           </Typography>
         </Paper>
       )}

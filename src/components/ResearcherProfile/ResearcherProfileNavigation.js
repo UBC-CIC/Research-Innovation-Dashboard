@@ -32,8 +32,10 @@ export default function Research_Profile_Navigation(props) {
                         <Button onClick={props.onClickFunctions.showOverviewFunc} sx={props.navButtonSelected === "Overview" ? activeButtonStyle : {}}>Overview</Button>
                         <Button onClick={props.onClickFunctions.showAreasOfInterestFunc} sx={props.navButtonSelected === "Areas of Interest" ? activeButtonStyle : {}}>Areas Of Interest</Button>
                         <Button onClick={props.onClickFunctions.showPublicationsFunc} sx={props.navButtonSelected === "Publications" ? activeButtonStyle : {}}>Publications</Button>
-                        <Button onClick={props.onClickFunctions.showGrantsFunction} sx={props.navButtonSelected === "Grants" ? activeButtonStyle : {}}>Grants</Button>
-                        <Button onClick={props.onClickFunctions.showPatentsFunction} sx={props.navButtonSelected === "Patents" ? activeButtonStyle : {}}>Patents</Button>
+                        {(props.dataLength.grants > 0) && 
+                          <Button onClick={props.onClickFunctions.showGrantsFunction} sx={props.navButtonSelected === "Grants" ? activeButtonStyle : {}}>Grants</Button>}
+                        {(props.dataLength.patents > 0) && 
+                          <Button onClick={props.onClickFunctions.showPatentsFunction} sx={props.navButtonSelected === "Patents" ? activeButtonStyle : {}}>Patents</Button>}
                     </ButtonGroup>
                     </ThemeProvider>
             </Box>
