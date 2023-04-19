@@ -197,7 +197,7 @@ export default function ResearcherImpactByDepartment(props) {
           <Grid item xs={12}>
             <Paper square={true} elevation={0} variant="outlined">
               <Grid container id="full_box">
-                <Grid item xs={6}>
+                <Grid item xs={6} sx={{pt: "1.5%", pb: "1.5%"}}>
                   <Typography
                     align="left"
                     variant="h4"
@@ -206,9 +206,9 @@ export default function ResearcherImpactByDepartment(props) {
                     Impact By Department (last 5 years)
                   </Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item xs={6} sx={{pt: "1.5%", pb: "1.5%"}}>
                   <Stack direction="row" justifyContent="end">
-                    <FormControl sx={{ m: 1, mr: 0 }} variant="standard">
+                    <FormControl variant="standard">
                       <NativeSelect
                         id="demo-customized-select-native"
                         value={props.departmentToShowImpact}

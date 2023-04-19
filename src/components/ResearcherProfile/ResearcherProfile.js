@@ -127,6 +127,8 @@ export default function Researcher_profile_overview() {
   const [researcherSearchResultPage, setResearcherSearchResultPage] = useState(1);
   const [keywordToSearchFor, setKeywordToSearchFor] = useState("")
 
+  const [navButtonSelected, setNavButtonSelected] = useState("Overview")
+
   const getPatents = async () => {
     const researcherPatentData = await API.graphql({
       query: getResearcherPatents,
@@ -341,6 +343,7 @@ export default function Researcher_profile_overview() {
     setShowPatents(false);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setNavButtonSelected("Overview");
   }
 
   function showAreasOfInterestFunc() {
@@ -354,6 +357,7 @@ export default function Researcher_profile_overview() {
     setShowPatents(false);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setNavButtonSelected("Areas of Interest");
   }
 
   function showPublicationsFunc() {
@@ -365,6 +369,7 @@ export default function Researcher_profile_overview() {
     setShowPatents(false);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setNavButtonSelected("Publications");
   }
 
   function showSimilarResearchersFunc() {
@@ -391,6 +396,7 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setNavButtonSelected("Grants");
   }
 
   function showPatentsFunction() {
@@ -404,6 +410,7 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setNavButtonSelected("Patents");
   }
 
   function showResearchersWithSimlarKeyword(keyWord) {
@@ -496,6 +503,7 @@ export default function Researcher_profile_overview() {
               showGrantsFunction,
               showPatentsFunction,
             }}
+            navButtonSelected={navButtonSelected}
           />
           {showOverview && (
             <Grid container>

@@ -199,18 +199,19 @@ export default function ImpactByFaculty(props) {
           <Grid item xs={12}>
             <Paper square={true} elevation={0} variant="outlined">
               <Grid container id="full_box">
-                <Grid item xs={6}>
+                <Grid item xs={6} sx={{pt: "1.5%", pb: "1.5%"}}>
                   <Typography
                     align="left"
                     variant="h4"
                     justifyContent={"center"}
+                    //sx={{pt: "2%", pb: "2%"}}
                   >
                     Impact By Faculty (last 5 years)
                   </Typography>
                 </Grid>
-                <Grid item xs={6}>
-                  <Stack direction="row" justifyContent="end">
-                    <FormControl sx={{ m: 1, mr: 0 }} variant="standard">
+                <Grid item xs={6} sx={{pt: "1.5%", pb: "1.5%"}}>
+                  <Stack direction="row" justifyContent="end" >
+                    <FormControl variant="standard">
                       <NativeSelect
                         id="demo-customized-select-native"
                         value={props.departmentToImpact}

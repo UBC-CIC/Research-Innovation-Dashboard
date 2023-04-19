@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import ToggleButton from '@mui/material/ToggleButton';
 
 const navigationBarTheme = createTheme({
   palette: {

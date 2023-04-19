@@ -16,6 +16,10 @@ const navigationBarTheme = createTheme({
     },
   });
 
+const activeButtonStyle = {
+  backgroundColor: "#C0C0C0"
+}  
+
 export default function Research_Profile_Navigation(props) {
 
     /* There is a bug if you click a link too fast where you get sent to the wrong place */
@@ -25,11 +29,11 @@ export default function Research_Profile_Navigation(props) {
             <Box backgroundColor='#e6e6e6' sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', '& > *': { m: 1,},}}>
                     <ThemeProvider theme={navigationBarTheme}>
                     <ButtonGroup  color='primary' size='large' variant="text" aria-label="text button group">
-                        <Button onClick={props.onClickFunctions.showOverviewFunc}>Overview</Button>
-                        <Button onClick={props.onClickFunctions.showAreasOfInterestFunc}>Areas Of Interest</Button>
-                        <Button onClick={props.onClickFunctions.showPublicationsFunc}>Publications</Button>
-                        <Button onClick={props.onClickFunctions.showGrantsFunction}>Grants</Button>
-                        <Button onClick={props.onClickFunctions.showPatentsFunction}>Patents</Button>
+                        <Button onClick={props.onClickFunctions.showOverviewFunc} sx={props.navButtonSelected === "Overview" ? activeButtonStyle : {}}>Overview</Button>
+                        <Button onClick={props.onClickFunctions.showAreasOfInterestFunc} sx={props.navButtonSelected === "Areas of Interest" ? activeButtonStyle : {}}>Areas Of Interest</Button>
+                        <Button onClick={props.onClickFunctions.showPublicationsFunc} sx={props.navButtonSelected === "Publications" ? activeButtonStyle : {}}>Publications</Button>
+                        <Button onClick={props.onClickFunctions.showGrantsFunction} sx={props.navButtonSelected === "Grants" ? activeButtonStyle : {}}>Grants</Button>
+                        <Button onClick={props.onClickFunctions.showPatentsFunction} sx={props.navButtonSelected === "Patents" ? activeButtonStyle : {}}>Patents</Button>
                     </ButtonGroup>
                     </ThemeProvider>
             </Box>
