@@ -6,11 +6,13 @@ import {
   FormGroup,
   FormControlLabel,
   Button,
+  IconButton
 } from "@mui/material";
 import { API } from "aws-amplify";
 import { getAllDepartments, getAllFaculty } from "../../../graphql/queries";
 import DepartmentFiltersDialog from "./DepartmentFiltersDialog";
 import FacultyFiltersDialog from "./FacultyFiltersDialog";
+import ClearIcon from '@mui/icons-material/Clear';
 
 const ResearcherFilters = ({
   selectedDepartments,
@@ -140,8 +142,16 @@ const ResearcherFilters = ({
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
       <Typography variant="h6" sx={{fontWeight: "bold"}}>Filters for Researchers:</Typography>
       <Typography variant="h6" sx={{ my: "1em", color: "#666666" }}>{"Faculty (" + selectedFaculties.length + " selected)"}</Typography>
+      {(selectedFaculties.length > 0) && 
+        (<Button onClick={() => setSelectedFaculties([])} sx={{justifyContent: "left", p: 0, pb: 1, color: "#666666"}}>
+          Clear all filters {<ClearIcon sx={{pl: 1}}></ClearIcon>}
+        </Button>)}
       {renderFacultyOptions()}
       <Typography variant="h6" sx={{ my: "1em", color: "#666666" }}>{"Department (" + selectedDepartments.length + " selected)" }</Typography>
+      {(selectedDepartments.length > 0) && 
+        (<Button onClick={() => setSelectedDeparments([])} sx={{justifyContent: "left", p: 0, pb: 1, color: "#666666"}}>
+          Clear all filters {<ClearIcon sx={{pl: 1}}></ClearIcon>}
+        </Button>)}
       {renderDepartmentOptions()}
       <DepartmentFiltersDialog
         open={openDepartmentFiltersDialog}

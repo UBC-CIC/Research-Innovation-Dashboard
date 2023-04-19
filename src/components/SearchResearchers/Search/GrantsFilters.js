@@ -10,6 +10,7 @@ import {
 import { API } from "aws-amplify";
 import { getAllGrantAgencies } from "../../../graphql/queries";
 import GrantFiltersDialog from "./GrantFiltersDialog";
+import ClearIcon from '@mui/icons-material/Clear';
 
 const GrantsFilters = ({
   selectedGrants,
@@ -79,6 +80,10 @@ const GrantsFilters = ({
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
       <Typography variant="h6" sx={{fontWeight: "bold"}}>Filters for Grants:</Typography>
       <Typography sx={{ my: "1em", color: "#666666", fontSize: 20}}>{"Grants (" + selectedGrants.length + " selected)"}</Typography>
+      {(selectedGrants.length > 0) && 
+        (<Button onClick={() => setSelectedGrants([])} sx={{justifyContent: "left", p: 0, pb: 1, color: "#666666"}}>
+          Clear all filters {<ClearIcon sx={{pl: 1}}></ClearIcon>}
+        </Button>)}
       {renderDepartmentOptions()}
       <GrantFiltersDialog
         open={openGrantFiltersDialog}

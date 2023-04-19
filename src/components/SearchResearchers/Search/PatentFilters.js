@@ -17,6 +17,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import { BorderColor } from "@mui/icons-material";
+import ClearIcon from '@mui/icons-material/Clear';
 
 const PatentFilters = ({
     selectedPatentClassification,
@@ -196,6 +197,10 @@ const PatentFilters = ({
       <Typography sx={{ my: "1em", color: "#666666", fontSize: 20, marginTop: "7%"}}>{
         "(" + selectedPatentClassification.length + " selected)"}
       </Typography>
+      {(selectedPatentClassification.length > 0) && 
+        (<Button onClick={() => setSelectedPatentClassification([])} sx={{justifyContent: "left", p: 0, pb: 1, color: "#666666"}}>
+          Clear all filters {<ClearIcon sx={{pl: 1}}></ClearIcon>}
+        </Button>)}
       {renderClassificationsOptions()}
       <PatentFiltersDialog
         open={openPatentFiltersDialog}
