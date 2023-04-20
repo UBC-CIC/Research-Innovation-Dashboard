@@ -29,6 +29,7 @@ export default function SearchComponent(props) {
   const [publicationsSearchResultPage, setPublicationsSearchResultPage] =
     useState(1);
   const [searchYet, setSearchYet] = useState(false) //indicate whether the user entered a search string and search
+  const [openFacultyFiltersDialog, setOpenFacultyFiltersDialog] = useState(false)
   const [openDepartmentFiltersDialog, setOpenDepartmentFiltersDialog] = useState(false);
   const [catagoiresCount, setCatagoriesCount] = useState({researcherCount: 0, publicationCount: 0, grantCount: 0, patentCount: 0})
 
@@ -213,7 +214,6 @@ export default function SearchComponent(props) {
       
       } else if (props.whatToSearch === "Publications") {
 
-        console.log(openDepartmentFiltersDialog)
         url = "/Search/Publications/".concat(selectedJournalsPath, "/", searchBarValueRef.current, "/");
 
       } else if (props.whatToSearch === "Everything"){
@@ -234,18 +234,16 @@ export default function SearchComponent(props) {
         "/";
       }
 
-      //console.log(searchBarValueRef)
-      // console.log(url)
-      if (openDepartmentFiltersDialog === false) {
-        // don't refresh until the department filter dialogs is closed
+      if ((openDepartmentFiltersDialog === false) && (openFacultyFiltersDialog === false) ) {
+        // don't refresh until the department/faculty filter dialogs is closed
         navigate(url);
         window.location.reload();
         //console.log(selectedFaculties)
       }
     }
 
-  }, [selectedFaculties, selectedDepartments, props.whatToSearch, selectedGrantAgency, selectedPatentClassification, selectedJournals, openDepartmentFiltersDialog])
-  
+  }, [selectedFaculties, selectedDepartments, props.whatToSearch, selectedGrantAgency, selectedPatentClassification, selectedJournals, openDepartmentFiltersDialog, openFacultyFiltersDialog])
+
   const [currentFacultyOptions, setCurrentFacultyOptions] = useState([]);
   const [currentDepartmentOptions, setCurrentDepartmentOptions] = useState([]);
 
@@ -449,6 +447,8 @@ export default function SearchComponent(props) {
                 selectedFaculties={selectedFaculties}
                 setSelectedFaculties={setSelectedFaculties}
                 searchYet={searchYet}
+                openFacultyFiltersDialog={openFacultyFiltersDialog}
+                setOpenFacultyFiltersDialog={setOpenFacultyFiltersDialog}
                 openDepartmentFiltersDialog={openDepartmentFiltersDialog}
                 setOpenDepartmentFiltersDialog={setOpenDepartmentFiltersDialog}
                 currentFacultyOptions={currentFacultyOptions}
@@ -461,7 +461,7 @@ export default function SearchComponent(props) {
               <ResearcherSearchResultsComponent
                 researchSearchResults={researchSearchResults}
                 researcherSearchResultPage={researcherSearchResultPage}
-                errorTitle={'No Researcher Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
+                errorTitle={searchBarValueRef.current !== " " ? ('No Researcher Search Results for: "' + searchBarValueRef.current + '"') : (<div></div>)}
                 setResearcherSearchResultPage={setResearcherSearchResultPage}
                 searchYet={searchYet}
               />
@@ -485,7 +485,8 @@ export default function SearchComponent(props) {
                 setPublicationsSearchResultPage={
                   setPublicationsSearchResultPage
                 }
-                errorTitle={'No Publication Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
+                //errorTitle={'No Publication Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
+                errorTitle={searchBarValueRef.current !== " " ? ('No Publication Search Results for: "' + searchBarValueRef.current + '"') : (<div></div>)}
                 searchYet={searchYet}
               />
             </Grid>
@@ -505,7 +506,8 @@ export default function SearchComponent(props) {
                 tabOpened={false} 
                 initialNumberOfRows={50}
                 searchYet={searchYet}
-                errorTitle={'No Grant Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
+                //errorTitle={'No Grant Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
+                errorTitle={searchBarValueRef.current !== " " ? ('No Grant Search Results for: "' + searchBarValueRef.current + '"') : (<div></div>)}
               />
             </Grid>
           </Grid>
@@ -524,7 +526,8 @@ export default function SearchComponent(props) {
                 researcherPatents={patentsSearchResults} 
                 initialNumberOfRows={10}
                 searchYet={searchYet}
-                errorTitle={'No Patent Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
+                //errorTitle={'No Patent Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
+                errorTitle={searchBarValueRef.current !== " " ? ('No Patent Search Results for: "' + searchBarValueRef.current + '"') : (<div></div>)}
               />
             </Grid>
           </Grid>

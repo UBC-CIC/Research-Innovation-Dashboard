@@ -20,6 +20,8 @@ const ResearcherFilters = ({
   selectedFaculties,
   setSelectedFaculties,
   searchYet,
+  openFacultyFiltersDialog,
+  setOpenFacultyFiltersDialog,
   openDepartmentFiltersDialog,
   setOpenDepartmentFiltersDialog,
   currentFacultyOptions,
@@ -28,12 +30,13 @@ const ResearcherFilters = ({
   setCurrentDepartmentOptions
 }) => {
   
-  const [optionsToShow, setOptionsToShow] = useState(7)
+  // const [optionsToShow, setOptionsToShow] = useState(7)
 
   const OPTIONS_TO_SHOW = 7
-  const INCR_OPTIONS_BY = 10
+  // const INCR_OPTIONS_BY = 10
 
   const handleClose = () => {
+    setOpenFacultyFiltersDialog(false);
     setOpenDepartmentFiltersDialog(false);
   };
 
@@ -54,7 +57,7 @@ const ResearcherFilters = ({
   const handleCheckFaculty = (e, faculty) => {
     if (e.target.checked) {
       // checked
-      setSelectedFaculties((prev) => {return [...prev, faculty]});
+      setSelectedFaculties((prev) => [...prev, faculty]);
     } else {
       // unchecked
       setSelectedFaculties(
@@ -73,7 +76,7 @@ const ResearcherFilters = ({
             currentDepartmentOptions
               // sort the options based on descending checked value and then based on ascending alphabetical order
               .sort((f1, f2) => f2['checked'] - f1['checked'] || f1['department'].localeCompare(f2['department']))
-              .slice(0, 5)
+              .slice(0, OPTIONS_TO_SHOW)
               .map((department, index) => (
                 <FormControlLabel
                   key={index}
@@ -107,7 +110,7 @@ const ResearcherFilters = ({
             currentFacultyOptions
               // sort the options based on descending checked value and then based on ascending alphabetical order
               .sort((f1, f2) => f2['checked'] - f1['checked'] || f1['faculty'].localeCompare(f2['faculty']))
-              .slice(0, optionsToShow)
+              .slice(0, OPTIONS_TO_SHOW)
               .map((faculty, index) => (
                 <FormControlLabel
                   key={index}
@@ -118,7 +121,7 @@ const ResearcherFilters = ({
                 />
               ))}
         </FormGroup>
-        {currentFacultyOptions && (optionsToShow < currentFacultyOptions.length) ? 
+        {/* {currentFacultyOptions && (optionsToShow < currentFacultyOptions.length) ? 
         (<Button
           //onClick={() => setOpenFacultyFiltersDialog(true)}
           onClick={() => setOptionsToShow(currentFacultyOptions.length)}
@@ -133,7 +136,13 @@ const ResearcherFilters = ({
         >
           Show less
         </Button>)
-        }
+        } */}
+       <Button
+          onClick={() => setOpenFacultyFiltersDialog(true)}
+          sx={{ color: "#666666", justifyContent: "flex-start" }}
+        >
+          Show All
+        </Button>
       </Box>
     );
   };
@@ -147,6 +156,13 @@ const ResearcherFilters = ({
           Clear all filters {<ClearIcon sx={{pl: 1}}></ClearIcon>}
         </Button>)}
       {renderFacultyOptions()}
+      <FacultyFiltersDialog
+        open={openFacultyFiltersDialog}
+        handleClose={handleClose}
+        allFaculties={currentFacultyOptions.map((faculty) => faculty['faculty'])}
+        selectedFaculties={selectedFaculties}
+        handleCheckFaculty={handleCheckFaculty}
+      />
       <Typography variant="h6" sx={{ my: "1em", color: "#666666" }}>{"Department (" + selectedDepartments.length + " selected)" }</Typography>
       {(selectedDepartments.length > 0) && 
         (<Button onClick={() => setSelectedDeparments([])} sx={{justifyContent: "left", p: 0, pb: 1, color: "#666666"}}>

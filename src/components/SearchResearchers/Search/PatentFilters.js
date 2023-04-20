@@ -59,7 +59,7 @@ const PatentFilters = ({
 
   const tooltipContent = () => {
     return (
-      <Box style={{ width: "500px", height: "500px", overflow: "auto", border: 4 }}>
+      <Box style={{ width: "500px", height: "560px", overflow: "auto", border: 4 }}>
         <Typography variant="h1" sx={{fontSize: 17, fontWeight: 700}}>Human necessities (A):</Typography>
         <Typography variant="h5" sx={{fontSize: 14}}>
           You can expect to find patents that are related to human necessities, such as <em> food, clothing, 
