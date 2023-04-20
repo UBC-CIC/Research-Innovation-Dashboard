@@ -136,8 +136,9 @@ export default function Researcher_profile_overview() {
     });
 
     //console.log(researcherPatentData.data.getResearcherPatents);
-
-    setResearcherPatents(researcherPatentData.data.getResearcherPatents);
+    const sortedPatents = researcherPatentData.data.getResearcherPatents
+      .sort((patent1, patent2) => patent2.patent_publication_date.substring(0,4) - patent1.patent_publication_date.substring(0,4))
+    setResearcherPatents(sortedPatents);
   }
 
   const getAllPublications = async () => {
@@ -230,8 +231,10 @@ export default function Researcher_profile_overview() {
         id: researcherId,
       },
     });
-    //console.log(grantResult);
-    setGrantData(grantResult.data.getResearcherGrants);
+    // grant sorted by most recent
+    const sortedGrant = grantResult.data.getResearcherGrants
+      .sort((grant1, grant2) => grant2.year.substring(0,4) - grant1.year.substring(0,4))
+    setGrantData(sortedGrant);
     setPageLoaded(true);
   };
 
