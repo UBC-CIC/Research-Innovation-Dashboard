@@ -62,7 +62,7 @@ export class DataFetchStack extends cdk.Stack {
     });
 
     // The layer containing the numpy library (AWS Managed)
-    const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', 'arn:aws:lambda:ca-central-1:336392948345:layer:AWSDataWrangler-Python39:5')
+    const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', `arn:aws:lambda:${this.region}:336392948345:layer:AWSDataWrangler-Python39:5`)
 
     // Create the database tables (runs during deployment)
     const createTables = new triggers.TriggerFunction(this, 'expertiseDashboard-createTables', {

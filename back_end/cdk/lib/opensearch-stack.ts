@@ -40,8 +40,6 @@ export class OpensearchStack extends Stack {
                             "es:ESHttpPost",
                         ],
                         resources: ["arn:aws:es:*:*:domain/*"]
-                        //arn:aws:es:ca-central-1:649335657496:domain/cdk-opensearch-domain
-                        //arn:aws:es:::domain/*
                     }),
                     new PolicyStatement({
                         effect: Effect.ALLOW,
@@ -64,7 +62,7 @@ export class OpensearchStack extends Stack {
         effect: iam.Effect.ALLOW,
         actions: [ 'es:ESHttp*' ],
         principals: [ new ArnPrincipal(lambdaRole.roleArn) ],
-        resources: [ `arn:aws:es:ca-central-1:${this.account}:domain/${this.domainName}` ],
+        resources: [ `arn:aws:es:${this.region}:${this.account}:domain/${this.domainName}` ],
     });
 
     // get the default security group from the vpc

@@ -194,7 +194,6 @@ export class AppsyncStack extends Stack {
         link: String
         title: String!
         year_published: String
-        author_ids_string: String
       }
       
       type Query {
@@ -490,7 +489,7 @@ export class AppsyncStack extends Stack {
     "getResearcherOrcid", "getResearcherPubsByCitations", "getResearcherPubsByTitle", "getResearcherPubsByYear",
     "getResearcherImpactsByDepartment", "getResearcherImpactsByFaculty", "totalPublicationPerYear", "wordCloud",
     "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs", "getFlaggedIds", "getResearcherGrants", 
-    "getAllGrantAgencies", "getResearcherPatents"];
+    "getAllGrantAgencies", "getResearcherPatents", "getCatagoriesCount"];
 
     for(var i = 0; i<postgresqlDBQueryList.length; i++){
       const resolver = new appsync.CfnResolver(this, postgresqlDBQueryList[i], {
