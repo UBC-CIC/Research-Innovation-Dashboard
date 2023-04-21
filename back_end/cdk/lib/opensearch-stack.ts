@@ -23,7 +23,7 @@ export class OpensearchStack extends Stack {
     constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
       super(scope, id, props);
 
-    this.domainName = 'cdk-opensearch-domain'
+    this.domainName = 'expertisedashboard-os-domain'
 
     //Create a role for lambda to access opensearch
     const lambdaRole = new Role(this, 'OpenSearchLambdaRole', {
