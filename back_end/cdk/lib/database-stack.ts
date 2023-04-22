@@ -58,7 +58,7 @@ export class DatabaseStack extends Stack {
       parameterGroup: parameterGroup,
       cloudwatchLogsRetention: logs.RetentionDays.INFINITE,
       storageEncrypted: true, // storage encryption at rest
-      monitoringInterval: cdk.Duration.minutes(30) // enhanced monitoring interval
+      monitoringInterval: cdk.Duration.seconds(60) // enhanced monitoring interval
     });
 
     this.dbInstance.connections.securityGroups.forEach(function (securityGroup) {
