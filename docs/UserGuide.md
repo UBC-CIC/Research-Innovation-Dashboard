@@ -8,8 +8,10 @@
 | :------------------------------------------  | :---------------------------------------------------- |
 | [Home](#Home)                                | Main search bar (Search Everything)                   |
 | [Researchers Search](#Researchers-Search)    | Researcher search and related filters                 |
-| [Publications Search](#Publications-Search)  | Publications search and related filters               |
+| [Publications Search](#Publications-Search)  | Publications search               |
 | [Advanced Search](#Advanced-Search)          | Advanced search                                       |
+| [Grants](#Grants-Search)                     | Grants search and related filters
+| [Patents](#Patents-Search)                   | Patents search and related filters
 | [Researcher Profile](#Researcher-Profile)    | Researcher profile and information page               |
 | [Impact](#Impact)                            | Researcher impact by department or faculty            |
 | [Metrics](#Metrics)                          | Top 100 research keywords word cloud                  |
@@ -42,12 +44,18 @@ Clicking on the `Show All` button will open a window displaying all the possible
 
 ## Publications Search
 
-The search bar on this page returns publication results that match the user inputted search term. The filter for publications can be found on the left hand sidebar. There is one category to filter by (Journal). Clicking on the `All Journals` tab will open a dropdown displaying all the possible journal options.
+The search bar on this page returns publication results that match the user inputted search term. 
 
-![alt text](images/userGuide/publications01.png)
+## Grants Search
 
-To select the journal options you would like to filter by, click the journal name and the selected journal will appear above the dropdown menu.
-![alt text](images/userGuide/publications02.png)
+The search bar on this page returns grant results that match the user inputted search term. The filter for grants can be found on the left hand side bar. There are four funding catgories to filter by. To select the grant options you would like to see, click the checkbox beside the option name to initiate the filter function.
+
+## Patents Search
+
+The search bar on this page returns patent results that match the user inputted search term. The filter for patents can be found on the left hand sidebar. There are nine categories to filter by.
+
+Hovering over the `(i)` icon next to Patent Classification filter will show the types of patents one can expect to find when selecting a category.
+
 
 ## Advanced Search
 
