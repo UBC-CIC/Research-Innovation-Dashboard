@@ -11,6 +11,7 @@ import { DatabaseStack } from '../lib/database-stack';
 import { DataFetchStack } from '../lib/datafetch-stack';
 import { GrantDataStack } from '../lib/grantdata-stack';
 import { PatentDataStack } from '../lib/patentdata-stack';
+import { UpdatePublicationStack } from '../lib/updatepublication-stack';
 
 
 const app = new cdk.App();
@@ -40,6 +41,10 @@ dataFetchStack.addDependency(databaseStack)
 const patentDataStack = new PatentDataStack(app, 'PatentDataStack', grantDataStack, vpcStack,
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 patentDataStack.addDependency(grantDataStack)
+
+const updatePublicationStack = new UpdatePublicationStack(app, 'UpdatePublicationStack', grantDataStack, 
+    {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }})
+updatePublicationStack.addDependency(grantDataStack)
 
 const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseStack, dmsStack,
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
