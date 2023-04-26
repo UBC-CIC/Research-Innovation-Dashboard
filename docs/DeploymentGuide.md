@@ -52,12 +52,12 @@ The **Deploy to Amplify Console** button will take you to your AWS console to de
     <img src="https://oneclick.amplifyapp.com/button.svg" alt="Deploy to Amplify Console">
 </a>
 
-1. On the AWS console. select your region on the top right, then connect to GitHub. !mg
-   ![Amplify console main screen](images/amplifyConsole/amplify-console-01.png)
-2. Select the **amplifyconsole-exp-dash-backend-role** we made previously for the deployment role, and then press `Save and Deploy`. Please make sure to select the **amplifyconsole-exp-dash-backend-role**, the role name in the image might have changed. !img
+1. On the AWS console. select your region on the top right, then connect to GitHub.
+   ![alt text](images/amplifyConsole/amplify-console-01.png)
+2. Select the **amplifyconsole-exp-dash-backend-role** we made previously for the deployment role, and then press `Save and Deploy`.
    ![alt text](images/amplifyConsole/amplify-console-02.png)
 3. The deployment will take a few minutes. Wait until all green check marks show up.
-
+   ![alt text](images/amplifyConsole/amplify-console-03.png)
 4. Click on left taskbar to open menu, click on Rewrites and redirects, and click on edit![alt text](images/amplifyConsole/amplify-console-04.png)
 5. Click and replace the first rule's source address (or add a rule if there is none) to `</^((?!\.(css|gif|ico|jpg|js|png|txt|svg|woff|ttf)$).)*$/>`, click and replace target address to `/index.html`, and select and replace **type** with `200 (Rewrite)`, then save. Add a second rule, with the source address as `</^((?!\.(css|gif|ico|jpg|js|png|txt|svg|woff|ttf)$).)*$/>`, the target address as `/index.html`, and the **type** with `404 (Rewrite)`.
    Refer to [AWS's Page on Single Page Apps](https://docs.aws.amazon.com/amplify/latest/userguide/redirects.html#redirects-for-single-page-web-apps-spa) for further information on why we did that
@@ -213,16 +213,17 @@ Please delete the stacks in the opposite order of when you deployed them.
 2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `institution_data.csv`. Note that the `INSTITUTION_USER_ID` column could represents any types of **unique ids** (employee id from institution's HR data, uuid from the institution's external database, etc), and each ids must be associated with one person(researcher) only.
 3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
    ![alt text](images/deploymentGuide/s3_search.jpg)
-4. In the `Buckets` search bar enter `datafetchstack` and click on the name of the bucket.
+4. In the `Buckets` search bar enter `datafetchstack` and click on the name of the bucket (the actual name will varies a bit, but will always contains `datafetchstack`).
    ![alt text](images/deploymentGuide/s3_bucket_search.png)
 5. Click on `Create Folder`.
+   ![alt text](images/deploymentGuide/s3_bucket_page.png)
 6. Enter `researcher_data` as the folder name then click `Create Folder`.
-   ![alt text](images/deploymentGuide/s3_create_folder.jpg)
+   ![alt text](images/deploymentGuide/s3_create_folder.png)
 7. Click on the `researcher_data` folder then click `Upload`.
-   ![alt text](images/deploymentGuide/s3_opened_folder.jpg)
+   ![alt text](images/deploymentGuide/s3_opened_folder.png)
 8. Click `Add Files` and select the `scopus_ids.csv` file and the `institution_data.csv` file (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: [Example Matches File](example_data/manual_matches(example).csv)) then click `Upload`.
    ![alt text](images/p3/deployment/depl-researcher-data-s3.png)
-9. Once the upload is complete click `Close`
+9.  Once the upload is complete click `Close`
 
 # Step 5: Run the Data Pipeline
 
@@ -308,7 +309,7 @@ To set up user accounts on the app, you will need to do the following steps
 
 1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Cognito` in the search bar.
    ![alt text](images/webApp/webapp01.png)
-2. Click `User Pools` from the left hand sidebar and select the user pool that corresponds to the project name.
+2. Click `User Pools` from the left hand sidebar and select the user pool that corresponds to the project name (contains the string `innovationdashbo`).
    ![alt text](images/webApp/webapp02.png)
 3. Select the user which you want to set to Admin
    ![alt text](images/webApp/webapp12.png)
