@@ -2,7 +2,7 @@
 
 The goal of the Patent Data Pipeline is to initially populate the database with patent data. The data is fetched from the [European Patent Office](https://www.epo.org/), which contains both published patent application and published patent of not just European countries but also other major intellectual property offices (click [here](https://www.epo.org/searching-for-patents/data/coverage.html) for further details about EPO's published data coverage). EPO provides both a web search engine for patent called [Espacenet](https://worldwide.espacenet.com/patent/) and an Application Programming Interface (API) called [Open Patent Services](https://www.epo.org/searching-for-patents/data/web-services/ops.html) (OPS). The API is useful in particular because it allows for an easy programmatic access and retrieval of patent data from EPO, which is why we chose it to be our "one-stop shop" for patent data.
 
-To use the OPS API, the user should obtain a developer account and with that, generate a consumer key and consumer secret key that serve as authorization credentials for the application. Up-to-date detail about the OPS API and how to sign up for an account can be found here.
+To use the OPS API, the user should obtain a developer account and with that, generate a consumer key and consumer secret key that serve as authorization credentials for the application. Up-to-date detail about the OPS API and how to sign up for an account can be found [here](https://developers.epo.org/).
 
 Currently, the data that we are interested in obtaining for this current iteration of the Patent pipeline is all published patent data from Canada and The United States. For instruction on how to deploy and run the pipeline, consult this [deployment guide](DeploymentGuide.md).
 
