@@ -8,7 +8,7 @@ import time
 
 print("Starting Update Publications")
 
-ssm_client = boto3.client('ssm', region_name='ca-central-1')
+ssm_client = boto3.client('ssm')
 sm_client = boto3.client('secretsmanager')
 dms_client = boto3.client('dms')
 

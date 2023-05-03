@@ -29,7 +29,7 @@ export class DmsStack extends Stack {
     const opensearchAccessPolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
-          resources: [`arn:aws:es:ca-central-1:${this.account}:domain/${opensearchStack.domainName}/*`],
+          resources: [`arn:aws:es:${this.region}:${this.account}:domain/${opensearchStack.domainName}/*`],
           actions: [
           "es:ESHttpDelete",
           "es:ESHttpGet",

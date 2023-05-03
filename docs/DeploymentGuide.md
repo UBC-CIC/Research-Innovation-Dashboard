@@ -120,11 +120,11 @@ aws secretsmanager create-secret \
 
 ## Step 3: CDK Deployment
 
-Initialize the CDK stacks (required only if you have not deployed this stack before). Note the CDK deployment assumes you are deploying in ca-central-1
+Initialize the CDK stacks (required only if you have not deployed this stack before). Note this CDK deployment was tested in `ca-central-1` region only.
 
 ```bash
 cdk synth --profile your-profile-name
-cdk bootstrap aws://YOUR_AWS_ACCOUNT_ID/ca-central-1 --profile your-profile-name
+cdk bootstrap aws://YOUR_AWS_ACCOUNT_ID/YOUR_ACCOUNT_REGION --profile your-profile-name
 ```
 
 Deploy the CDK stacks (this will take ~ 60 minutes):

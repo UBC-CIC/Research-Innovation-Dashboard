@@ -136,6 +136,7 @@ export class OpensearchStack extends Stack {
         memorySize: 512,
         environment: {
             "OPENSEARCH_ENDPOINT": this.devDomain.domainEndpoint,
+            "AWS_REGION": this.region
         },
         securityGroups: [ defaultSecurityGroup ],
         vpc: vpcStack.vpc,

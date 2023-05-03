@@ -55,7 +55,7 @@ export class AppsyncStack extends Stack {
           //Secrets Manager
           "secretsmanager:GetSecretValue",
         ],
-        resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:expertiseDashboard/credentials/*`]
+        resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:expertiseDashboard/credentials/*`]
     }));
 
     // The layer containing the postgres library
@@ -551,7 +551,7 @@ export class AppsyncStack extends Stack {
     })
 
     const wafAssociation = new wafv2.CfnWebACLAssociation(this, 'waf-association', {
-      resourceArn: `arn:aws:appsync:ca-central-1:${this.account}:apis/${APIID}`,
+      resourceArn: `arn:aws:appsync:${this.region}:${this.account}:apis/${APIID}`,
       webAclArn: waf.attrArn
     });
   }

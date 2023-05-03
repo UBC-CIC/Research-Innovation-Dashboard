@@ -5,6 +5,7 @@ const aws4 = require("aws4");
 
 exports.handler = async (event) => {
 var host = 'https://' + process.env.OPENSEARCH_ENDPOINT
+var region = process.env.AWS_REGION
 
 const createAwsConnector = (credentials, region) => {
   class AmazonConnection extends Connection {
@@ -26,7 +27,7 @@ const createAwsConnector = (credentials, region) => {
 const getClient = async () => {
   const credentials = await defaultProvider()();
   return new Client({
-      ...createAwsConnector(credentials, 'ca-central-1'),
+      ...createAwsConnector(credentials, region),
       node: host,
   });
 }

@@ -31,7 +31,7 @@ export class FargateStack extends Stack {
     const accessSecretsManagerPolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({ 
-          resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:expertiseDashboard/credentials/*`],
+          resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:expertiseDashboard/credentials/*`],
           actions: ['secretsmanager:GetSecretValue'],
           effect: iam.Effect.ALLOW,
         }),
