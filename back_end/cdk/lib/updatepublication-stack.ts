@@ -99,7 +99,7 @@ export class UpdatePublicationStack extends Stack {
         maxConcurrentRuns: MAX_CONCURRENT_RUNS,
       },
       connections: {
-        connections: [glueConnectionName]
+        connections: [glueDmsConnectionName] // a Glue NETWORK connection allows you to access any resources inside and outside (the internet) of that VPC
       },
       maxRetries: MAX_RETRIES,
       maxCapacity: MAX_CAPACITY,
