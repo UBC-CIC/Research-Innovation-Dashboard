@@ -44,11 +44,13 @@ export class UpdatePublicationStack extends Stack {
     );
     const glueAmazonS3FullAccessPolicy =
       iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess");
+    const glueSSMPolicy = iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMFullAccess")
 
     glueRole.addManagedPolicy(glueServiceRolePolicy);
     glueRole.addManagedPolicy(glueConsoleFullAccessPolicy);
     glueRole.addManagedPolicy(glueSecretManagerPolicy);
     glueRole.addManagedPolicy(glueAmazonS3FullAccessPolicy);
+    glueRole.addManagedPolicy(glueSSMPolicy)
     //Create a policy to start DMS task
     glueRole.addToPolicy(new iam.PolicyStatement({
       effect: Effect.ALLOW,
@@ -156,7 +158,7 @@ export class UpdatePublicationStack extends Stack {
         name: "updatePublications-scheduler",
         description: "Scheduled run for updatePublications",
         startOnCreation: true,
-        schedule: "cron(0 7 1,15 * ? *)" // run at 7:00 AM UTC on the 1st and 15th of every month
+        schedule: "cron(0 0 ? * SAT *)" // run at 12:00 AM UTC every SAT
       });
 
     // Destroy Glue related resources when PatentDataStack is deleted
