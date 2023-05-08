@@ -425,7 +425,7 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
     const cleanNoMatchesMap = new sfn.Map(this, 'Missing Matches Map', {
-      maxConcurrency: 1,
+      maxConcurrency: 5,
       itemsPath: '$'
     });
     cleanNoMatchesMap.iterator(cleanNoMatchesInvoke);
@@ -435,7 +435,7 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
     const identifyDuplicatesMap = new sfn.Map(this, 'Duplicates Map', {
-      maxConcurrency: 1,
+      maxConcurrency: 5,
       itemsPath: '$'
     });
     identifyDuplicatesMap.iterator(identifyDuplicatesInvoke);
@@ -460,7 +460,7 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
     const publicationMap = new sfn.Map(this, 'Publication Map', {
-      maxConcurrency: 1,
+      maxConcurrency: 5,
       itemsPath: '$'
     });
     publicationMap.iterator(publicationFetchInvoke);

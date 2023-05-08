@@ -5,19 +5,28 @@ import psycopg2
 import os
 import math
 import time
+import sys
+from awsglue.utils import getResolvedOptions
 
-print("Starting Update Publications")
+args = getResolvedOptions(sys.argv, ["DB_SECRET_NAME", "DMS_TASK_ARN"])
+DB_SECRET_NAME = args["DB_SECRET_NAME"]
 
-ssm_client = boto3.client('ssm', region_name='ca-central-1')
+ssm_client = boto3.client('ssm')
 sm_client = boto3.client('secretsmanager')
 dms_client = boto3.client('dms')
+glue_client = boto3.client('glue')
+
+logging = True
+
+def log(input):
+    if logging == True:
+        print(input)
 
 #Will Need To Think About Where To Get Credentials From With CDK!!!!
 def getCredentials():
     """Using AWS secrets manager the function returns the databases credentials"""
     credentials = {}
-    DB_CREDENTIALS_PATH = os.environ['DB_CREDENTIALS_PATH']
-    response = sm_client.get_secret_value(SecretId=DB_CREDENTIALS_PATH)
+    response = sm_client.get_secret_value(SecretId=DB_SECRET_NAME)
     secrets = json.loads(response['SecretString'])
     credentials['username'] = secrets['username']
     credentials['password'] = secrets['password']
@@ -29,68 +38,288 @@ def getCredentials():
 # The function returns an array of the same lenght with their number of documents. 
 def getResearcherNumDocuments(authorArray, instoken, apikey):
     """
-    authorArray: A list of upto 25 author ID strings. 
-    instoken: The Scopus institution token. 
+    authorArray: A list of up to 25 author ID strings.
+    instoken: The Scopus institution token.
     apikey: Scopus Api Key
 
-    The function gets the number of documents for each researcher ID in the input and returns a list of the same length containing the reserachers number of documents.
+    The function gets the number of documents for each researcher ID in the input and returns a list of the same length containing the researchers' number of documents.
     """
     url = 'https://api.elsevier.com/content/author'
-    headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
-    params = {'field': 'document-count,h-index', 'author_id': authorArray}
-    response = requests.get(url, headers=headers, params=params)
-    authorDataArray = response.json()['author-retrieval-response-list']['author-retrieval-response']
-    return authorDataArray
+    headers = {'Accept': 'application/json', 'X-ELS-APIKey': apikey['Parameter']['Value'], 'X-ELS-Insttoken': instoken['Parameter']['Value']}
+    params = {'field': 'dc:identifier,document-count,h-index', 'author_id': authorArray}
+
+    max_retries = 1
+    backoff_factor = 0
+    retry_count = 0
+
+    while retry_count < max_retries:
+        try:
+            response = requests.get(url, headers=headers, params=params)
+            if response.status_code == 200:
+                authorDataArray = response.json()['author-retrieval-response-list']['author-retrieval-response']
+                return authorDataArray
+            elif response.status_code == 429:  # Rate limit exceeded
+                wait_time = backoff_factor * (2 ** retry_count)
+                time.sleep(wait_time)
+                retry_count += 1
+            else:
+                response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            log(f"Error fetching data from Scopus API: {e}")
+            retry_count += 1
+
+    log(f"Failed to fetch data after {max_retries} retries.")
+    return []
 
 def createListOfResearchersToUpdate():
     """
     The function queries the database and creates a list of researchers that need to be updated.
     """
+    researchers_to_update = []
     
-    researchersToUpdateArray = []
-    
-    #Get database credentials and login
+    # Get database credentials and login
     credentials = getCredentials()
-    connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
-    cursor = connection.cursor()
+    try:
+        connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
+        cursor = connection.cursor()
+    except Exception as e:
+        log(f"Error connecting to the database: {e}")
+        return researchers_to_update
     
     instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
     apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
+
+    # Fetch researcher data from the database
+    local_database_data = fetch_researcher_data(cursor)
     
-    #Get the ID and number of documents for each researcher in our database
+    # Process researcher data and update h-index
+    researchers_to_update = process_researcher_data(cursor, local_database_data, instoken, apikey)
+    
+    # Close cursor and connection
+    cursor.close()
+    connection.close()
+
+    return researchers_to_update
+
+def fetch_researcher_data(cursor):
     query = "SELECT id, num_documents FROM public.elsevier_data"
-    cursor.execute(query)
-    author_scopus_ids = cursor.fetchall()
+    try:
+        cursor.execute(query)
+        author_scopus_ids = cursor.fetchall()
+        return author_scopus_ids
+    except Exception as e:
+        log(f"Error fetching researcher data: {e}")
+        return []
+
+def process_researcher_data(cursor, local_database_data, instoken, apikey):
+    researchers_to_update = []
     
-    #For each researcher query scopus to see if they have new publications.
-    #If the researcher has new publications add their ID to the list.
-    for i in range(0,len(author_scopus_ids),25):
-        authorArray = []
-        for j in range(i, i+25):
-            if(j == len(author_scopus_ids)):
-                break
-            authorArray.append(author_scopus_ids[j][0])
-        authorDataArray = getResearcherNumDocuments(authorArray, instoken, apikey)
-        for k in range(len(authorDataArray)):
-            if authorDataArray[k]['@status'] == 'not_found':
-                #If Researcher Not Found In Scopus Add Them To Problem Researchers
-                print("Add Researcher To List Of Issue Researchers")
+    batch_size = 25
+    first_items_batches = [[entry[0] for entry in local_database_data[i:i + batch_size]] for i in range(0, len(local_database_data), batch_size)]
+    
+    for author_batch in first_items_batches:
+        author_data_array = []
+
+        try:
+            author_data_array = getResearcherNumDocuments(author_batch, instoken, apikey)
+        except Exception as e:
+            log(f"Error fetching data from Scopus API: {e}")
+            continue
+        
+        print(author_data_array)
+
+        for index, author_data in enumerate(author_data_array):
+            if author_data['@status'] == 'not_found':
+                log("Add Researcher To List Of Issue Researchers")
             else:
-                #If Researcher is found check if they need to be updated
-                num_documents = authorDataArray[k]['coredata']['document-count']
-                h_index = 0
-                if(authorDataArray[k]['h-index']):
-                    h_index = authorDataArray[k]['h-index']
-                #Update everyones h-index everytime updatePublications is ran
-                query = "UPDATE public.elsevier_data SET h_index="+str(h_index)+" WHERE id='"+author_scopus_ids[i+k][0]+"'"
-                #Add researcher to list if they are missing publications
-                if(int(num_documents) > author_scopus_ids[i+k][1]):
-                    researchersToUpdateArray.append(author_scopus_ids[i+k][0])
-    
-    #Return list of researchers that need to be updated.
-    connection.commit()
-    return researchersToUpdateArray
+                researcher_id, num_documents_scopus, h_index = extract_researcher_info(author_data)
+                log(researcher_id)
+                log(num_documents_scopus)
+                log(h_index)
+                update_h_index(cursor, researcher_id, h_index)
+
+                local_database_data_num_documents = local_database_data[index + index][1]
+                
+                if num_documents_scopus > local_database_data_num_documents:
+                    researchers_to_update.append(researcher_id)
+
+    return researchers_to_update
+
+def extract_researcher_info(author_data):
+    researcher_id = author_data['coredata']['dc:identifier'].split(':')[1]
+    num_documents = 0
+    h_index = 0
+    if author_data['coredata']['document-count'] != None:
+        num_documents = int(author_data['coredata']['document-count'])
+    if author_data['h-index'] != None:
+        h_index = int(author_data['h-index'])
+        
+    return researcher_id, num_documents, h_index
+
+def update_h_index(cursor, researcher_id, h_index):
+    query = f"UPDATE public.elsevier_data SET h_index={h_index} WHERE id='{researcher_id}'"
+    try:
+        cursor.execute(query)
+    except Exception as e:
+        log(f"Error updating h-index: {e}")
   
+def makeInitialPublicationsRequest(author_id, apikey, instoken):
+    url = 'https://api.elsevier.com/content/search/scopus'
+    headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
+    query = {'query': 'AU-ID(' + author_id + ')', 'view' : 'COMPLETE', 'cursor': '*'}
+
+    max_retries = 1
+    backoff_factor = 0
+    retry_count = 0
+
+    while retry_count < max_retries:
+        try: 
+            response = requests.get(url, headers=headers, params=query)
+            if response.status_code == 200:
+                return response
+            elif response.status_code == 429:  # Rate limit exceeded
+                wait_time = backoff_factor * (2 ** retry_count)
+                time.sleep(wait_time)
+                retry_count += 1
+            else:
+                response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            log(f"Error fetching data from Scopus API: {e}")
+            retry_count += 1
+
+    log(f"Failed to fetch data after {max_retries} retries.")
+    return []
+
+def requestNextScopusPublicationPage(rjson, apikey, instoken):
+    headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
+    
+    max_retries = 1
+    backoff_factor = 0
+    retry_count = 0
+
+    try: 
+        next_url = rjson['search-results']['link'][2]['@href']
+    except Exception as e:
+        log(f"Error occurred while getting next url: {e}")
+        return []
+
+    while retry_count < max_retries:
+        try: 
+            response = requests.get(next_url, headers=headers)
+            if response.status_code == 200:
+                return response
+            elif response.status_code == 429:  # Rate limit exceeded
+                wait_time = backoff_factor * (2 ** retry_count)
+                time.sleep(wait_time)
+                retry_count += 1
+            else:
+                response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            log(f"Error fetching data from Scopus API: {e}")
+            retry_count += 1
+
+    log(f"Failed to fetch data after {max_retries} retries.")
+    return []
+
+def checkIfPublicationIsInDatabase(publication, cursor):
+    try:
+        keys = publication.keys()
+        id = ''
+
+        if(list(keys).count('dc:identifier')):
+            for c in publication['dc:identifier']:
+                if c.isdigit():
+                    id = id + c
+
+        query = "SELECT COUNT(*) FROM publication_data WHERE id='"+id+"'"
+        cursor.execute(query)
+        results = cursor.fetchone()
+
+        #Return False if not in the database
+        if(results[0] == 0):
+            return False
+        
+        #Return True if it is in the database
+        return True
+
+    except Exception as e:
+        log(f"Error occurred while updating publications: {e}")
+        return None
+
+def handlePublicationInDatabase(publication, author_id, cursor, connection):
+    try: 
+        keys = publication.keys()
+        if(int(publication['author-count']['@total']) > 100):
+            #If the publication is above 100 check if the current researcher is in it
+            query = "SELECT COUNT(*) FROM publication_data WHERE id='"+id+"' AND ('"+author_id+"' = ANY(author_ids))"
+            cursor.execute(query)
+            authorInPublicationResult = cursor.fetchone()
+            #If author is not in publication add them to it
+            if(authorInPublicationResult[0] == 0):
+                query = "SELECT author_ids FROM publication_data WHERE id='"+id+"'"
+                cursor.execute(query)
+                pubToAddAuthorToResult = cursor.fetchone()
+                #Add researcher to author id array
+                authorIdArray = pubToAddAuthorToResult[0]
+                authorIdArray.append(author_id)
+                authorIdArray = str(authorIdArray.replace('\'', '"').replace('[', '{').replace(']', '}'))
+                query = "UPDATE publication_data SET author_ids='"+authorIdArray+"' WHERE id='"+id+"' "
+                cursor.execute(query)
+                #Update Author Keywords
+                publicationToUpdate = []
+                #Get Keywords to Update
+                if(list(keys).count('authkeywords')):
+                    keywords_string = publication['authkeywords']
+                    keywords = keywords_string.split('|')
+                    keywords = [keyword.strip() for keyword in keywords]
+                publicationToUpdate.append({'keywords': keywords})
+                #Store new keywords
+                store_keywords(author_id, publicationToUpdate, cursor)
+                #Commit Changes to database
+                connection.commit()
+    except Exception as e:
+        log(f"Error occurred checking publication already storred: {e}")
+
+def handlePublicationNotInDatabase(publication, author_id):
+    try:
+        log(publication)
+        author_ids = []
+        author_names = []
+
+        title = publication['dc:title']
+        doi = publication['prism:doi']
+        journal = publication['prism:publicationName']
+        cited_by = int(publication['citedby-count'])
+        year_published = publication['prism:coverDate'][0:4]
+        link = publication['link'][2]['@href']
+
+        keywords_string = publication['authkeywords']
+        keywords = keywords_string.split('|')
+        keywords = [keyword.strip() for keyword in keywords]
+
+        scopus_authors = publication['author']
+        #This flag is used to see if the specfic author is added to the publication
+        authorInList = False
+        for author in scopus_authors:
+            if(author['authid'] == author_id):
+                authorInList = True
+            author_ids.append(author['authid'])
+            author_names.append(author['authname'])
+        
+        if(authorInList == False):
+            #Add Author to ids and names because they were not added yet
+            author_ids.append(author_id)
+
+        #Return the publication to add to missing publications
+        return True, {'doi': doi, 'id': id, 'title': title, 
+                            'keywords': keywords, 'journal': journal, 'cited_by': cited_by, 
+                            'year_published': year_published, 'author_ids': author_ids, 
+                            'author_names': author_names, 'link': link}
+
+    except Exception as e:
+        log(f"Error occurred building publication to store it: {e}")
+        return False, {}
+
 def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
     """
     author_id: The author ID to fetch missing publications for
@@ -102,171 +331,95 @@ def fetchMissingPublications(author_id, apikey, instoken, cursor, connection):
     The function then returns the list of missing functions.
     """
 
-    global NumberOfPublicationsUpdate
-
-    #Fetch author first and last name here
-
-    #This function will be run for every researcher that needs to be updated.
-    #But some reseracher might publish with other reserachers at the institution.
-    #To avoid duplication of publications we check the number of documents on each fetch.
-    query = "SELECT num_documents FROM public.elsevier_data WHERE id='"+author_id+"'"
-    cursor.execute(query)
-    results = cursor.fetchone()
-    StoredResults = results[0]
-    
-    url = 'https://api.elsevier.com/content/search/scopus'
-    headers = {'Accept' : 'application/json', 'X-ELS-APIKey' : apikey['Parameter']['Value'], 'X-ELS-Insttoken' : instoken['Parameter']['Value']}
-    query = {'query': 'AU-ID(' + author_id + ')', 'view' : 'COMPLETE', 'cursor': '*'}
-    
-    response = requests.get(url, headers=headers, params=query)
-    rjson = response.json()
-
-    keys = rjson.keys()
-
-    if(list(keys).count('search-results') == 0):
-        print("Scopus Search Limit Hit Update Publications will run again next week")
+    #Try to get number of documents for the researcher
+    #If it errors out return an empty array
+    try: 
+        query = "SELECT num_documents FROM public.elsevier_data WHERE id='"+author_id+"'"
+        cursor.execute(query)
+        results = cursor.fetchone()
+        StoredResults = results[0]
+    except Exception as e:
+        log(f"Error occurred while updating publications: {e}")
         return []
     
-    totalResults = int(rjson['search-results']['opensearch:totalResults'])
+
+    response = makeInitialPublicationsRequest(author_id, apikey, instoken)
+    try:
+        rjson = response.json()
+        keys = rjson.keys()
+    except Exception as e:
+        log(f"Error occured with publications fetch: {e}")
+        return []
+
+    if(list(keys).count('search-results') == 0):
+        log("Scopus Search Limit Hit Update Publications will run again next week")
+        return []
+    
+    try: 
+        totalResults = int(rjson['search-results']['opensearch:totalResults'])
+    except Exception as e:
+        log(f"Error with scopus response formatting: {e}")
+        return []
     totalNumberOfPages = math.ceil(totalResults/25)
     
     
     #Check if the researchers new publication has already been inserted into the database.
     if(StoredResults > totalResults):
-        print("ERROR! TOO MANY PUBS FOR RESEARCHER!")
+        log("ERROR! TOO MANY PUBS FOR RESEARCHER!")
         return []
     if(StoredResults == totalResults):
-        print("Have all researchers publications")
+        log("Have all researchers publications")
         return []
     
     #For each of the researchers 25 new publications check if it is already in the database.
     #If the publication is not in the database add the publication to the missing publications list.
     missingPublications = []
     currentPage = 0
-    while(currentPage<totalNumberOfPages):
+    for currentPage in range(totalNumberOfPages):
         publications = rjson['search-results']['entry']
         for publication in publications:
-            keys = publication.keys()
-            id = ''
-            doi = ''
-            title = ''
-            keywords = []
-            journal = ''
-            cited_by = None
-            year_published = ''
-            link = ''
-            if(list(keys).count('dc:identifier')):
-                for c in publication['dc:identifier']:
-                    if c.isdigit():
-                        id = id + c
-                        
-            #Check if the publication is already in the database
-            query = "SELECT COUNT(*) FROM publication_data WHERE id='"+id+"'"
-            cursor.execute(query)
-            results = cursor.fetchone()
-            #If publication not in the database we need to put into the db
-            if(results[0] == 0):
-                author_ids = []
-                author_names = []
-                if(list(keys).count('dc:title')):
-                    title = publication['dc:title']
-                if(list(keys).count('prism:doi')):
-                    doi = publication['prism:doi']
-                if(list(keys).count('authkeywords')):
-                    keywords_string = publication['authkeywords']
-                    keywords = keywords_string.split('|')
-                    keywords = [keyword.strip() for keyword in keywords]
-                if (list(keys).count('prism:publicationName')):
-                    journal = publication['prism:publicationName']
-                if (list(keys).count('citedby-count')):
-                    cited_by = int(publication['citedby-count'])
-                if (list(keys).count('prism:coverDate')):
-                    year_published = publication['prism:coverDate'][0:4]
-                if (list(keys).count('link')):
-                    link = publication['link'][2]['@href']
-                if (list(keys).count('author')):
-                    scopus_authors = publication['author']
-                    #This flag is used to see if the specfic author is added to the publication
-                    flag = 0
-                    for author in scopus_authors:
+            
+            publicationInDatabase = checkIfPublicationIsInDatabase(publication, cursor)
 
-                        if(author['authid'] == author_id):
-                            flag = 1
-                        author_ids.append(author['authid'])
-                        author_names.append(author['authname'])
-                    if(int(publication['author-count']['@total']) > 100 and flag == 0):
-                        #Add Author to ids and names because they were not added yet
-                        author_ids.append(author_id)
-                        #Find out how to add author name
-                    #Add the publication to the list of missing publications
-                    missingPublications.append({'doi': doi, 'id': id, 'title': title, 
-                        'keywords': keywords, 'journal': journal, 'cited_by': cited_by, 
-                        'year_published': year_published, 'author_ids': author_ids, 
-                        'author_names': author_names, 'link': link})
-                    StoredResults += 1
-                connection.commit()
+            if(publicationInDatabase == None):
+                #NEED TO DOUBLE CHECK THIS BUT continue should go to the next publication 
+                continue
+
+            if(publicationInDatabase == True):
+                #Handle true logic (publication in database)
+                handlePublicationInDatabase(publication, author_id, cursor, connection)
             else:
-                keys = publication.keys()
-                if(list(keys).count('author-count')):
-                    if(int(publication['author-count']['@total']) > 100):
-                        #If the publication is above 100 check if the current researcher is in it
-                        query = "SELECT COUNT(*) FROM publication_data WHERE id='"+id+"' AND ('"+author_id+"' = ANY(author_ids))"
-                        cursor.execute(query)
-                        authorInPublicationResult = cursor.fetchone()
-                        #If author is not in publication add them to it
-                        if(authorInPublicationResult[0] == 0):
-                            NumberOfPublicationsUpdate = NumberOfPublicationsUpdate + 1
-                            query = "SELECT * FROM publication_data WHERE id='"+id+"'"
-                            cursor.execute(query)
-                            pubToAddAuthorToResult = cursor.fetchone()
-                            #Add researcher to author id array
-                            authorIdArray = pubToAddAuthorToResult[5]
-                            authorIdArray.append(author_id)
-                            authorIdArray = str(authorIdArray).replace('\'', '"').replace('[', '{').replace(']', '}')
-                            query = "UPDATE publication_data SET author_ids='"+authorIdArray+"' WHERE id='"+id+"' "
-                            cursor.execute(query)
-                            #Update Author Keywords
-                            publicationToUpdate = []
-                            #Get Keywords to Update
-                            if(list(keys).count('authkeywords')):
-                                keywords_string = publication['authkeywords']
-                                keywords = keywords_string.split('|')
-                                keywords = [keyword.strip() for keyword in keywords]
-                            publicationToUpdate.append({'keywords': keywords})
-                            #Store new keywords
-                            store_keywords(author_id, publicationToUpdate, cursor)
-                            #Commit Changes to database
-                            connection.commit()
-
-                            #If the publication is in the database but the researcher is not attached we should add them
-                            #Increase their document count and add to their keywords
-                            #Don't add it to missing documents
+                #Handle false logic (publication not in database)
+                success, publication = handlePublicationNotInDatabase(publication, author_id)
+                if(success):
+                    missingPublications.append(publication)
+                    StoredResults += 1
 
         #Check if we got all the new publications
         if(StoredResults == totalResults):
             break
-        #Increment current page counter and get the next page of publications if we do not have them all yet
-        currentPage += 1
-        if(currentPage>=totalNumberOfPages):
+
+        # If there are more pages to fetch, get the next page of publications
+        response = requestNextScopusPublicationPage(rjson, apikey, instoken)
+
+        # This means the code was unable to fetch the next page
+        if response == []:
             break
-        next_url = rjson['search-results']['link'][2]['@href']
-        response = requests.get(next_url, headers=headers)
+        
         rjson = response.json()
+
     return missingPublications
 
 def getResearcherCurrentNumDocuments(author_id, cursor):
-    """
-    author_id: The author id to get number of publications for
-    cursor: This is used to query the db.
-    
-    This function gets an ID's total number of publications from the postgresql database.
-    """
-    
-    query = "SELECT num_documents FROM public.elsevier_data WHERE id='"+author_id+"'"
-    cursor.execute(query)
-    results = cursor.fetchone()
-    StoredResults = results[0]
-    return StoredResults
+    try:
+        query = "SELECT num_documents FROM public.elsevier_data WHERE id=%s"
+        cursor.execute(query, (author_id,))
+        results = cursor.fetchone()
+        StoredResults = results[0]
+        return StoredResults
+    except Exception as e:
+        log(f"Error in getResearcherCurrentNumDocuments: {e}")
+        return -1
 
 def updateResearcherInformation(author_id, num_documents, cursor):
     """
@@ -277,8 +430,11 @@ def updateResearcherInformation(author_id, num_documents, cursor):
     This function sets an authors number of documents in the database.
     """
     
-    query = "UPDATE public.elsevier_data SET num_documents = "+num_documents+" WHERE id='"+author_id+"'"
-    cursor.execute(query)
+    try:
+        query = "UPDATE public.elsevier_data SET num_documents = %s WHERE id=%s"
+        cursor.execute(query, (num_documents, author_id))
+    except Exception as e:
+        log(f"Error in updateResearcherInformation: {e}")
 
 def store_publications(publications, cursor):
     """
@@ -288,20 +444,31 @@ def store_publications(publications, cursor):
     """
     
     for publication in publications:
-        # Format each field
-        publication['id'] = publication['id']
-        publication['title'] = publication['title'].replace('\'', "''")
-        publication['author_ids'] = str(publication['author_ids']).replace('\'', '"').replace('[', '{').replace(']', '}')
-        publication['author_names'] = str(publication['author_names'])[2:-2].replace(" '", " ").replace("',", ",").replace("'", "''")
-        publication['keywords'] = str(publication['keywords'])[2:-2].replace(" '", " ").replace("',", ",").replace("'", "''")
-        publication['journal'] = publication['journal'].replace("'", "''")
-        publication['cited_by'] = str(publication['cited_by'])
-        publication['year_published'] = publication['year_published']
-        queryline1 = "INSERT INTO public.publication_data(id, doi, title, author_ids, author_names, keywords, journal, cited_by, year_published, link) "
-        queryline2 = "VALUES ('" + publication['id'] + "', '" + publication['doi'] + "', '" + publication['title'] + "', '" + publication['author_ids'] + "', '" + publication['author_names'] + "', '" + publication['keywords'] + "', '" + publication['journal'] + "', '" + publication['cited_by'] + "', '" + publication['year_published'] + "', '" + publication['link'] + "')"
-        queryline3 = "ON CONFLICT (id) DO UPDATE "
-        queryline4 = "SET doi='" + publication['doi'] + "', title='" + publication['title'] + "', author_ids='" + publication['author_ids'] + "', author_names='" + publication['author_names'] + "', journal='" + publication['journal'] + "', year_published='" + publication['year_published'] + "', cited_by='" + publication['cited_by'] + "', keywords='" + publication['keywords'] + "', link='" + publication['link'] + "'"
-        cursor.execute(queryline1 + queryline2 + queryline3 + queryline4)
+        try:
+            # Format each field
+            publication['id'] = publication['id']
+            publication['title'] = publication['title'].replace('\'', "''")
+            publication['author_ids'] = str(publication['author_ids']).replace('\'', '"').replace('[', '{').replace(']', '}')
+            publication['author_names'] = str(publication['author_names'])[2:-2].replace(" '", " ").replace("',", ",").replace("'", "''")
+            publication['keywords'] = str(publication['keywords'])[2:-2].replace(" '", " ").replace("',", ",").replace("'", "''")
+            publication['journal'] = publication['journal'].replace("'", "''")
+            publication['cited_by'] = str(publication['cited_by'])
+            publication['year_published'] = publication['year_published']
+
+
+            query = (f"INSERT INTO public.publication_data(id, doi, title, author_ids, author_names, keywords, journal, cited_by, year_published, link) "
+                     f"VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+                     f"ON CONFLICT (id) DO UPDATE "
+                     f"SET doi=%s, title=%s, author_ids=%s, author_names=%s, journal=%s, year_published=%s, cited_by=%s, keywords=%s, link=%s")
+
+            cursor.execute(query, (publication['id'], publication['doi'], publication['title'], publication['author_ids'],
+                                   publication['author_names'], publication['keywords'], publication['journal'], publication['cited_by'],
+                                   publication['year_published'], publication['link'], publication['doi'], publication['title'],
+                                   publication['author_ids'], publication['author_names'], publication['journal'], publication['year_published'],
+                                   publication['cited_by'], publication['keywords'], publication['link']))
+
+        except Exception as e:
+            log(f"Error in store_publications: {e}")
 
 def store_keywords(author_id, publications, cursor):
     """
@@ -311,34 +478,36 @@ def store_keywords(author_id, publications, cursor):
 
     The function adds the publications keywords to the reserachers keywords list
     """
-    
-    unsorted_keywords = []
-    for publication in publications:
-        for keyword in publication['keywords']:
-            unsorted_keywords.append(keyword)
+    try: 
+        unsorted_keywords = []
+        for publication in publications:
+            for keyword in publication['keywords']:
+                unsorted_keywords.append(keyword)
 
-    
-    keywords = unsorted_keywords
-    
-    #Get rid of all the commas, single quotes and double quotes from keywords
-    for keyword in keywords:
-        keyword = keyword.replace(',', '')
-    # Get rid of all single quotes around each keyword
-    keywords_string = str(keywords)[1:-1].replace('"', '').replace("'", "")
+        
+        keywords = unsorted_keywords
+        
+        #Get rid of all the commas, single quotes and double quotes from keywords
+        for keyword in keywords:
+            keyword = keyword.replace(',', '')
+        # Get rid of all single quotes around each keyword
+        keywords_string = str(keywords)[1:-1].replace('"', '').replace("'", "")
 
-    query = "SELECT keywords FROM researcher_data WHERE scopus_id='" + author_id + "'"
-    cursor.execute(query)
-    results = cursor.fetchone()
+        query = "SELECT keywords FROM researcher_data WHERE scopus_id='" + author_id + "'"
+        cursor.execute(query)
+        results = cursor.fetchone()
 
-    keywords_string = results[0] + ", " + keywords_string
+        keywords_string = results[0] + ", " + keywords_string
+    except Exception as e:
+        log(f"Error in processing of store_keywords: {e}")
     
     try:
-        query = "UPDATE public.researcher_data SET keywords='" + keywords_string + "' WHERE scopus_id='" + author_id + "'"
-        cursor.execute(query)
-    except:
-        print("ERROR!")
-        print(author_id)
-        print(keywords_string)
+        query = "UPDATE public.researcher_data SET keywords=%s WHERE scopus_id=%s"
+        cursor.execute(query, (keywords_string, author_id))
+    except Exception as e:
+        log(f"Error in store_keywords: {e}")
+        log(author_id)
+        log(keywords_string)
 
 def updateResearchers(researchersToUpdateArray, instoken, apikey, connection, cursor):
     """
@@ -349,102 +518,77 @@ def updateResearchers(researchersToUpdateArray, instoken, apikey, connection, cu
     The function then puts the publications into the database.
     """
 
-    global NumberOfPublicationsUpdate
+    total_publications_updated = 0
 
     #Loop through all researchers to update.
     while (len(researchersToUpdateArray) > 0):
-        #Get the front of lists missing publications
+        #This fetches all publications missing for a researcher
         missingPublications = fetchMissingPublications(researchersToUpdateArray.pop(0), apikey, instoken, cursor, connection)
         
-        #For each author that contributed to these publications at the Institution you need to update their num_documents!
         for publication in missingPublications:
-            NumberOfPublicationsUpdate = NumberOfPublicationsUpdate + 1
+            total_publications_updated += 1
             for author_id in publication['author_ids']:
-                #Check if the author is in the database
-                query = "SELECT COUNT(*) FROM elsevier_data WHERE id='"+author_id+"'"
-                cursor.execute(query)
+                query = "SELECT COUNT(*) FROM elsevier_data WHERE id=%s"
+                cursor.execute(query, (author_id,))
                 results = cursor.fetchone()
-                #If the author is part of the Institution's database increase their num_documents by one
-                #And add the publications keywords to the researcheres keywords
                 if(results[0] == 1):
-                    updateResearcherInformation(author_id, str(getResearcherCurrentNumDocuments(author_id, cursor)+1), cursor)
-                    store_keywords(author_id, missingPublications, cursor)
-    
-        #Add the Publications
+                    current_num_documents = getResearcherCurrentNumDocuments(author_id, cursor)
+                    #If it is -1 there was an error with the fetch
+                    if current_num_documents != -1:
+                        updateResearcherInformation(author_id, current_num_documents + 1, cursor)
+                        store_keywords(author_id, missingPublications, cursor)
+
         store_publications(missingPublications, cursor)
-        #Commit changes to database after every researcher
         connection.commit()
 
-#Update all researchers number of publications
-#We might never need this because it should be correct at all times 
-#and removing a researcher does not decrease your publications
-def updateAllResearchersNumDocuments(cursor, connection):
-    #UPDATE H_INDEX AS WELL!
-    time_string = str(time.time())
-    query = "SELECT * FROM researcher_data"
-    cursor.execute(query)
-    results = cursor.fetchall()
-    #For each researcher get their number of documents in the database and update it to be correct
-    for i in range(0, len(results)):
-        query = "SELECT COUNT(*) FROM publication_data WHERE '"+str(results[i][12])+"' = ANY(author_ids)"
-        cursor.execute(query)
-        countResult = cursor.fetchone()
-        query = "UPDATE elsevier_data SET num_documents = "+str(countResult[0])+" WHERE id = '"+str(results[i][12])+"'"
-        cursor.execute(query)
-        #Update last updated column in researcher_data
-        query = "UPDATE researcher_data SET last_updated = '"+time_string+"' WHERE scopus_id = '"+str(results[i][12])+"' "
-        cursor.execute(query)
-    connection.commit()
+    return total_publications_updated
 
-    #Change the last updated value
+def main():
 
-def removePublicationsWithNoInstitutionResearcher(cursor, connection):
-    global NumberOfPublicationsUpdate
-    query = "SELECT * FROM publication_data WHERE NOT EXISTS (SELECT * FROM researcher_data WHERE researcher_data.scopus_id = ANY(publication_data.author_ids))"
-    cursor.execute(query)
-    results = cursor.fetchall()
-    #Delete all publications that do not have current researcher in the list of researchers
-    for i in range(0, len(results)):
-        query = "DELETE FROM publication_data WHERE id='"+str(results[i][0])+"'"
-        cursor.execute(query)
-        NumberOfPublicationsUpdate = NumberOfPublicationsUpdate + 1
-    connection.commit()
+    log("Starting Update Publications")
 
-instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
-apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
+    instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
+    apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
 
-credentials = getCredentials()
-connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
-cursor = connection.cursor()
+    credentials = getCredentials()
 
-NumberOfPublicationsUpdate = 0
+    try:
+        with psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db']) as connection:
+            with connection.cursor() as cursor:
+                researcherArray = createListOfResearchersToUpdate()
+                log(f"Finished Creating List Of Researchers To Update. List of researchers is: {researcherArray}")
 
-time_string = str(time.time())
+                NumberOfPublicationsUpdate = updateResearchers(researcherArray, instoken, apikey, connection, cursor)
+                log("Finished Updating Researchers")
 
-#Remove all publications with no researcher in the Institution list
-#removePublicationsWithNoInstitutionResearcher(cursor, connection)
-print("Finished Removing Publications")
+                query = "INSERT INTO update_publications_logs(date_updated, number_of_publications_updated) VALUES (%s, %s)"
+                cursor.execute(query, (time.time(), NumberOfPublicationsUpdate))
 
-#Set researchers number of documents to be what we have in the database
-#updateAllResearchersNumDocuments(cursor, connection)
-print("Finished Updating Num Documents")
+                log(f"Number of Publications Added: {NumberOfPublicationsUpdate}")
+                connection.commit()
 
-#Create a list of researchers that need to be updated
-researcherArray = createListOfResearchersToUpdate()
-print("Finished Creating List Of Researchers To Update. List of researchers is:" + str(researcherArray))
-#Using the List of Researchers Put their new publications into the database
-updateResearchers(researcherArray, instoken, apikey, connection, cursor)
-print("Finished Updating Researchers")
-#Add to the updating table
-query = "INSERT INTO update_publications_logs(date_updated, number_of_publications_updated) VALUES ('"+str(time.time())+"', '"+str(NumberOfPublicationsUpdate)+"')"
-cursor.execute(query)
+    except Exception as e:
+        log(f"Error occurred while updating publications: {e}")
 
-print("Number of Publications Added: "+str(NumberOfPublicationsUpdate))
-connection.commit()
-cursor.close()
+    log("Finished Updating Publication")
 
-print("Finished Updating Publication")
+    # Start the Glue job which starts dms replication
+    job_name = "expertiseDashboard-startDmsReplicationTask-updatePublications"
+    response = glue_client.start_job_run(JobName=job_name)
 
-response = dms_client.start_replication_task(
-    ReplicationTaskArn= os.environ['Replication_Task_Arn'],
-    StartReplicationTaskType='reload-target')
+    # Print the job run ID
+    log(f"DMS Glue Job started with Run ID: "+str(response['JobRunId']))
+
+main()
+
+# instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
+# apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
+    
+# authorArray = ["55765887300"]
+    
+# url = 'https://api.elsevier.com/content/author'
+# headers = {'Accept': 'application/json', 'X-ELS-APIKey': apikey['Parameter']['Value'], 'X-ELS-Insttoken': instoken['Parameter']['Value']}
+# params = {'field': 'document-count,h-index', 'author_id': authorArray}
+
+# response = requests.get(url, headers=headers, params=params)
+# log(response)

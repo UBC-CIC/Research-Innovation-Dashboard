@@ -11,6 +11,7 @@ import { updateLoginState } from "./actions/loginActions";
 import theme from "./themes";
 import Login from "./components/authentication/Login_material";
 import PageContainer from "./views/pageContainer/PageContainer";
+import { Auth } from "aws-amplify";
 
 Amplify.configure(awsmobile);
 
@@ -18,14 +19,31 @@ function App(props) {
   const { loginState, updateLoginState } = props;
 
   const [currentLoginState, updateCurrentLoginState] = useState(loginState);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setAuthListener();
   }, []);
 
   useEffect(() => {
+    console.log(loginState)
     updateCurrentLoginState(loginState);
   }, [loginState]);
+
+  useEffect(() => {
+    async function retrieveUser() {
+      try {
+        Auth.currentAuthenticatedUser()
+          .then((user) => {
+            updateLoginState("signedIn");
+          })
+          .catch((err) => {
+            updateLoginState("signIn");
+          });
+      } catch (e) {}
+    }
+    retrieveUser().then(() => {const timeoutId = setTimeout(() => setLoading(false), 0);});
+  }, []);
 
   async function setAuthListener() {
     Hub.listen("auth", (data) => {
@@ -39,22 +57,23 @@ function App(props) {
     });
   }
 
+  //Here to prevent the login page from flashing before the user is authenticated
+  if (loading) {
+    return (
+      <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={theme}>
+          <div style={{ width: "100vw", height: "100vh", overflowX: "hidden" }}>
+          </div>
+        </ThemeProvider>
+      </StyledEngineProvider>
+    );
+  }
+
   return (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
         <div style={{ width: "100vw", height: "100vh", overflowX: "hidden" }}>
           {currentLoginState !== "signedIn" && (
-            /* Login component options:
-             *
-             * [logo: "custom", "none"]
-             * [type: "video", "image", "static"]
-             * [themeColor: "standard", "#012144" (color hex value in quotes) ]
-             *  Suggested alternative theme colors: #037dad, #5f8696, #495c4e, #4f2828, #ba8106, #965f94
-             * [animateTitle: true, false]
-             * [title: string]
-             * [darkMode (changes font/logo color): true, false]
-             * [disableSignUp: true, false]
-             * */
             <Login
               logo={"custom"}
               type={"image"}
