@@ -90,7 +90,7 @@ def confirmMatches(duplicates_split):
                 if (result['subject-areas'] == None):
                     subject_areas = []
                 else:
-                    if "subject-areas" in result['subject-areas']:
+                    if "subject-area" in result['subject-areas']:
                         subject_areas = result['subject-areas']['subject-area']
                     
             for author in author_subset:

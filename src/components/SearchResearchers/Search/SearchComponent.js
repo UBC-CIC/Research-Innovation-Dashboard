@@ -4,16 +4,20 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import React from "react";
 import SearchBar from "./SearchBar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ResearcherSearchResultsComponent from "../ResearcherSearchResultsComponent";
 import PublicationSearchResultsComponent from "../PublicationSearchResultsComponent";
 import ResearcherFilters from "./ResearcherFilters";
 import PublicationFilters from "./PublicationFilters";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import GrantInformation from "../../ResearcherProfile/GrantInformation"
 import GrantFilters from "../Search/GrantsFilters"
 import PatentInformation from "../../ResearcherProfile/PatentInformation"
 import PatentFilters from "../Search/PatentFilters"
+import Link from '@mui/material/Link';
+import { getAllDepartments, getAllFaculty, getCatagoriesCount } from "../../../graphql/queries";
+import { API } from "aws-amplify";
+import HomePageBar from "../../HomePage/HomePageBar";
 
 export default function SearchComponent(props) {
   const [researchSearchResults, setResearcherSearchResults] = useState([]);
@@ -24,6 +28,10 @@ export default function SearchComponent(props) {
     useState(1);
   const [publicationsSearchResultPage, setPublicationsSearchResultPage] =
     useState(1);
+  const [searchYet, setSearchYet] = useState(false) //indicate whether the user entered a search string and search
+  const [openFacultyFiltersDialog, setOpenFacultyFiltersDialog] = useState(false)
+  const [openDepartmentFiltersDialog, setOpenDepartmentFiltersDialog] = useState(false);
+  const [catagoiresCount, setCatagoriesCount] = useState({researcherCount: 0, publicationCount: 0, grantCount: 0, patentCount: 0})
 
   let { anyDepartmentFilter, anyFacultyFilter, journalFilter, grantFilter, patentClassifications } = useParams();
 
@@ -64,7 +72,7 @@ export default function SearchComponent(props) {
     selectedClassification = patentClassifications.split("&&");
   }
   
-  console.log(props.whatToSearch)
+  // console.log(props.whatToSearch)
 
   //for researcher filters
   const [selectedDepartments, setSelectedDeparments] = useState(
@@ -84,6 +92,16 @@ export default function SearchComponent(props) {
   const [selectedPatentClassification, setSelectedPatentClassification] = useState(selectedClassification)
   const [grantPath, setGrantPath] = useState("");
   const [patentClassificationPath, setPatentClassificationPath] = useState("")
+  
+  let navigate = useNavigate()
+  const initialMount = useRef(true)
+  const searchBarValueRef = useRef(" ")
+
+  // refs to scroll to result when clicking the numbers
+  const researcherResRef = useRef(null)
+  const pubResRef = useRef(null)
+  const grantResRef = useRef(null)
+  const patentResRef = useRef(null)
 
   useEffect(() => {
     //if there are selected departments, join items in array to create 1 string (different departments separated by &&), replace all spaces with %20
@@ -142,22 +160,169 @@ export default function SearchComponent(props) {
     }
   }, [selectedPatentClassification])
 
+  useEffect(() => {
+    if (initialMount.current) {
+
+      initialMount.current = false
+
+    } else {
+
+      let selectedFacultiesPath = " "
+      let selectedDepartmentsPath = " "
+      let selectedGrantAgenciesPath = " "
+      let selectedPatentClfsPath = " "
+      let selectedJournalsPath = " "
+      let url = "/ / / / / / /"
+
+      if (selectedFaculties.length !== 0) {
+        selectedFacultiesPath = selectedFaculties.join("&&")
+      }
+      if (selectedDepartments.length !== 0) {
+        selectedDepartmentsPath = selectedDepartments.join("&&")
+      }
+      if (selectedGrantAgency.length !== 0) {
+        selectedGrantAgenciesPath = selectedGrantAgency.join("&&")
+      }
+      if (selectedPatentClassification.length !== 0) {
+        selectedPatentClfsPath = selectedPatentClassification.join("&&")
+      }
+      if (selectedJournals.length !== 0) {
+        selectedJournalsPath = selectedJournals.join("&&")
+      }
+      
+      if (props.whatToSearch === "Researchers") {
+        
+        // if (searchBarValueRef === "") {
+        //   searchBarValueRef.current = " "
+        // }
+
+        url = "/Search/Researchers/" +
+        selectedDepartmentsPath +
+        "/" +
+        selectedFacultiesPath +
+        "/" +
+        searchBarValueRef.current +
+        "/";
+
+      } else if (props.whatToSearch === "Grants") {
+
+        url = "/Search/Grants/" + selectedGrantAgenciesPath + "/" + searchBarValueRef.current + "/";
+      
+      } else if  (props.whatToSearch === "Patents") {
+
+        url = "/Search/Patents/" + selectedPatentClfsPath + "/" + searchBarValueRef.current + "/";
+      
+      } else if (props.whatToSearch === "Publications") {
+
+        url = "/Search/Publications/".concat(selectedJournalsPath, "/", searchBarValueRef.current, "/");
+
+      } else if (props.whatToSearch === "Everything"){
+        
+        url =
+        "/" +
+        selectedDepartmentsPath +
+        "/" +
+        selectedFacultiesPath +
+        "/" +
+        selectedJournalsPath +
+        "/" +
+        selectedGrantAgenciesPath +
+        "/" +
+        selectedPatentClfsPath +
+        "/" +
+        searchBarValueRef.current +
+        "/";
+      }
+
+      if ((openDepartmentFiltersDialog === false) && (openFacultyFiltersDialog === false) ) {
+        // don't refresh until the department/faculty filter dialogs is closed
+        navigate(url);
+        window.location.reload();
+        //console.log(selectedFaculties)
+      }
+    }
+
+  }, [selectedFaculties, selectedDepartments, props.whatToSearch, selectedGrantAgency, selectedPatentClassification, selectedJournals, openDepartmentFiltersDialog, openFacultyFiltersDialog])
+
+  const [currentFacultyOptions, setCurrentFacultyOptions] = useState([]);
+  const [currentDepartmentOptions, setCurrentDepartmentOptions] = useState([]);
+
+  useEffect(() => {
+    const getFilterOptions = async () => {
+      const [departmentRes, facultyRes] = await Promise.all([
+        API.graphql({
+          query: getAllDepartments,
+        }),
+        API.graphql({
+          query: getAllFaculty,
+        }),
+      ]);
+
+      // create an initial list of json objects that contains the departments and an integer
+      // e.g. {'department': 'Department of Statistics', 'checked': 0} with 0 means unchecked and 1 means checked
+      let allDepartments = departmentRes.data.getAllDepartments.map((item, index) => ({"department": item, "checked": 0}));
+      selectedDepartments.forEach((department) => {
+        const currentIndex = allDepartments.findIndex((obj) => obj["department"] === department);
+        allDepartments[currentIndex]["checked"] = 1
+      });
+      setCurrentDepartmentOptions(allDepartments);
+      // create an initial list of json objects that contains the faculty and an integer
+      // e.g. {'faculty': 'Faculty of Science', 'checked': 0} with 0 means unchecked and 1 means checked
+      let allFaculties = facultyRes.data.getAllFaculty.map((item, index) => ({"faculty": item, "checked": 0}));
+      selectedFaculties.forEach((faculty) => {
+        const currentIndex = allFaculties.findIndex((obj) => obj["faculty"] === faculty);
+        allFaculties[currentIndex]["checked"] = 1
+      });
+      setCurrentFacultyOptions(allFaculties);
+    };
+    getFilterOptions();
+  }, []);
+
+  useEffect(() => {
+    const getCatagoriesCountFunction = async () => {
+      const catagoriesCount = await API.graphql({
+        query: getCatagoriesCount,
+      });
+
+      //console.log("Hereee")
+
+      console.log(catagoriesCount.data.getCatagoriesCount)
+      setCatagoriesCount(catagoriesCount.data.getCatagoriesCount);
+    };
+    //console.log("HEREEE")
+    getCatagoriesCountFunction();
+  }, []);
+
   return (
     <div>
       <Grid container>
         <Grid item xs={12}>
-          <Paper square={true} variant="outlined" elevation={0}>
-            <Grid container>
+          <Paper
+            //variant="outlined"
+            square={true} 
+            elevation={0}
+          >
+            <Grid container sx={{ border: '0px' }}>
               <Grid item xs={12}>
-                <Typography align="center" variant="h5" sx={{ margin: "8px" }}>
-                  {"Search " + props.whatToSearch}
-                </Typography>
+                {
+                  (props.whatToSearch === "Everything" && searchYet === false) ?
+                    (<Typography align="center" variant="h4" sx={{ margin: "8px", pt: "1.5%", pb: "1.5%" }}>
+                      {"Welcome to the Expertise Dashboard"}
+                    </Typography>) : (props.whatToSearch === "Researchers") ? 
+                      (<Typography align="center" variant="h4" sx={{ margin: "8px", pt: "1.5%", pb: "1.5%" }}>
+                        {"Find Researchers"}
+                      </Typography>) :
+                      (<Typography align="center" variant="h4" sx={{ margin: "8px", pt: "1.5%", pb: "1.5%" }}>
+                        {"Find " + props.whatToSearch}
+                      </Typography>)
+                }
               </Grid>
-              <Grid item xs={12} align="center">
+              <Grid item xs={12} sx={{paddingBottom: 3}} align="center">
                 <SearchBar
                   setResearcherSearchResults={setResearcherSearchResults}
                   setPublicationSearchResults={setPublicationSearchResults}
                   whatToSearch={props.whatToSearch}
+                  searchYet={props.searchYet}
                   selectedDepartments={selectedDepartments}
                   selectedFaculties={selectedFaculties}
                   selectedJournals={selectedJournals}
@@ -172,8 +337,11 @@ export default function SearchComponent(props) {
                   setPublicationsSearchResultPage={setPublicationsSearchResultPage}
                   setGrantsSearchResults={setGrantsSearchResults}
                   setPatentSearchResults={setPatentSearchResults}
+                  setSearchYet={setSearchYet}
+                  searchBarValueRef={searchBarValueRef}
                 />
                 <Paper
+                  variant="elevation"
                   square={true}
                   elevation={0}
                   sx={{
@@ -200,7 +368,75 @@ export default function SearchComponent(props) {
           </Paper>
         </Grid>
       </Grid>
+      {searchYet === false && <HomePageBar 
+        researchersCount={catagoiresCount.researcherCount} 
+        publicationsCount={catagoiresCount.publicationCount} 
+        grantsCount={catagoiresCount.grantCount} 
+        patentsCount={catagoiresCount.patentCount} />}
+
       <Grid container>
+        {(props.whatToSearch === "Everything" && searchYet === true) && (
+          <Grid container 
+            spacing={4} 
+            sx={{justifyContent: "right", alignSelf: "center", marginTop: "2%", paddingRight: "2%"}}
+          >
+            <Grid item >
+              <Typography
+                variant="h5"
+                sx={{color: "#666666"}}
+              >
+                {"Researchers: "}  
+                <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
+                  onClick={() => {researcherResRef.current.scrollIntoView()}}
+                >
+                  {researchSearchResults.length}
+                </Link>
+              </Typography>
+            </Grid>
+
+            <Grid item >
+              <Typography
+                variant="h5"
+                sx={{color: "#666666"}}
+              >
+                {"Publications: "}
+                <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
+                  onClick={() => {pubResRef.current.scrollIntoView()}}
+                >
+                  {publicationSearchResults.length}
+                </Link>
+              </Typography>
+            </Grid>
+
+            <Grid item >
+              <Typography
+                variant="h5"
+                sx={{color: "#666666"}}
+              >
+                {"Grants: "}
+                <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
+                  onClick={() => {grantResRef.current.scrollIntoView()}}
+                >
+                  {grantsSearchResults.length}
+                </Link>
+              </Typography>
+            </Grid>
+
+            <Grid item >
+              <Typography
+                variant="h5"
+                sx={{color: "#666666"}}
+              >
+                {"Patents: "}
+                <Link sx={{color: "blue", textDecorationColor: 'blue'}} 
+                  onClick={() => {patentResRef.current.scrollIntoView()}}
+                >
+                  {patentsSearchResults.length}
+                </Link>
+              </Typography>
+            </Grid>
+          </Grid>
+        )}
         {(props.whatToSearch === "Everything" ||
           props.whatToSearch === "Researchers") && (
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
@@ -210,15 +446,24 @@ export default function SearchComponent(props) {
                 setSelectedDeparments={setSelectedDeparments}
                 selectedFaculties={selectedFaculties}
                 setSelectedFaculties={setSelectedFaculties}
+                searchYet={searchYet}
+                openFacultyFiltersDialog={openFacultyFiltersDialog}
+                setOpenFacultyFiltersDialog={setOpenFacultyFiltersDialog}
+                openDepartmentFiltersDialog={openDepartmentFiltersDialog}
+                setOpenDepartmentFiltersDialog={setOpenDepartmentFiltersDialog}
+                currentFacultyOptions={currentFacultyOptions}
+                setCurrentFacultyOptions={setCurrentFacultyOptions}
+                currentDepartmentOptions={currentDepartmentOptions}
+                setCurrentDepartmentOptions={setCurrentDepartmentOptions}
               />
             </Grid>
-            <Grid item xs={10}>
+            <Grid item xs={10} ref={researcherResRef}>
               <ResearcherSearchResultsComponent
                 researchSearchResults={researchSearchResults}
                 researcherSearchResultPage={researcherSearchResultPage}
-                resultTitle={"Research Search Results"}
-                errorTitle={"No Researcher Search Results"}
+                errorTitle={searchBarValueRef.current !== " " ? ('No Researcher Search Results for: "' + searchBarValueRef.current + '"') : (<div></div>)}
                 setResearcherSearchResultPage={setResearcherSearchResultPage}
+                searchYet={searchYet}
               />
             </Grid>
           </Grid>
@@ -226,19 +471,23 @@ export default function SearchComponent(props) {
         {(props.whatToSearch === "Everything" ||
           props.whatToSearch === "Publications") && (
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
-            <Grid item xs={2}>
+            {/* <Grid item xs={2}>
               <PublicationFilters
                 selectedJournals={selectedJournals}
                 setSelectedJournals={setSelectedJournals}
+                searchYet={searchYet}
               />
-            </Grid>
-            <Grid item xs={10}>
+            </Grid> */}
+            <Grid item xs={12} ref={pubResRef}>
               <PublicationSearchResultsComponent
                 publicationSearchResults={publicationSearchResults}
                 publicationsSearchResultPage={publicationsSearchResultPage}
                 setPublicationsSearchResultPage={
                   setPublicationsSearchResultPage
                 }
+                //errorTitle={'No Publication Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
+                errorTitle={searchBarValueRef.current !== " " ? ('No Publication Search Results for: "' + searchBarValueRef.current + '"') : (<div></div>)}
+                searchYet={searchYet}
               />
             </Grid>
           </Grid>
@@ -248,22 +497,38 @@ export default function SearchComponent(props) {
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
             <Grid item xs={2}>
               <GrantFilters selectedGrants={selectedGrantAgency}
-                setSelectedGrants={setSelectedGrantAgency} />
+                setSelectedGrants={setSelectedGrantAgency}
+                searchYet={searchYet} />
             </Grid>
-            <Grid item xs={10}>
-              <GrantInformation grantData={grantsSearchResults} tabOpened={false} initialNumberOfRows={50}/>
+            <Grid item xs={10} ref={grantResRef}>
+              <GrantInformation 
+                grantData={grantsSearchResults} 
+                tabOpened={false} 
+                initialNumberOfRows={50}
+                searchYet={searchYet}
+                //errorTitle={'No Grant Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
+                errorTitle={searchBarValueRef.current !== " " ? ('No Grant Search Results for: "' + searchBarValueRef.current + '"') : (<div></div>)}
+              />
             </Grid>
           </Grid>
         )}
         {(props.whatToSearch === "Everything" ||
          props.whatToSearch === "Patents") && (
           <Grid container item xs={12} sx={{ p: "1.5em" }}>
-            <Grid item xs={2}>
+            <Grid item xs={2.4} sx={{}}>
               <PatentFilters selectedPatentClassification={selectedPatentClassification}
-              setSelectedPatentClassification={setSelectedPatentClassification}/>
+              setSelectedPatentClassification={setSelectedPatentClassification}
+              searchYet={searchYet}/>
             </Grid>
-            <Grid item xs={10}>
-              <PatentInformation tabOpened={false} researcherPatents={patentsSearchResults} initialNumberOfRows={10}/>
+            <Grid item xs={9.6} ref={patentResRef}>
+              <PatentInformation 
+                tabOpened={false} 
+                researcherPatents={patentsSearchResults} 
+                initialNumberOfRows={10}
+                searchYet={searchYet}
+                //errorTitle={'No Patent Search Results for: "' + (searchBarValueRef.current === " " ? "" : searchBarValueRef.current) + '"'}
+                errorTitle={searchBarValueRef.current !== " " ? ('No Patent Search Results for: "' + searchBarValueRef.current + '"') : (<div></div>)}
+              />
             </Grid>
           </Grid>
         )}

@@ -121,7 +121,7 @@ const StyledPopper = styled(Popper)({
 export default function AutoCompleteStyled(props) {
   return (
     <Autocomplete
-      sx={{ width: "100%" }}
+      sx={{ width: "149%" }}
       disableListWrap
       PopperComponent={StyledPopper}
       ListboxComponent={ListboxComponent}

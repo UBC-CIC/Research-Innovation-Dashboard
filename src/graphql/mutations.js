@@ -25,6 +25,7 @@ export const putPub = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;

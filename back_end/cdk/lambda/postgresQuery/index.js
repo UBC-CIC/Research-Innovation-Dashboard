@@ -181,9 +181,19 @@ async function handler(event) {
     case "getResearcherImpactsByDepartment":
       console.log("Getting Rankings");
       let query_rankings =
-        await sql`SELECT scopus_id, researcher_data.preferred_name, researcher_data.prime_department, elsevier_data.h_index, elsevier_data.num_citations
-      FROM researcher_data FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id 
-      WHERE researcher_data.prime_department=${event.arguments.prime_department} ORDER BY h_index DESC`;
+      //   await sql`SELECT scopus_id, researcher_data.preferred_name, researcher_data.prime_department, elsevier_data.h_index, elsevier_data.num_citations
+      // FROM researcher_data FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id
+      // WHERE researcher_data.prime_department=${event.arguments.prime_department} ORDER BY h_index DESC`;
+      await sql `SELECT scopus_id, researcher_data.preferred_name, researcher_data.prime_department, elsevier_data.h_index, elsevier_data.num_citations, gd.total_grant_amount, researcher_data.researcher_id
+          FROM researcher_data FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id
+          LEFT JOIN (
+                      SELECT CAST (assigned_id AS text), SUM(amount) AS total_grant_amount
+                      FROM grant_data
+                      WHERE LEFT(grant_data.year, 4) >= ${(currentYear-4).toString()} AND LEFT(grant_data.year, 4) <= ${currentYear.toString()}
+                      GROUP BY assigned_id
+                    ) gd ON CAST(researcher_data.researcher_id AS text) = gd.assigned_id
+          WHERE researcher_data.prime_department=${event.arguments.prime_department} ORDER BY h_index DESC`;
+          
       let rankings = [];
       for (let i = 0; i < Object.keys(query_rankings).length; i++) {
         rankings[i] = query_rankings[i.toString()];
@@ -193,9 +203,20 @@ async function handler(event) {
     case "getResearcherImpactsByFaculty":
       console.log("Getting Rankings");
       let faculty_rankings =
-        await sql`SELECT scopus_id, researcher_data.preferred_name, researcher_data.prime_faculty, elsevier_data.h_index, elsevier_data.num_citations, researcher_data.prime_department
-      FROM researcher_data FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id 
+      //   await sql`SELECT scopus_id, researcher_data.preferred_name, researcher_data.prime_faculty, elsevier_data.h_index, elsevier_data.num_citations, researcher_data.prime_department
+      // FROM researcher_data FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id 
+      // WHERE researcher_data.prime_faculty=${event.arguments.prime_faculty} ORDER BY h_index DESC`;
+      
+      await sql`SELECT scopus_id, researcher_data.preferred_name, researcher_data.prime_faculty, elsevier_data.h_index, elsevier_data.num_citations, researcher_data.prime_department, gd.total_grant_amount, researcher_data.researcher_id
+      FROM researcher_data FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id
+      LEFT JOIN (
+                      SELECT CAST (assigned_id AS text), SUM(amount) AS total_grant_amount
+                      FROM grant_data
+                      WHERE LEFT(grant_data.year, 4) >= ${(currentYear-4).toString()} AND LEFT(grant_data.year, 4) <= ${currentYear.toString()}
+                      GROUP BY assigned_id
+                    ) gd ON CAST(researcher_data.researcher_id AS text) = gd.assigned_id
       WHERE researcher_data.prime_faculty=${event.arguments.prime_faculty} ORDER BY h_index DESC`;
+      
       let Rankings = [];
       for (let i = 0; i < Object.keys(faculty_rankings).length; i++) {
         Rankings[i] = faculty_rankings[i.toString()];
@@ -270,9 +291,21 @@ async function handler(event) {
       break;
     case "getAllResearchersImpacts":
       let allResearchers =
-        await sql`SELECT DISTINCT scopus_id, researcher_data.preferred_name, researcher_data.prime_faculty, researcher_data.prime_department, elsevier_data.h_index, elsevier_data.num_citations
-                                      FROM researcher_data FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id 
-                                      ORDER BY h_index DESC`;
+        // await sql`SELECT DISTINCT scopus_id, researcher_data.preferred_name, researcher_data.prime_faculty, researcher_data.prime_department, elsevier_data.h_index, elsevier_data.num_citations
+        //                               FROM researcher_data FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id 
+        //                               ORDER BY h_index DESC`;
+        await sql `SELECT DISTINCT scopus_id, researcher_data.preferred_name, researcher_data.prime_faculty, 
+                               researcher_data.prime_department, elsevier_data.h_index, elsevier_data.num_citations, 
+                               gd.total_grant_amount, researcher_data.researcher_id
+               FROM researcher_data
+               FULL OUTER JOIN elsevier_data ON researcher_data.scopus_id = elsevier_data.id
+               LEFT JOIN (
+                              SELECT CAST (assigned_id AS text), SUM(amount) AS total_grant_amount
+                              FROM grant_data
+                              WHERE LEFT(grant_data.year, 4) >= ${(currentYear-4).toString()} AND LEFT(grant_data.year, 4) <= ${currentYear.toString()}
+                              GROUP BY assigned_id
+                            ) gd ON CAST(researcher_data.researcher_id AS text) = gd.assigned_id
+               ORDER BY h_index DESC`
       let allResearchersArray = [];
       for (let i = 0; i < Object.keys(allResearchers).length; i++) {
         allResearchersArray[i] = allResearchers[i.toString()];
@@ -401,11 +434,28 @@ async function handler(event) {
         payload.push(agencies[i].agency);
       }
       break;
+
+    case "getCatagoriesCount":
+      let researcherCount = await sql`SELECT COUNT(researcher_id) FROM researcher_data`
+      let publicationCount = await sql`SELECT COUNT(id) FROM publication_data`
+      let grantCount = await sql`SELECT COUNT(grant_id) FROM grant_data`
+      let patentCount = await sql`SELECT COUNT(patent_id) FROM patent_data`
+
+      payload = {
+        researcherCount: researcherCount[0].count,
+        publicationCount: publicationCount[0].count,
+        grantCount: grantCount[0].count,
+        patentCount: patentCount[0].count
+      }
+
+      break;
     
     case "getResearcherPatents":
       researcher_id = await sql`SELECT researcher_id FROM researcher_data WHERE researcher_id=${event.arguments.id}`
       
-      let patenetResults = await sql`SELECT * from patent_data WHERE ${researcher_id[0].researcher_id} = ANY(inventors_assigned_ids)`
+      researcher_id[0].researcher_id = '%'+researcher_id[0].researcher_id+'%'
+      
+      let patenetResults = await sql`SELECT * from patent_data WHERE patent_data.inventors_assigned_ids LIKE ${researcher_id[0].researcher_id}`
       
       let patentsObject = {};
       
@@ -459,6 +509,9 @@ async function handler(event) {
       payload = patenetResults
       
       break;
+  
+    default:
+      console.log("Unexpected Query!")
   }
 
   await sql.end({ timeout: 0 });

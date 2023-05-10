@@ -115,7 +115,14 @@ def get_patent_count():
 
 """
 This function will fetch all the patents contains in the search results, and store the results in
-CSV format inside an S3 Bucket
+CSV format inside an S3 Bucket.
+
+query parameters:
+ia: Applicants or Inventors name
+pn: publication number
+    - pn=US means a document filed in the United States (US)
+    - pn=CA means a document filed in Canada (CA)
+pd: Publication date: the publication date of the publication
 """
 
 

@@ -4,13 +4,13 @@ import InputBase from "@mui/material/InputBase";
 import Stack from "@mui/material/Stack";
 import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
 import { API } from "aws-amplify";
 
-import { searchResearcher, searchPublications, searchGrants, searchPatents } from "../../../graphql/queries";
+import { searchResearcher, searchPublications, searchGrants, searchPatents, getResearcher } from "../../../graphql/queries";
 
 export default function Search_Bar(props) {
   const {
@@ -27,40 +27,60 @@ export default function Search_Bar(props) {
     grantPath,
     patentClassificationPath,
     selectedPatentClassification,
+    searchYet,
+    setSearchYet,
+    searchIconRef,
+    searchBarValueRef
   } = props;
 
   let { searchValue } = useParams();
+  let initialSearchValue = useRef(" ") // for the filters to refresh the search 
+
   if (!searchValue || searchValue === " ") {
     searchValue = "";
+    initialSearchValue.current = " "
+  } else {
+    initialSearchValue.current = searchValue
   }
+
   const [searchBarValue, setSearchBarValue] = useState(searchValue);
   let navigate = useNavigate();
 
   useEffect(() => {
     search();
+    searchBarValueRef.current = initialSearchValue.current
   }, []);
 
   function search() {
+    
     if (whatToSearch === "Everything") {
       searchResearchersQuery();
       searchPublicationsQuery();
       searchGrantsQuery();
       searchPatentsQuery();
+      if (searchBarValue !== "") {
+        setSearchYet(true)
+      }
     } else if (whatToSearch === "Researchers") {
       searchResearchersQuery();
       setPublicationSearchResults([]);
+      setSearchYet(true)
     } else if (whatToSearch === "Publications") {
       setResearcherSearchResults([]);
       searchPublicationsQuery();
+      setSearchYet(true)
     } else if (whatToSearch === "Grants") {
       searchGrantsQuery();
+      setSearchYet(true)
     } else if (whatToSearch === "Patents") {
       searchPatentsQuery();
+      setSearchYet(true)
     }
   }
 
   const searchResearchersQuery = async () => {
-    const researcherSearchResult = await API.graphql({
+    // this query is from ResearcherOpenSearch
+    let researcherSearchResult = await API.graphql({
       query: searchResearcher,
       variables: {
         search_value: searchBarValue,
@@ -68,11 +88,13 @@ export default function Search_Bar(props) {
         facultiesToFilterBy: selectedFaculties,
       },
     });
+
     props.setResearcherSearchResults(
+      //researcherSearchResult.data.searchResearcher
       researcherSearchResult.data.searchResearcher
     );
-
-    console.log(researcherSearchResult.data.searchResearcher)
+    console.log(researcherSearchResult.data.searchResearcher.length)
+    // console.log(researcherSearchResult.data.searchResearcher)
   };
 
   const searchPublicationsQuery = async () => {
@@ -157,7 +179,7 @@ export default function Search_Bar(props) {
         searchPath +
         "/";
     }
-
+  
     navigate(path);
     window.location.reload();
     props.setResearcherSearchResultPage(1);
@@ -191,7 +213,7 @@ export default function Search_Bar(props) {
           routeChange();
         }}
       >
-        <SearchIcon sx={{ padding: "8px" }} />
+        <SearchIcon sx={{ padding: "8px", boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.25)', borderRadius: '70%', width: "28px", height: "28px"}} />
       </IconButton>
     </Paper>
   );

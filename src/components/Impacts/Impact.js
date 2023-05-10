@@ -33,8 +33,8 @@ export default function Impact(props) {
   const [facultyImpact, setFacultyImpact] = useState("");
   const [allFaculty, setAllFaculty] = useState([]);
 
-  const [showByDepartment, setShowByDepartment] = useState(true);
-  const [showByFaculty, setShowByFaculty] = useState(false);
+  const [showByDepartment, setShowByDepartment] = useState(false);
+  const [showByFaculty, setShowByFaculty] = useState(true);
   const [showOverallImpacts, setShowOverallImpacts] = useState(false);
 
   const [pageLoaded, setPageLoaded] = useState(false);
@@ -98,7 +98,7 @@ export default function Impact(props) {
     Promise.all([
       getDeparmentArray(),
       getFacultyArray(),
-      getOverallResearcherImpacts(),
+      //getOverallResearcherImpacts(),
     ]).then(() => {
       setPageLoaded(true);
     });

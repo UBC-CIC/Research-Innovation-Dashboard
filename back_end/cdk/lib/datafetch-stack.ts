@@ -10,12 +10,13 @@ import { aws_logs as logs } from 'aws-cdk-lib';
 import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { DatabaseStack } from './database-stack';
 import { DmsStack } from './dms-stack';
+import { GrantDataStack } from './grantdata-stack';
 
 export class DataFetchStack extends cdk.Stack {
   public readonly psycopg2: lambda.LayerVersion;
   public readonly pyjarowinkler: lambda.LayerVersion;
 
-  constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, dmsStack: DmsStack, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, dmsStack: DmsStack, grantDataStack: GrantDataStack, props?: cdk.StackProps) {
     super(scope, id, props);
 
     // Create the S3 Bucket
@@ -61,7 +62,7 @@ export class DataFetchStack extends cdk.Stack {
     });
 
     // The layer containing the numpy library (AWS Managed)
-    const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', 'arn:aws:lambda:ca-central-1:336392948345:layer:AWSDataWrangler-Python39:5')
+    const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', `arn:aws:lambda:${this.region}:336392948345:layer:AWSDataWrangler-Python39:5`)
 
     // Create the database tables (runs during deployment)
     const createTables = new triggers.TriggerFunction(this, 'expertiseDashboard-createTables', {
@@ -118,7 +119,7 @@ export class DataFetchStack extends cdk.Stack {
         "ssm:GetParameters",
         "ssm:GetParametersByPath",
       ],
-      resources: [`arn:aws:ssm:ca-central-1:${this.account}:parameter/service/elsevier/api/user_name/*`]
+      resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/service/elsevier/api/user_name/*`]
     }));
     nameMatchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
@@ -141,7 +142,7 @@ export class DataFetchStack extends cdk.Stack {
         // Secrets Manager
         "secretsmanager:GetSecretValue",
       ],
-      resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:expertiseDashboard/credentials/*`]
+      resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:expertiseDashboard/credentials/*`]
     }));
     dataFetchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
@@ -175,7 +176,7 @@ export class DataFetchStack extends cdk.Stack {
         "ssm:GetParametersByPath",
       ],
       resources: [
-        `arn:aws:ssm:ca-central-1:${this.account}:parameter/service/elsevier/api/user_name/*`,
+        `arn:aws:ssm:${this.region}:${this.account}:parameter/service/elsevier/api/user_name/*`,
       ]
     }));
     //Create a policy to start DMS task
@@ -424,7 +425,7 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
     const cleanNoMatchesMap = new sfn.Map(this, 'Missing Matches Map', {
-      maxConcurrency: 1,
+      maxConcurrency: 5,
       itemsPath: '$'
     });
     cleanNoMatchesMap.iterator(cleanNoMatchesInvoke);
@@ -434,7 +435,7 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
     const identifyDuplicatesMap = new sfn.Map(this, 'Duplicates Map', {
-      maxConcurrency: 1,
+      maxConcurrency: 5,
       itemsPath: '$'
     });
     identifyDuplicatesMap.iterator(identifyDuplicatesInvoke);
@@ -459,14 +460,18 @@ export class DataFetchStack extends cdk.Stack {
       outputPath: '$.Payload',
     });
     const publicationMap = new sfn.Map(this, 'Publication Map', {
-      maxConcurrency: 1,
+      maxConcurrency: 5,
       itemsPath: '$'
-    })
+    });
     publicationMap.iterator(publicationFetchInvoke);
 
     const replicationStartInvoke = new tasks.LambdaInvoke(this, 'Start DMS Replication', {
       lambdaFunction: startReplication,
       outputPath: '$.Payload',
+    });
+
+    const mergeKeywordsInvoke = new tasks.GlueStartJobRun(this, 'Create Merged Keywords', {
+      glueJobName: grantDataStack.mergeKeywordsJobName,
     });
 
     const dataFetchDefinition = scopusCleanInvoke
@@ -478,6 +483,7 @@ export class DataFetchStack extends cdk.Stack {
       .next(elsevierFetchInvoke)
       .next(orcidFetchInvoke)
       .next(publicationMap)
+      .next(mergeKeywordsInvoke)
       .next(replicationStartInvoke);
     
     const dataFetch = new sfn.StateMachine(this, 'expertiseDashboard-DataFetchStateMachine', {

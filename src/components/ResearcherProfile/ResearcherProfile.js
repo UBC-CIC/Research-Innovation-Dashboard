@@ -127,15 +127,18 @@ export default function Researcher_profile_overview() {
   const [researcherSearchResultPage, setResearcherSearchResultPage] = useState(1);
   const [keywordToSearchFor, setKeywordToSearchFor] = useState("")
 
+  const [navButtonSelected, setNavButtonSelected] = useState("Overview")
+
   const getPatents = async () => {
     const researcherPatentData = await API.graphql({
       query: getResearcherPatents,
       variables: { id: researcherId },
     });
 
-    console.log(researcherPatentData.data.getResearcherPatents);
-
-    setResearcherPatents(researcherPatentData.data.getResearcherPatents);
+    //console.log(researcherPatentData.data.getResearcherPatents);
+    const sortedPatents = researcherPatentData.data.getResearcherPatents
+      .sort((patent1, patent2) => patent2.patent_publication_date.substring(0,4) - patent1.patent_publication_date.substring(0,4))
+    setResearcherPatents(sortedPatents);
   }
 
   const getAllPublications = async () => {
@@ -177,6 +180,7 @@ export default function Researcher_profile_overview() {
         year_published: publication_data_sorted_by_ciation[i].year_published,
         journal: publication_data_sorted_by_ciation[i].journal,
         link: publication_data_sorted_by_ciation[i].link,
+        keywords: publication_data_sorted_by_ciation[i].keywords
       };
       descendingPublicationsCitation.push(publicationCitation);
       ascendingPublicationsCitation.unshift(publicationCitation);
@@ -190,6 +194,7 @@ export default function Researcher_profile_overview() {
         year_published: publication_data_sorted_by_year[i].year_published,
         journal: publication_data_sorted_by_year[i].journal,
         link: publication_data_sorted_by_year[i].link,
+        keywords: publication_data_sorted_by_year[i].keywords
       };
       descendingPublicationsYear.push(publicationYear);
       ascendingPublicationsYear.unshift(publicationYear);
@@ -203,6 +208,7 @@ export default function Researcher_profile_overview() {
         year_published: publication_data_sorted_by_title[i].year_published,
         journal: publication_data_sorted_by_title[i].journal,
         link: publication_data_sorted_by_title[i].link,
+        keywords: publication_data_sorted_by_title[i].keywords
       };
       descendingPublicationsTitle.push(publicationTitle);
       ascendingPublicationsTitle.unshift(publicationTitle);
@@ -225,8 +231,10 @@ export default function Researcher_profile_overview() {
         id: researcherId,
       },
     });
-    console.log(grantResult);
-    setGrantData(grantResult.data.getResearcherGrants);
+    // grant sorted by most recent
+    const sortedGrant = grantResult.data.getResearcherGrants
+      .sort((grant1, grant2) => grant2.year.substring(0,4) - grant1.year.substring(0,4))
+    setGrantData(sortedGrant);
     setPageLoaded(true);
   };
 
@@ -283,6 +291,7 @@ export default function Researcher_profile_overview() {
     }
     // save weighted list of keywords to state variable
     setSortedAreasOfInterest(sortedKeywordHashmap);
+    //console.log(sortedAreasOfInterest)
   };
   const getResearcherBarGraphData = async () => {
     const bar_graph_data_response = await API.graphql({
@@ -337,6 +346,7 @@ export default function Researcher_profile_overview() {
     setShowPatents(false);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setNavButtonSelected("Overview");
   }
 
   function showAreasOfInterestFunc() {
@@ -350,6 +360,7 @@ export default function Researcher_profile_overview() {
     setShowPatents(false);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setNavButtonSelected("Areas of Interest");
   }
 
   function showPublicationsFunc() {
@@ -361,6 +372,7 @@ export default function Researcher_profile_overview() {
     setShowPatents(false);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setNavButtonSelected("Publications");
   }
 
   function showSimilarResearchersFunc() {
@@ -387,7 +399,9 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setNavButtonSelected("Grants");
   }
+
   function showPatentsFunction() {
     setShowOverview(false);
     setShowAreasOfInterest(false);
@@ -399,9 +413,10 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setNavButtonSelected("Patents");
   }
+
   function showResearchersWithSimlarKeyword(keyWord) {
-    keyWord = keyWord
     setShowOverview(false);
     setShowAreasOfInterest(false);
     setShowPublications(false);
@@ -412,7 +427,6 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(true);
-
     setKeywordToSearchFor(keyWord);
     getSimilarResearcherBasedOnKeyword(keyWord);
   }
@@ -424,20 +438,20 @@ export default function Researcher_profile_overview() {
         keyword: keyWord
       },
     });
-
+    // console.log(keyWord)
     let results = searchResults.data.otherResearchersWithKeyword;
-    console.log(results);
+    // console.log(results);
     for(let i = 0; i<results.length; i++) {
       //Remove the researcher the keyword came from
       if(results[i].researcher_id == researcherId) {
-        console.log("removed researcher you got keyword from");
+        // console.log("removed researcher you got keyword from");
         results.splice(i, 1);
         break;
       }
     }
     setResearchersWithClickedKeyword(results);
   };
-
+  
   return (
     <Box>
       {!pageLoaded && <LoadingWheel />}
@@ -492,6 +506,8 @@ export default function Researcher_profile_overview() {
               showGrantsFunction,
               showPatentsFunction,
             }}
+            navButtonSelected={navButtonSelected}
+            dataLength={{grants: grantData.length, patents: researcherPatents.length}}
           />
           {showOverview && (
             <Grid container>
@@ -551,7 +567,12 @@ export default function Researcher_profile_overview() {
               </Grid>
               <Grid item xs={12}>
                 <Paper square={true} elevation={0} variant="outlined">
-                    <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={2}/>
+                    <GrantInformation 
+                      grantData={grantData} 
+                      tabOpened={showGrants} 
+                      initialNumberOfRows={2}
+                      searchYet={true}
+                    />
                     <Box textAlign="center">
                       {/* <Button
                         onClick={showGrantsFunction}
@@ -569,7 +590,11 @@ export default function Researcher_profile_overview() {
               </Grid>
               <Grid item xs={12}>
                 <Paper square={true} elevation={0} variant="outlined">
-                  <PatentInformation  researcherPatents={researcherPatents} initialNumberOfRows={2}/>
+                  <PatentInformation  
+                    researcherPatents={researcherPatents} 
+                    initialNumberOfRows={2}
+                    searchYet={true}
+                  />
                   <Box textAlign="center">
                       {/* <Button
                         onClick={showPatentsFunction}
@@ -629,20 +654,32 @@ export default function Researcher_profile_overview() {
             />
           )}
           {showGrants && (
-            <GrantInformation grantData={grantData} tabOpened={showGrants} initialNumberOfRows={25}/>
+            <GrantInformation 
+              grantData={grantData} 
+              tabOpened={showGrants} 
+              initialNumberOfRows={25}
+              searchYet={true}
+            />
           )}
           {showPatents && (
             <Grid item xs={12}>
-            <PatentInformation tabOpened={showPatents} researcherPatents={researcherPatents} initialNumberOfRows={2}/>
+            <PatentInformation 
+              tabOpened={showPatents} 
+              researcherPatents={researcherPatents} 
+              initialNumberOfRows={2}
+              searchYet={true}
+            />
             </Grid>
           )}
           {showResearchersWithSimilarKeyword && (
             <ResearcherSearchResultsComponent
+              searchYet={true}
               researchSearchResults={researchersWithClickedKeyword}
               researcherSearchResultPage={researcherSearchResultPage}
               setResearcherSearchResultPage={setResearcherSearchResultPage}
-              resultTitle={"Other researchers with the Keyword: "+keywordToSearchFor}
+              //resultTitle={"Other researchers with the Keyword: "+keywordToSearchFor}
               errorTitle={"No Other Researchers with the keyword: "+keywordToSearchFor}
+              keywordToSearchFor={keywordToSearchFor}
             />
           )}
         </Grid>

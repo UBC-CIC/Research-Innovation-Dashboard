@@ -9,39 +9,9 @@ import Pagination from "@mui/material/Pagination";
 import Box from "@mui/material/Box";
 
 export default function PublicationSearchResultsComponent(props) {
-  const { publicationSearchResults } = props;
+  const { publicationSearchResults, searchYet } = props;
 
   let numberOfResearcherPerPage = 5;
-
-  function ShowAllPublicationsResultsButton() {
-    return (
-      <Paper
-        square={true}
-        elevation={0}
-        sx={{
-          width: "100%",
-          justifyContent: "center",
-          marginTop: "1%",
-          marginBottom: "1%",
-        }}
-        component={Stack}
-        direction="row"
-      >
-        <Button
-          sx={{
-            m: 1,
-            border: "2px solid Black",
-            color: "black",
-            backgroundColor: "white",
-          }}
-        >
-          {"Show All " +
-            props.publicationSearchResults.length +
-            " Publication Results"}
-        </Button>
-      </Paper>
-    );
-  }
 
   function PublicationsHeader() {
     return (
@@ -89,7 +59,7 @@ export default function PublicationSearchResultsComponent(props) {
   }
 
   const publications =
-    publicationSearchResults &&
+    publicationSearchResults &&//.sort((pub1, pub2) => pub1.year_published > pub2.year_published ? -1 : 1) &&
     publicationSearchResults
       .filter((data, index) => PaginationCallback(data, index))
       .map((publication) => {
@@ -98,20 +68,20 @@ export default function PublicationSearchResultsComponent(props) {
         );
       });
 
-  return (
+  return (searchYet &&
     publicationSearchResults && (
       <Grid container>
         {publicationSearchResults.length === 0 && (
           <Paper elevation={0} square={true} sx={{ width: "100%" }}>
-            <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}>
-              No Publication Search Results
+            <Typography variant="h4" sx={{ marginLeft: "2%" }}>
+              {props.errorTitle}
             </Typography>
           </Paper>
         )}
         {publicationSearchResults.length !== 0 && (
           <Paper elevation={0} square={true} sx={{ width: "100%" }}>
-            <Typography variant="h4" sx={{ marginLeft: "2%", marginTop: "2%" }}>
-              Publication Search Results
+            <Typography variant="h4" sx={{ marginLeft: "2%"}}>
+              {"Publications (" + publicationSearchResults.length + " results)"}
             </Typography>
           </Paper>
         )}

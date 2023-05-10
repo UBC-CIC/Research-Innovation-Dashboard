@@ -135,20 +135,21 @@ function Login(props) {
 
   const classes = useStyles();
 
-  useEffect(() => {
-    async function retrieveUser() {
-      try {
-        Auth.currentAuthenticatedUser()
-          .then((user) => {
-            updateLoginState("signedIn");
-          })
-          .catch((err) => {
-            updateLoginState("signIn");
-          });
-      } catch (e) {}
-    }
-    retrieveUser();
-  }, []);
+  // commented out and pulled out to app.js
+  // useEffect(() => {
+  //   async function retrieveUser() {
+  //     try {
+  //       Auth.currentAuthenticatedUser()
+  //         .then((user) => {
+  //           updateLoginState("signedIn");
+  //         })
+  //         .catch((err) => {
+  //           updateLoginState("signIn");
+  //         });
+  //     } catch (e) {}
+  //   }
+  //   retrieveUser();
+  // }, []);
 
   function clearErrors() {
     setAccountCreationEmailExistError(false);

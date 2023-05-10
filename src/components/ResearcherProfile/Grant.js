@@ -8,6 +8,8 @@ import './ResearcherProfile.css'
 
 export default function Grant(props){
 
+    const PADDING = "3%"
+
     return(
                 <Grid container>
                     <Grid item xs={2}>
@@ -15,7 +17,7 @@ export default function Grant(props){
                         square={true}
                         elevation={0}
                         variant="outlined"
-                        sx={{ textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
+                        sx={{ pl: PADDING, textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
                         >
                             <a href={"/Researchers/" + props.assigned_id + "/"} target="_blank" rel="noopener noreferrer">{props.name}</a>
                         </Paper>
@@ -25,7 +27,7 @@ export default function Grant(props){
                         square={true}
                         elevation={0}
                         variant="outlined"
-                        sx={{ textAlign: "left", height: "100%", flexDirection: "column", display: "flex" }}
+                        sx={{ pl: "1%", textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
                         >
                             {props.projectTitle}
                         </Paper>
@@ -35,7 +37,7 @@ export default function Grant(props){
                         square={true}
                         elevation={0}
                         variant="outlined"
-                        sx={{ textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
+                        sx={{ pl: PADDING, textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
                         >
                             {props.agency}
                         </Paper>
@@ -45,7 +47,7 @@ export default function Grant(props){
                         square={true}
                         elevation={0}
                         variant="outlined"
-                        sx={{ textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
+                        sx={{ pl: PADDING, textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
                         >
                             {"$"+props.amount.toLocaleString()}
                         </Paper>
@@ -55,7 +57,7 @@ export default function Grant(props){
                         square={true}
                         elevation={0}
                         variant="outlined"
-                        sx={{ textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
+                        sx={{ pl: PADDING, textAlign: "left", height: "100%", justifyContent: "center", flexDirection: "column", display: "flex" }}
                         >
                             {props.year}
                         </Paper>

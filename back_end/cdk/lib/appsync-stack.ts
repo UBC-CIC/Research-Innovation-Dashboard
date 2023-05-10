@@ -55,7 +55,7 @@ export class AppsyncStack extends Stack {
           //Secrets Manager
           "secretsmanager:GetSecretValue",
         ],
-        resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:expertiseDashboard/credentials/*`]
+        resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:expertiseDashboard/credentials/*`]
     }));
 
     // The layer containing the postgres library
@@ -148,6 +148,13 @@ export class AppsyncStack extends Stack {
       apiId: APIID,
 
       definition: `
+      type Catagories {
+        researcherCount: Int
+        publicationCount: Int
+        grantCount: Int
+        patentCount: Int
+      }
+      
       type Department {
         prime_department: String
       }
@@ -163,10 +170,18 @@ export class AppsyncStack extends Stack {
         prime_department: String
         prime_faculty: String
         scopus_id: String
+        total_grant_amount: Int
+        researcher_id: String
       }
       
       type Mutation {
-        putPub(authors: [String!], id: ID!, journal: String, keywords: [String], title: String!): Publication
+        putPub(
+          authors: [String!],
+          id: ID!,
+          journal: String,
+          keywords: [String],
+          title: String!
+        ): Publication
       }
       
       type Publication {
@@ -182,9 +197,32 @@ export class AppsyncStack extends Stack {
       }
       
       type Query {
-        advancedSearchGrants(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, table: String!): [grant]
-        advancedSearchPublications(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, journal: String!, noneOfTheseWords: String!, table: String!, year_gte: Int!, year_lte: Int!): [Publication]
-        advancedSearchResearchers(includeAllTheseWords: String!, includeAnyOfTheseWords: String!, includeTheseExactWordsOrPhrases: String!, noneOfTheseWords: String!, prime_department: String!, prime_faculty: String!, table: String!): [ResearcherOpenSearch]
+        advancedSearchGrants(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          noneOfTheseWords: String!,
+          table: String!
+        ): [grant]
+        advancedSearchPublications(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          journal: String!,
+          noneOfTheseWords: String!,
+          table: String!,
+          year_gte: Int!,
+          year_lte: Int!
+        ): [Publication]
+        advancedSearchResearchers(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          noneOfTheseWords: String!,
+          prime_department: String!,
+          prime_faculty: String!,
+          table: String!
+        ): [ResearcherOpenSearch]
         allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
         facultyMetrics(faculty: String!): [facultyMetric]
         getAllDepartments: [String]
@@ -218,6 +256,7 @@ export class AppsyncStack extends Stack {
         getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
         getResearcherPatents(id: ID!): [patent]
         getResearcherGrants(id: ID!): [grant]
+        getCatagoriesCount: Catagories
       }
       
       type Researcher {
@@ -450,7 +489,7 @@ export class AppsyncStack extends Stack {
     "getResearcherOrcid", "getResearcherPubsByCitations", "getResearcherPubsByTitle", "getResearcherPubsByYear",
     "getResearcherImpactsByDepartment", "getResearcherImpactsByFaculty", "totalPublicationPerYear", "wordCloud",
     "changeScopusId", "lastUpdatedResearchersList", "getUpdatePublicationsLogs", "getFlaggedIds", "getResearcherGrants", 
-    "getAllGrantAgencies", "getResearcherPatents"];
+    "getAllGrantAgencies", "getResearcherPatents", "getCatagoriesCount"];
 
     for(var i = 0; i<postgresqlDBQueryList.length; i++){
       const resolver = new appsync.CfnResolver(this, postgresqlDBQueryList[i], {
@@ -512,7 +551,7 @@ export class AppsyncStack extends Stack {
     })
 
     const wafAssociation = new wafv2.CfnWebACLAssociation(this, 'waf-association', {
-      resourceArn: `arn:aws:appsync:ca-central-1:${this.account}:apis/${APIID}`,
+      resourceArn: `arn:aws:appsync:${this.region}:${this.account}:apis/${APIID}`,
       webAclArn: waf.attrArn
     });
   }

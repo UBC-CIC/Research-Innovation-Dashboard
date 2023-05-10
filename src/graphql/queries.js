@@ -60,6 +60,7 @@ export const advancedSearchPublications = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -140,6 +141,8 @@ export const getAllResearchersImpacts = /* GraphQL */ `
       prime_department
       prime_faculty
       scopus_id
+      total_grant_amount
+      researcher_id
     }
   }
 `;
@@ -171,6 +174,7 @@ export const getPub = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -214,8 +218,8 @@ export const getResearcherFull = /* GraphQL */ `
       email
       first_name
       h_index
-      job_stream
       merged_keywords
+      job_stream
       keywords
       last_name
       last_updated
@@ -253,6 +257,7 @@ export const getResearcherPubsByCitations = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -268,6 +273,7 @@ export const getResearcherPubsByTitle = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -283,6 +289,7 @@ export const getResearcherPubsByYear = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -304,6 +311,7 @@ export const searchPublications = /* GraphQL */ `
       link
       title
       year_published
+      author_ids_string
     }
   }
 `;
@@ -492,6 +500,8 @@ export const getResearcherImpactsByDepartment = /* GraphQL */ `
       prime_department
       prime_faculty
       scopus_id
+      total_grant_amount
+      researcher_id
     }
   }
 `;
@@ -504,6 +514,8 @@ export const getResearcherImpactsByFaculty = /* GraphQL */ `
       prime_department
       prime_faculty
       scopus_id
+      total_grant_amount
+      researcher_id
     }
   }
 `;
@@ -536,6 +548,16 @@ export const getResearcherGrants = /* GraphQL */ `
       project_title
       start_date
       year
+    }
+  }
+`;
+export const getCatagoriesCount = /* GraphQL */ `
+  query GetCatagoriesCount {
+    getCatagoriesCount {
+      researcherCount
+      publicationCount
+      grantCount
+      patentCount
     }
   }
 `;

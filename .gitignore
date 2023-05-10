@@ -30,6 +30,7 @@ amplify/\#current-cloud-backend
 amplify/.config/local-*
 amplify/logs
 amplify/mock-data
+amplify/mock-api-resources
 amplify/backend/amplify-meta.json
 amplify/backend/.temp
 build/
@@ -45,3 +46,6 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
+
+amplify/team-provider-info.json
+back_end/cdk/cdk.context.json

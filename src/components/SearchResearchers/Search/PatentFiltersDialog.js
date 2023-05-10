@@ -57,7 +57,7 @@ const PatentFiltersDialog = ({
         <CloseIcon />
       </IconButton>
       <Box sx={{ p: "2em", display: "flex", flexDirection: "column" }}>
-        <Typography>All Departments</Typography>
+        <Typography>All Patent Classifications</Typography>
         {renderAllDepartments()}
         <Button
           variant="outlined"

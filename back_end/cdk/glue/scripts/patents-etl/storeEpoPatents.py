@@ -33,15 +33,16 @@ def storePatentData():
 
     global FILE_PATH
     df_id = pd.read_csv(fetchFromS3(TEMP_BUCKET_NAME, FILE_PATH))
-    df_id["inventors_assigned_ids"] = df_id["inventors_assigned_ids"].apply(
-        lambda x: ast.literal_eval(x))
-    df_id["matched_inventors_names"] = df_id["matched_inventors_names"].apply(
-        lambda x: ast.literal_eval(x))
+    # df_id["inventors_assigned_ids"] = df_id["inventors_assigned_ids"].apply(
+    #     lambda x: ast.literal_eval(x))
+    # df_id["matched_inventors_names"] = df_id["matched_inventors_names"].apply(
+    #     lambda x: ast.literal_eval(x))
 
-    # retain row with inventor ids
-    df_id["id_count"] = df_id.apply(
-        lambda x: len(x["inventors_assigned_ids"]), axis=1)
-    df_id = df_id[df_id.id_count > 0]
+    # # retain row with inventor ids
+    # df_id["id_count"] = df_id.apply(
+    #     lambda x: len(x["inventors_assigned_ids"]), axis=1)
+    # df_id = df_id[df_id.id_count > 0]
+    df_id = df_id[df_id.inventors_assigned_ids.notna()]
     # rearrange columns order
     columns_order = ['publication_number', 'country_code', 'kind_code', 'title', 'inventors',
                      'applicants', 'family_number', 'cpc', 'publication_date', 'inventors_assigned_ids', 'matched_inventors_names']
@@ -67,19 +68,25 @@ def storePatentData():
     # # clear data from table (for testing)
     # query = "TRUNCATE patent_data"
     # cursor.execute(query)
-
+    
+    # # nuke table (for testing)
+    # query = "DROP TABLE patent_data"
+    # cursor.execute(query)
+    # connection.commit()
+    
     # query = """CREATE TABLE IF NOT EXISTS public.patent_data (
     #   patent_id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
     #   patent_number varchar,
-    #   patent_country_code,
-    #   patent_kind_code,
+    #   patent_country_code varchar,
+    #   patent_kind_code varchar,
     #   patent_title varchar,
     #   patent_inventors varchar,
     #   patent_sponsors varchar,
     #   patent_family_number varchar,
     #   patent_classification varchar,
     #   patent_publication_date varchar,
-    #   inventors_assigned_ids varchar[]
+    #   inventors_assigned_ids varchar,
+    #   matched_inventors_names varchar
     # );"""
 
     # cursor.execute(query)
@@ -107,12 +114,22 @@ def storePatentData():
 
     # log the rows that are inserted
     # datetime object containing current date and time
-    # now = datetime.now()
-    # print("now =", now)
-    # # dd/mm/YY H:M:S
-    # dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-    # print("date and time =", dt_string)
-    # saving file with some datetime information for logging/debugging purpose
+    now = datetime.now()
+    print("now =", now)
+    # dd/mm/YY H:M:S
+    dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+    print("date and time =", dt_string)
+
+    query = """INSERT INTO data_update_logs (table_name, last_updated)
+               VALUES (%s, %s)
+               ON CONFLICT (table_name)
+               DO UPDATE SET last_updated = EXCLUDED.last_updated   
+    """
+    data = ("patent_data", str(dt_string))
+    cursor.execute(query, data)
+    connection.commit()
+
+    
     if EQUIVALENT == "true":
         FILE_PATH = f"epo/patent_data_insert/equivalent/patents_equivalent_insert.csv"
     else:

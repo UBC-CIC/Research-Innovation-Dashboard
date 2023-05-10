@@ -3,8 +3,8 @@ Resources:
   AmplifyRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: amplifyconsole-vpri-backend-role
-      Description: IAM Role to deploy amplify VRPI Innovation Dashboard Project
+      RoleName: amplifyconsole-exp-dash-backend-role
+      Description: IAM Role to deploy amplify Expertise Dashboard Project
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:

@@ -7,10 +7,11 @@ import {useState, useEffect} from 'react';
 import './ResearcherProfile.css'
 import Grant from './Grant';
 import Pagination from "@mui/material/Pagination";
+import Typography from "@mui/material/Typography";
 
 export default function GrantInformation(props){
 
-    console.log(props)
+    // console.log(props.grantData)
 
     const [numberOfRows, setNumberOfRows] = useState(props.initialNumberOfRows);
     const [increaseRowCountBy, setIncreaseRowCountBy] = useState(25);
@@ -42,7 +43,7 @@ export default function GrantInformation(props){
     }
 
     const mappedData =
-    props.grantData
+    props.grantData//.sort((grant1, grant2) => grant1.year > grant2.year ? -1 : 1)
       .filter(
         (data, index) => paginationCallback(data, index)
       )
@@ -52,13 +53,22 @@ export default function GrantInformation(props){
         assigned_id={filteredData.assigned_id}/>
       ));
 
-    return(
+    return(props.searchYet &&
         <Box sx={{ml: "2%", mr: "2%", width: "96%"}}>
             <Box>
-                <Box sx={{}} id="header_text">
-                    Grants
-                </Box>
-                <Box sx={{}}>
+                {props.grantData.length === 0 && (
+                    <Paper elevation={0} square={true} sx={{width: "100%" }}>
+                        <Typography variant="h4" sx={{ marginLeft: "2%"}}>{props.errorTitle}</Typography>
+                    </Paper>
+                )}
+                {props.grantData.length > 0 && <Box sx={{}}>
+                    {props.grantData.length > 1 ? 
+                    (<Box sx={{}} id="header_text">
+                        {"Grants (" +  props.grantData.length + " results)"}
+                    </Box>) :
+                    ((<Box sx={{}} id="header_text">
+                        Grant
+                    </Box>))}
                     <Grid container>
                         <Grid item xs={2}>
                             <Paper
@@ -129,12 +139,7 @@ export default function GrantInformation(props){
                             </Box>
                         </Grid>
                     </Grid>}
-                    {/* {props.tabOpened && 
-                    <Box textAlign='center'>
-                        <ShowMoreGrantsButton />
-                    </Box>
-                    } */}
-                </Box>
+                </Box>}
             </Box>
         </Box>
     );}

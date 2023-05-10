@@ -4,6 +4,7 @@ import Typography from "@mui/material/Typography";
 import React from "react";
 import Stack from "@mui/material/Stack";
 import InputBase from "@mui/material/InputBase";
+import TextField from '@mui/material/TextField';
 
 export default function AdvancedSearchRow(props) {
   return (
@@ -24,10 +25,11 @@ export default function AdvancedSearchRow(props) {
         >
           <Typography variant="h7">{props.whatDoesSearchBoxDo}</Typography>
         </Paper>
-        <Paper square={true} elevation={0} sx={{ width: "50%", border: 1 }}>
+        <Paper square={true} elevation={0} sx={{ width: "70%", border: 1 }}>
           <InputBase
             onKeyDown={(e) => {
               if (e.key === "Enter") {
+                props.setAdvancedSearchYet(true)
                 props.routeChange();
               }
             }}
@@ -37,9 +39,10 @@ export default function AdvancedSearchRow(props) {
             }}
             fullWidth={true}
             sx={{ padding: "8px", fontSize: "1.0rem" }}
+            placeholder={props.howToDoSearchBox}
           ></InputBase>
         </Paper>
-        <Paper
+        {/* <Paper
           elevation={0}
           sx={{ width: "30%", paddingLeft: "2%" }}
           component={Stack}
@@ -47,7 +50,7 @@ export default function AdvancedSearchRow(props) {
           justifyContent="center"
         >
           <Typography variant="h7">{props.howToDoSearchBox}</Typography>
-        </Paper>
+        </Paper> */}
       </Paper>
     </Grid>
   );

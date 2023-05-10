@@ -10,10 +10,12 @@ import {
 import { API } from "aws-amplify";
 import { getAllGrantAgencies } from "../../../graphql/queries";
 import GrantFiltersDialog from "./GrantFiltersDialog";
+import ClearIcon from '@mui/icons-material/Clear';
 
 const GrantsFilters = ({
   selectedGrants,
   setSelectedGrants,
+  searchYet
 }) => {
   const [grantsOptions, setGrantsOptions] = useState();
   const [openGrantFiltersDialog, setOpenGrantFiltersDialog] = useState(false);
@@ -29,7 +31,7 @@ const GrantsFilters = ({
         })
       ]);
       const allGrants = grantResults[0].data.getAllGrantAgencies;
-      console.log(allGrants)
+      //console.log(allGrants)
       setGrantsOptions(allGrants);
     };
     getFilterOptions();
@@ -64,20 +66,24 @@ const GrantsFilters = ({
                 />
               ))}
         </FormGroup>
-        <Button
+        {/* <Button
           onClick={() => setOpenGrantFiltersDialog(true)}
-          sx={{ color: "#0055B7", justifyContent: "flex-start" }}
+          sx={{ color: "##666666", justifyContent: "flex-start" }}
         >
           Show All
-        </Button>
+        </Button> */}
       </Box>
     );
   };
 
-  return (
+  return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
-      <Typography variant="h6">Filter for Grants:</Typography>
-      <Typography sx={{ my: "1em", color: "#0055B7" }}>Grants</Typography>
+      <Typography variant="h6" sx={{fontWeight: "bold"}}>Filters for Grants:</Typography>
+      <Typography sx={{ my: "1em", color: "#666666", fontSize: 20}}>{"Grants (" + selectedGrants.length + " selected)"}</Typography>
+      {(selectedGrants.length > 0) && 
+        (<Button onClick={() => setSelectedGrants([])} sx={{justifyContent: "left", p: 0, pb: 1, color: "#666666"}}>
+          Clear all filters {<ClearIcon sx={{pl: 1}}></ClearIcon>}
+        </Button>)}
       {renderDepartmentOptions()}
       <GrantFiltersDialog
         open={openGrantFiltersDialog}

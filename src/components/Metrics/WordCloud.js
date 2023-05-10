@@ -48,8 +48,9 @@ const WordCloud = () => {
   };
 
   const callbacks = {
-    getWordTooltip: (word) =>
-      `The word "${word.text}" appears ${word.value} times. Click to search for the keyword "${word.text}"`,
+    getWordTooltip: (word) => (word.value > 1) ? 
+      `The word "${word.text}" appears ${word.value} times. Click to search for the keyword "${word.text}" across researchers.` :
+      `The word "${word.text}" appears ${word.value} time. Click to search for the keyword "${word.text}" across researchers.`,
     onWordClick: getCallback("onWordClick"),
     onWordMouseOut: getCallback("onWordMouseOut"),
     onWordMouseOver: getCallback("onWordMouseOver"),
@@ -82,7 +83,7 @@ const WordCloud = () => {
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
       <Typography variant="h4" align="center">
-        Top 100 Keywords for all Research
+        Top 100 Keywords across Institution Research
       </Typography>
       {!words ? (
         <CircularProgress sx={{ py: "5em" }} />

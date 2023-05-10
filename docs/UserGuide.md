@@ -8,46 +8,50 @@
 | :------------------------------------------  | :---------------------------------------------------- |
 | [Home](#Home)                                | Main search bar (Search Everything)                   |
 | [Researchers Search](#Researchers-Search)    | Researcher search and related filters                 |
-| [Publications Search](#Publications-Search)  | Publications search               |
+| [Publications Search](#Publications-Search)  | Publications search                                   |
+| [Grants Search](#Grants-Search)                     | Grants search and related filters                     |
+| [Patents Search](#Patents-Search)                   | Patents search and related filters                    |
 | [Advanced Search](#Advanced-Search)          | Advanced search                                       |
-| [Grants](#Grants-Search)                     | Grants search and related filters
-| [Patents](#Patents-Search)                   | Patents search and related filters
 | [Researcher Profile](#Researcher-Profile)    | Researcher profile and information page               |
 | [Impact](#Impact)                            | Researcher impact by department or faculty            |
 | [Metrics](#Metrics)                          | Top 100 research keywords word cloud                  |
 | [Admin Dashboard](#Admin-Dashboard)          | Update logs, Changing Scopus IDs, Viewing Flagged IDs |
 | [Updating Researchers](#Updating-Researchers)| Process for Updating Researcher Data                  |
-| [Updating Grant Data](#updating-grant-data)  | Process for Updating Grant Data
+| [Updating Grant Data](#updating-grant-data)  | Process for Updating Grant Data                       |
+| [Updating Patent Data](#updating-patent-data)| Process for Updating Patent Data                      |
 
 **Note:** The screenshots contained in this User Guide show some information as redacted to obscure data that is not fully up to date.
 <br>
 
 ## Home
 
-The Home page is a combination of both the [Researchers Search Component](#Researchers-Search) and the [Publications Search Component](#Publications-Search), containing a search bar that returns both researcher and publication results that match the user-inputted search term. The researcher results are displayed on the top section of the home page, and publication results are displayed below.
+The Home page shows the four types of content ([Researchers](#Researchers-Search), [Publications](#Publications-Search), [Grants](#grants-search) and [Patents](#patents-search)) you can find in the dashboard. Clicking on the icon will open the search page for the type of information you want to find.
 
-![alt text](images/userGuide/home01.png)
-![alt text](images/userGuide/home02.png)
+![alt text](images/UserGuide-Final/home/home.png)
 
 #### NOTE: "Institution" in this document refers to the institution that deploys this solution.
 
 ## Researchers Search
 
-The search bar on this page returns researcher results that match the user inputted search term. Researchers that are adjunct professors will have a `*` character beside their name. Filters for researchers can be found on the left hand sidebar. There are 2 categories to filter by (Department, Faculty).
+The search bar on this page returns researcher results that match the user inputted search term. Researchers that are adjunct professors will have a `*` character beside their name. Filters for researchers can be found on the left hand sidebar. There are 2 categories to filter by (Department, Faculty). The number of selected categories will appear next to the option.
 
-![alt text](images/userGuide/researchers01.png)
+![alt text](images/UserGuide-Final/researcher-search/researcher-search-1.png)
 
-Clicking on the `Show All` button will open a window displaying all the possible options for the filter category. To select the options you would like to filter by, click the checkbox beside the option name. Then click `Apply Filters`. Multiple filter options can be selected from both the Department and Faculty category.
+Clicking on the `Show All` button will open a window displaying all the possible options for the filter category. To select the options you would like to filter by, click the checkbox beside the option name. Then click `Apply Filters`. Multiple filter options can be selected from both the Department and Faculty categories. Selected options will appear on the left hand sidebar. The number of results returned will show up on the top next to the word ‘Researchers’.
 
-![alt text](images/userGuide/researchers02.png)
+![alt text](images/UserGuide-Final/researcher-search/researcher-search-2.png)
 
 ## Publications Search
 
-The search bar on this page returns publication results that match the user inputted search term. 
+The search bar on this page returns publication results that match the user inputted search term. Click on the publication title to be redirected to corresponding entry on Scopus website.
+
+![alt text](images/UserGuide-Final/publication-search/publication-search-1.png)
 
 ## Grants Search
 
-The search bar on this page returns grant results that match the user inputted search term. The filter for grants can be found on the left hand side bar. There are four funding catgories to filter by. To select the grant options you would like to see, click the checkbox beside the option name to initiate the filter function.
+The search bar on this page returns grant results that match the user inputted search term. The filter for grants can be found on the left hand side bar. There are four funding agencies to filter by. To select the grant options you would like to filter by, click the checkbox beside the option name to initiate the filter function.
+
+![alt text](images/UserGuide-Final/grant-search/grant-search-1.png)
 
 ## Patents Search
 
@@ -55,14 +59,16 @@ The search bar on this page returns patent results that match the user inputted 
 
 Hovering over the `(i)` icon next to Patent Classification filter will show the types of patents one can expect to find when selecting a category.
 
+![alt text](images/UserGuide-Final/patent-search/patent-search-1.png)
+![alt text](images/UserGuide-Final/patent-search/patent-search-2.png)
 
 ## Advanced Search
 
 The advanced search page offers a more detailed method of finding information on the website, and increases search accuracy by allowing users to specify additional requirements for a search.
 
-The advanced search page can be accessed by clicking the `Advanced Search` button underneath the search bar in either the Home tab (will return results for both researchers and publications), Researchers tab (will only return results for researchers) or Publications tab (will only return results for publications).
+The advanced search page can be accessed by clicking the `Advanced Search` button underneath the search bar in Researchers tab (will only return results for researchers)m Publications tab (will only return results for publications), etc.
 
-![alt text](images/userGuide/advancedSearch01.png)
+![alt text](images/UserGuide-Final/advanced-search/advanced-search-1.png)
 
 There are 4 possible advanced search fields.
 
@@ -92,64 +98,74 @@ There are 4 possible advanced search fields.
 
 Search results can also be refined by filtering researchers by department or by faculty. Publications can be filtered by year and by journal.
 <br>
-![alt text](images/userGuide/advancedSearch03.png)
+
+![alt text](images/UserGuide-Final/advanced-search/advanced-search-2.png)
 
 ## Researcher Profile
 
-The researcher profile page contains general information about a researcher, their publications, areas of interest and a list of similar researchers.
+The researcher profile page contains general information about a researcher, their publications/grants/patents, areas of interest and a list of similar researchers.
 
 ### General Information
 
 The researcher's general information including name, faculty, department, email, phone number, office Scopus ID, and time last updated are displayed here.
 <br>
-![alt text](images/userGuide/researcherProfile01.png)
+
+![alt text](images/UserGuide-Final/researcher-profile/researcher-profile.png)
 
 ### Researcher Highlights
 
 Some of the researcher's highlights are displayed here, including their number of publications, H-index, funding and a graph displaying their number of publications each year for the past five years.
-![alt text](images/userGuide/researcherProfile02.png)
 
-Clicking on the expand arrow icon on the smaller graph will display a graph below that shows the number of publications each year for the past 15 years.
-![alt text](images/userGuide/researcherProfile04.png)
-![alt text](images/userGuide/researcherProfile03.png)
+![alt text](images/UserGuide-Final/researcher-profile/researcher-highlights-1.png)
+
+Clicking on the expand arrow icon on the smaller graph will display a graph below that shows the number of publications each year.
+
+![alt text](images/UserGuide-Final/researcher-profile/researcher-highlights-2.png)
 
 ### Areas of Interest and Similar Researchers
 
 This section displays a list of the researcher's areas of interest. The researcher's top five areas of interest are shown by default. To view all, click the `View All Areas of Interest` button.
 <br>
-![alt text](images/userGuide/researcherProfile05.png)
+
+![alt text](images/UserGuide-Final/researcher-profile/areas-of-interest-1.png)
+
+Clicking on each of the keyword box will show other researchers that has the same area of interest keyword.
+
+![alt text](images/UserGuide-Final/researcher-profile/areas-of-interest-2.png)
+
 Clicking the `10 Similar Researchers` button will display a list of researchers that are in the same faculty, department, or have similar areas of interest.
-![alt text](images/userGuide/researcherProfile06.png)
 
-### Publications
+![alt text](images/UserGuide-Final/researcher-profile/areas-of-interest-3.png)
 
-This section displays a list of the researcher's publications, along with information about the number of citations and the year published. Clicking on the publication title will open the publication in Scopus.
-<br>
-![alt text](images/userGuide/researcherProfile07.png)
+### Publications/Grants/Patents
 
-Hovering over the `Title` table column header will display an arrow icon. Clicking on this arrow icon will show the list of publications in alphabetical order.
-![alt text](images/userGuide/researcherProfile08.png)
-![alt text](images/userGuide/researcherProfile09.png)
+The Publications section displays a list of the researcher's publications, along with information about the number of citations and the year published. Clicking on the publication title will open the publication on Scopus.
 
-Hovering over the `Year Published` table column header display an arrow icon. Clicking on this arrow icon will sort the publications by year published starting from the most recent year.
-![alt text](images/userGuide/researcherProfile10.png)
+Hovering over the `Year Published` table column header display an arrow icon. Clicking on this arrow icon will sort the publications by year published starting from the most recent year. Similarly, overing over the `Title` table column header will display an arrow icon. Clicking on this arrow icon will show the list of publications in alphabetical order.
+
+![alt text](images/UserGuide-Final/researcher-profile/publications-grants-patents.png)
+
+The Grants section displays a list of the researcher's awarded grants, along with information about the title of their projects, the name of the granting agency, the amount in dollars, and the allocation year.
+
+The Patents section displays a list of the researcher's patents data, along with information about the title of the filed invention, the inventors’names, the sponsoring entities, the patent numbers, the patent status, the patent classifications, the patent family number and the year it was published. Clicking on one of the patent number will redirect to the corresponding published record on European Patent Office’s Espacenet website.
 
 ## Impact
 
-The Impact tab displays a table with all researchers sorted by their H index for the past 5 years. Researcher impact can be filtered by department or by faculty by clicking on the `Impact By Department` or `Impact By Faculty` toggle tabs above the impacts table.
-![alt text](images/userGuide/rankings01.png)
+The Impact tab displays a table with all researchers sorted by their H index for the past 5 years. Researcher impact can be filtered by department or by faculty by clicking on the `Impact By Faculty` or `Impact By Department` toggle tabs above the impacts table.
+![alt text](images/UserGuide-Final/impact/impact.png)
 
 ## Metrics
 
 The Metrics tab displays a word cloud containing the top 100 keywords in the Institution's research during a user selected date range. The font size of each word in the word cloud corresponds to the frequency that that word has appeared in publication titles during the selected date range. The earliest available year is 1908, and the latest available year is the current year.
-![alt text](images/userGuide/metrics01.png)
+
+![alt text](images/UserGuide-Final/metrics/metrics-1.png)
 
 The selected date range can be changed by moving either one of the date range slider buttons. A new word cloud will then be formed with the words for the updated date range.
 
-![alt text](images/userGuide/metrics03.png)
+![alt text](images/UserGuide-Final/metrics/metrics-2.png)
 
 To view the exact number of times a certain keyword has appeared, hover over the word and a popup will appear. If you would like to search for that keyword, click the word to open a new tab containing the search results.
-![alt text](images/userGuide/metrics02.png)
+![alt text](images/UserGuide-Final/metrics/metrics-3.png)
 
 ## Admin Dashboard
 
@@ -189,32 +205,30 @@ Below that, flagged researcher entries are grouped into tables with the columns 
 2. Ensure you have a file containing researcher HR data. An example of how this file should be structured can be found here: [Example HR Data File](example_data/hr_data(example).csv). This file must be named `institution_data.csv`. Note that the `INSTITUTION_USER_ID` column could represents any types of **unique ids** (employee id from institution's HR data, uuid from the institution's external database, etc), and each ids must be associated with one person(researcher) only.
 3. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar.
    ![alt text](images/deploymentGuide/s3_search.jpg)
-4. In the `Buckets` search bar enter `vpri-innovation-dashboard` and click on the name of the bucket.
-   ![alt text](images/deploymentGuide/s3_bucket_search.jpg)
+4. In the `Buckets` search bar enter `datafetchstack` and click on the name of the bucket (the name also contain the string `datas3bucket`).
+   ![alt text](images/p3/user/user-researcher-s3.png)
 5. Click on the `researcher_data` folder.
    ![alt text](images/userGuide/folder_select.jpg)
 6. Select the `institution_data.csv` and `scopus_ids.csv` files (also select the `manual_matches.csv` file if it is present) and click `Delete`
-   ![alt text](images/userGuide/file_select.jpg)
+   ![alt text](images/p3/user/user-csv-select.png)
 7. Type `permanently delete` in the text input field then click `Delete objects`.
-   ![alt text](images/userGuide/file_deletion.jpg)
+   ![alt text](images/p3/user/user-csv-delete.png)
 8. Click `Close` once the deletion is finished.
-   ![alt text](images/userGuide/deletion_close.jpg)
 9. Click `Add Files` and select the `scopus_ids.csv` file from part 1 and the `institution_data.csv` file from part 2 (also if you have a file of manually matched researcher profiles upload them as well. The file must be named `manual_matches.csv` and should be structured like the following file: [Example Matches File](example_data/manual_matches(example).csv)) then click `Upload`.
-   ![alt text](images/deploymentGuide/s3_upload.jpg)
+   ![alt text](images/p3/deployment/depl-researcher-data-s3.png)
 10. Once the upload is complete click `Close`
-   ![alt text](images/deploymentGuide/s3_upload_complete.jpg)
 
 ### Step 2: Run the Data Pipeline
 
 1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Step Functions` in the search bar.
    ![alt text](images/deploymentGuide/step_function_search.jpg)
-2. In the State Machine search bar enter `DataFetchStateMachine` and click the name of the top result (The exact name of the state machine may vary but it will always begin with `DataFetchStateMachine`.
+2. In the State Machine search bar enter `DataFetchStateMachine` and click the name of the top result (The exact name of the state machine may vary but it will always contain the string `DataFetchStateMachine`.
    ![alt text](images/deploymentGuide/state_machine_search.jpg)
 3. Click `Start Execution`
    ![alt text](images/deploymentGuide/state_machine_page.jpg)
 4. In the box that appears click `Start Execution`. Do not edit the text in the input field.
    ![alt text](images/deploymentGuide/start_execution.jpg)
-5. The data pipeline will now run on its own and populate the database. This process will take ~90 minutes. If you navigate to the page you visited in part 2 of this step you can view the status of the data pipeline. Once it is finished running the step function execution status will say `Succeeded`.
+5. The data pipeline will now run on its own and populate the database. This process will take ~5 hours. If you navigate to the page you visited in part 2 of this step you can view the status of the data pipeline. Once it is finished running the step function execution status will say `Succeeded`.
    ![alt text](images/deploymentGuide/state_machine_success.jpg)
 
 ## Updating Grant Data
@@ -222,8 +236,8 @@ Below that, flagged researcher entries are grouped into tables with the columns 
 **NOTE**: grant data should be updated every 6 months or so.
 
 1. Refer to the [User Guide to Grant Downloads](User%20Guide%20to%20Grant%20Downloads.pdf) for instructions on how to obtain the grant data for your institution.
-2. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar. Find the bucket whose name starts with `grantdatastack-grantdatas3bucket` (the full name will have some random alpha-numeric letter after that initial identifier).
-3. There are a folder called `raw` already created for you at deployment, and it contains 4 subfolders (`cihr`, `cfi`, `nserc`, `sshrc`). Inside each of the subfolder, put the corresponding CSV file for that grant there. For SSHRC, please also remember to include the `sshrc_program_codes.csv` file along with the SSHRC grant data CSV file. The resulting folder structure should look like this:
+2. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `S3` in the search bar. Find the bucket whose name contains the string `grantdatas3` (the full name will have some random alpha-numeric letter after that initial identifier).
+3. There is a folder called `raw` already created for you at deployment, and it contains 4 subfolders (`cihr`, `cfi`, `nserc`, `sshrc`). Inside each of the subfolder, delete the old csv file and replace it with the corresponding new CSV file for that grant there. For SSHRC, please also remember to include the `sshrc_program_codes.csv` file along with the SSHRC grant data CSV file. The resulting folder structure should look like this:
    ![alt text](images/deploymentGuide/grant-data-folder-structure.png)
 
 **NOTE**:
@@ -242,3 +256,8 @@ Below that, flagged researcher entries are grouped into tables with the columns 
 
 7.  If you see that a folder(s) is missing. Please wait for another 10 or so minutes because this could be a latency issue. If you came back and check and that missing folder still has not show up, then it is possible that a wrong file was uploaded in **raw** folder. Please double check your **raw** folder and follow the instructions above to reupload accordingly.
 
+## Updating Patent Data
+
+You only need to manually execute the Patent Data Pipeline for first time deployment. Subsequent runs will be automatically scheduled and executed on day 1st and 15th of every month (twice a month).
+
+You could also manually execute the pipeline if you wish. Refer to [Step 7](DeploymentGuide.md/#step-7-starting-patent-data-pipeline) for detail on how to manually run the pipeline.

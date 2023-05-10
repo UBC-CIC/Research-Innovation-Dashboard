@@ -5,6 +5,7 @@ const aws4 = require("aws4");
 
 exports.handler = async (event) => {
 var host = 'https://' + process.env.OPENSEARCH_ENDPOINT
+var region = process.env.AWS_REGION
 
 const createAwsConnector = (credentials, region) => {
   class AmazonConnection extends Connection {
@@ -26,7 +27,7 @@ const createAwsConnector = (credentials, region) => {
 const getClient = async () => {
   const credentials = await defaultProvider()();
   return new Client({
-      ...createAwsConnector(credentials, 'ca-central-1'),
+      ...createAwsConnector(credentials, region),
       node: host,
   });
 }
@@ -41,6 +42,7 @@ async function search(query, index, numberOfResults) {
     body: query,
     size: numberOfResults
   });
+
   return response.body.hits.hits;
 }
 
@@ -114,9 +116,9 @@ switch(event.info.fieldName) {
       filters.push(facultyFilter);
     }
     
-    if(event.arguments.search_value.length == 0){
-      queryArray = [{match_all: {}}]
-    }
+    // if(event.arguments.search_value.length == 0){
+    //   queryArray = [{match_all: {}}]
+    // }
     
     query = {
       query: {
@@ -130,7 +132,7 @@ switch(event.info.fieldName) {
     
     console.log(query);
     
-    searchResult = await search(query, "researcher_data", 50);
+    searchResult = await search(query, "researcher_data", 500);
     break;
     
   case "searchPublications":
@@ -168,9 +170,9 @@ switch(event.info.fieldName) {
       filters.push(journalsFilter);
     }
     
-    if(event.arguments.search_value.length == 0){
-      queryArray = [{match_all: {}}]
-    }
+    // if(event.arguments.search_value.length == 0){
+    //   queryArray = [{match_all: {}}]
+    // }
     
     query = {
       query: {
@@ -183,6 +185,7 @@ switch(event.info.fieldName) {
     };
 
     searchResult = await search(query, "publication_data", 200);
+    console.log(searchResult)
     break;
     
   case "similarResearchers":
@@ -286,9 +289,9 @@ switch(event.info.fieldName) {
       filters.push(grantsFilter);
     }
     
-    if(event.arguments.search_value.length == 0){
-      queryArray = [{match_all: {}}]
-    }
+    // if(event.arguments.search_value.length == 0){
+    //   queryArray = [{match_all: {}}]
+    // }
 
     query = {
       query: {
@@ -332,9 +335,9 @@ switch(event.info.fieldName) {
       filters.push(grantsFilter);
     }
     
-    if(event.arguments.search_value.length == 0){
-      queryArray = [{match_all: {}}]
-    }
+    // if(event.arguments.search_value.length == 0){
+    //   queryArray = [{match_all: {}}]
+    // }
     
     query = {
       query: {
@@ -524,20 +527,20 @@ if(event.info.fieldName == "advancedSearchResearchers" || event.info.fieldName =
       },
     };
     
-    if(allAndPhrases.length == 0 && anyOfTheseWords.length == 0){
-      query = {
-      query: {
-        bool: {
-          must: [
-            {
-              "match_all": {}
-            }
-          ],
-          filter: filters
-        }
-      },
-    };
-    }
+    // if(allAndPhrases.length == 0 && anyOfTheseWords.length == 0){
+    //   query = {
+    //   query: {
+    //     bool: {
+    //       must: [
+    //         {
+    //           "match_all": {}
+    //         }
+    //       ],
+    //       filter: filters
+    //     }
+    //   },
+    // };
+    // }
     
     searchResult = await search(query, table, 25);
     console.log('SEARCH RESULTS');
@@ -549,6 +552,8 @@ let result = [];
 for(var i = 0; i<searchResult.length; i++) {
   result.push(searchResult[i]._source);
 }
+
+console.log(result.length)
 
 return result;
 };

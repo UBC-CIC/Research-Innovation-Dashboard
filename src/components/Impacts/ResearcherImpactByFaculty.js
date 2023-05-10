@@ -74,11 +74,15 @@ export default function ImpactByFaculty(props) {
     </option>
   ));
 
+  const ALIGN_TEXT = "left"
+  const ALIGN_TEXT_BY = "2%" // pl of typography
+
+  //console.log(props.researcherImpactsByFaculty.total_grant_amount)  
   const impacts_element = props.researcherImpactsByFaculty
     .filter((data, index) => index < numberOfImpactsToShow)
     .map((prof_data, index) => (
       <Grid container key={prof_data.preferred_name}>
-        <Grid item xs={1}>
+        {/* <Grid item xs={1}>
           <Paper
             style={heightMatch}
             square={true}
@@ -90,20 +94,21 @@ export default function ImpactByFaculty(props) {
               {index + 1}
             </Typography>
           </Paper>
-        </Grid>
+        </Grid> */}
         <Grid item xs={3}>
           <Paper
             style={heightMatch}
             square={true}
             elevation={0}
             variant="outlined"
-            sx={{ textAlign: "center" }}
+            sx={{ textAlign: ALIGN_TEXT }}
           >
             <Typography
               component={Link}
-              to={"/Researchers/" + prof_data.scopus_id + "/"}
-              align="center"
+              to={"/Researchers/" + prof_data.researcher_id + "/"}
+              align="left"
               variant="body1"
+              sx={{pl: ALIGN_TEXT_BY}}
             >
               {prof_data.preferred_name}
             </Typography>
@@ -115,9 +120,9 @@ export default function ImpactByFaculty(props) {
             square={true}
             elevation={0}
             variant="outlined"
-            sx={{ textAlign: "center" }}
+            sx={{ textAlign: ALIGN_TEXT}}
           >
-            <Typography align="center" variant="body1">
+            <Typography align={ALIGN_TEXT_BY} variant="body1" sx={{pl: ALIGN_TEXT_BY}}>
               {prof_data.prime_faculty}
             </Typography>
           </Paper>
@@ -128,14 +133,14 @@ export default function ImpactByFaculty(props) {
             square={true}
             elevation={0}
             variant="outlined"
-            sx={{ textAlign: "center" }}
+            sx={{ textAlign: ALIGN_TEXT }}
           >
-            <Typography align="center" variant="body1">
+            <Typography align={ALIGN_TEXT} variant="body1" sx={{pl: ALIGN_TEXT_BY}}>
               {prof_data.prime_department}
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={1}>
+        <Grid item xs={1.5}>
           <Paper
             style={heightMatch}
             square={true}
@@ -148,7 +153,7 @@ export default function ImpactByFaculty(props) {
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={1}>
+        <Grid item xs={1.5}>
           <Paper
             style={heightMatch}
             square={true}
@@ -157,7 +162,7 @@ export default function ImpactByFaculty(props) {
             sx={{ textAlign: "center" }}
           >
             <Typography align="center" variant="body1">
-              {}
+              {prof_data.total_grant_amount ? prof_data.total_grant_amount.toLocaleString() : 0}
             </Typography>
           </Paper>
         </Grid>
@@ -194,18 +199,19 @@ export default function ImpactByFaculty(props) {
           <Grid item xs={12}>
             <Paper square={true} elevation={0} variant="outlined">
               <Grid container id="full_box">
-                <Grid item xs={6}>
+                <Grid item xs={6} sx={{pt: "1.5%", pb: "1.5%"}}>
                   <Typography
                     align="left"
-                    variant="h3"
+                    variant="h4"
                     justifyContent={"center"}
+                    //sx={{pt: "2%", pb: "2%"}}
                   >
-                    Impact By Faculty
+                    Impact By Faculty (last 5 years)
                   </Typography>
                 </Grid>
-                <Grid item xs={6}>
-                  <Stack direction="row" justifyContent="end">
-                    <FormControl sx={{ m: 1, mr: 0 }} variant="standard">
+                <Grid item xs={6} sx={{pt: "1.5%", pb: "1.5%"}}>
+                  <Stack direction="row" justifyContent="end" >
+                    <FormControl variant="standard">
                       <NativeSelect
                         id="demo-customized-select-native"
                         value={props.departmentToImpact}
@@ -217,7 +223,7 @@ export default function ImpactByFaculty(props) {
                     </FormControl>
                   </Stack>
                 </Grid>
-                <Grid item xs={1}>
+                {/* <Grid item xs={1}>
                   <Paper
                     style={heightMatch}
                     square={true}
@@ -229,7 +235,7 @@ export default function ImpactByFaculty(props) {
                       Impact
                     </Typography>
                   </Paper>
-                </Grid>
+                </Grid> */}
                 <Grid item xs={3}>
                   <Paper
                     style={heightMatch}
@@ -269,7 +275,7 @@ export default function ImpactByFaculty(props) {
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={1}>
+                <Grid item xs={1.5}>
                   <Paper
                     style={heightMatch}
                     square={true}
@@ -278,11 +284,11 @@ export default function ImpactByFaculty(props) {
                     sx={{ textAlign: "center" }}
                   >
                     <Typography align="center" variant="body1">
-                      H Index (5 Years)
+                      H Index
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={1}>
+                <Grid item xs={1.5}>
                   <Paper
                     style={heightMatch}
                     square={true}

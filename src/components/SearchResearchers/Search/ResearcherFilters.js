@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
   Typography,
@@ -6,49 +6,46 @@ import {
   FormGroup,
   FormControlLabel,
   Button,
+  IconButton
 } from "@mui/material";
 import { API } from "aws-amplify";
 import { getAllDepartments, getAllFaculty } from "../../../graphql/queries";
 import DepartmentFiltersDialog from "./DepartmentFiltersDialog";
 import FacultyFiltersDialog from "./FacultyFiltersDialog";
+import ClearIcon from '@mui/icons-material/Clear';
 
 const ResearcherFilters = ({
   selectedDepartments,
   setSelectedDeparments,
   selectedFaculties,
   setSelectedFaculties,
+  searchYet,
+  openFacultyFiltersDialog,
+  setOpenFacultyFiltersDialog,
+  openDepartmentFiltersDialog,
+  setOpenDepartmentFiltersDialog,
+  currentFacultyOptions,
+  setCurrentFacultyOptions,
+  currentDepartmentOptions,
+  setCurrentDepartmentOptions
 }) => {
-  const [departmentOptions, setDepartmentOptions] = useState();
-  const [facultyOptions, setFacultyOptions] = useState();
-  const [openDepartmentFiltersDialog, setOpenDepartmentFiltersDialog] = useState(false);
-  const [openFacultyFiltersDialog, setOpenFacultyFiltersDialog] = useState(false);
+  
+  // const [optionsToShow, setOptionsToShow] = useState(7)
+
+  const OPTIONS_TO_SHOW = 7
+  // const INCR_OPTIONS_BY = 10
 
   const handleClose = () => {
-    setOpenDepartmentFiltersDialog(false);
     setOpenFacultyFiltersDialog(false);
+    setOpenDepartmentFiltersDialog(false);
   };
-  useEffect(() => {
-    const getFilterOptions = async () => {
-      const [departmentRes, facultyRes] = await Promise.all([
-        API.graphql({
-          query: getAllDepartments,
-        }),
-        API.graphql({
-          query: getAllFaculty,
-        }),
-      ]);
-      const allDepartments = departmentRes.data.getAllDepartments;
-      const allFaculties = facultyRes.data.getAllFaculty;
-      setDepartmentOptions(allDepartments);
-      setFacultyOptions(allFaculties);
-    };
-    getFilterOptions();
-  }, []);
 
   const handleCheckDepartment = (e, department) => {
+    // when checked
     if (e.target.checked) {
       setSelectedDeparments((prev) => [...prev, department]);
     } else {
+      // when unchecked
       setSelectedDeparments(
         selectedDepartments.filter(
           (selectedDepartment) => selectedDepartment !== department
@@ -59,8 +56,10 @@ const ResearcherFilters = ({
 
   const handleCheckFaculty = (e, faculty) => {
     if (e.target.checked) {
+      // checked
       setSelectedFaculties((prev) => [...prev, faculty]);
     } else {
+      // unchecked
       setSelectedFaculties(
         selectedFaculties.filter(
           (selectedFaculty) => selectedFaculty !== faculty
@@ -73,22 +72,24 @@ const ResearcherFilters = ({
     return (
       <Box sx={{ display: "flex", flexDirection: "column" }}>
         <FormGroup>
-          {departmentOptions &&
-            departmentOptions
-              .slice(0, 5)
+          {currentDepartmentOptions &&
+            currentDepartmentOptions
+              // sort the options based on descending checked value and then based on ascending alphabetical order
+              .sort((f1, f2) => f2['checked'] - f1['checked'] || f1['department'].localeCompare(f2['department']))
+              .slice(0, OPTIONS_TO_SHOW)
               .map((department, index) => (
                 <FormControlLabel
                   key={index}
                   control={<Checkbox />}
-                  checked={selectedDepartments.includes(department)}
-                  label={<Typography variant="body2">{department}</Typography>}
-                  onChange={(e) => handleCheckDepartment(e, department)}
+                  checked={selectedDepartments.includes(department['department'])}
+                  label={<Typography variant="body2">{department['department']}</Typography>}
+                  onChange={(e) => handleCheckDepartment(e, department['department'])}
                 />
               ))}
         </FormGroup>
         <Button
           onClick={() => setOpenDepartmentFiltersDialog(true)}
-          sx={{ color: "#0055B7", justifyContent: "flex-start" }}
+          sx={{ color: "#666666", justifyContent: "flex-start" }}
         >
           Show All
         </Button>
@@ -105,22 +106,40 @@ const ResearcherFilters = ({
         }}
       >
         <FormGroup>
-          {facultyOptions &&
-            facultyOptions
-              .slice(0, 5)
+          {currentFacultyOptions &&
+            currentFacultyOptions
+              // sort the options based on descending checked value and then based on ascending alphabetical order
+              .sort((f1, f2) => f2['checked'] - f1['checked'] || f1['faculty'].localeCompare(f2['faculty']))
+              .slice(0, OPTIONS_TO_SHOW)
               .map((faculty, index) => (
                 <FormControlLabel
                   key={index}
                   control={<Checkbox />}
-                  checked={selectedFaculties.includes(faculty)}
-                  label={<Typography variant="body2">{faculty}</Typography>}
-                  onChange={(e) => handleCheckFaculty(e, faculty)}
+                  checked={selectedFaculties.includes(faculty["faculty"])}
+                  label={<Typography variant="body2">{faculty["faculty"]}</Typography>}
+                  onChange={(e) => handleCheckFaculty(e, faculty["faculty"])}
                 />
               ))}
         </FormGroup>
-        <Button
+        {/* {currentFacultyOptions && (optionsToShow < currentFacultyOptions.length) ? 
+        (<Button
+          //onClick={() => setOpenFacultyFiltersDialog(true)}
+          onClick={() => setOptionsToShow(currentFacultyOptions.length)}
+          sx={{ color: "#666666", justifyContent: "flex-start" }}
+        >
+          Show more
+        </Button>) : 
+        (<Button
+          //onClick={() => setOpenFacultyFiltersDialog(true)}
+          onClick={() => setOptionsToShow(OPTIONS_TO_SHOW)}
+          sx={{ color: "#666666", justifyContent: "flex-start" }}
+        >
+          Show less
+        </Button>)
+        } */}
+       <Button
           onClick={() => setOpenFacultyFiltersDialog(true)}
-          sx={{ color: "#0055B7", justifyContent: "flex-start" }}
+          sx={{ color: "#666666", justifyContent: "flex-start" }}
         >
           Show All
         </Button>
@@ -128,26 +147,34 @@ const ResearcherFilters = ({
     );
   };
 
-  return (
+  return (searchYet &&
     <Box sx={{ display: "flex", flexDirection: "column", ml: "1em" }}>
-      <Typography variant="h6">Filter for Researchers:</Typography>
-      <Typography sx={{ my: "1em", color: "#0055B7" }}>Department</Typography>
-      {renderDepartmentOptions()}
-      <Typography sx={{ my: "1em", color: "#0055B7" }}>Faculty</Typography>
+      <Typography variant="h6" sx={{fontWeight: "bold"}}>Filters for Researchers:</Typography>
+      <Typography variant="h6" sx={{ my: "1em", color: "#666666" }}>{"Faculty (" + selectedFaculties.length + " selected)"}</Typography>
+      {(selectedFaculties.length > 0) && 
+        (<Button onClick={() => setSelectedFaculties([])} sx={{justifyContent: "left", p: 0, pb: 1, color: "#666666"}}>
+          Clear all filters {<ClearIcon sx={{pl: 1}}></ClearIcon>}
+        </Button>)}
       {renderFacultyOptions()}
-      <DepartmentFiltersDialog
-        open={openDepartmentFiltersDialog}
-        handleClose={handleClose}
-        allDepartments={departmentOptions}
-        selectedDepartments={selectedDepartments}
-        handleCheckDepartment={handleCheckDepartment}
-      />
       <FacultyFiltersDialog
         open={openFacultyFiltersDialog}
         handleClose={handleClose}
-        allFaculties={facultyOptions}
+        allFaculties={currentFacultyOptions.map((faculty) => faculty['faculty'])}
         selectedFaculties={selectedFaculties}
         handleCheckFaculty={handleCheckFaculty}
+      />
+      <Typography variant="h6" sx={{ my: "1em", color: "#666666" }}>{"Department (" + selectedDepartments.length + " selected)" }</Typography>
+      {(selectedDepartments.length > 0) && 
+        (<Button onClick={() => setSelectedDeparments([])} sx={{justifyContent: "left", p: 0, pb: 1, color: "#666666"}}>
+          Clear all filters {<ClearIcon sx={{pl: 1}}></ClearIcon>}
+        </Button>)}
+      {renderDepartmentOptions()}
+      <DepartmentFiltersDialog
+        open={openDepartmentFiltersDialog}
+        handleClose={handleClose}
+        allDepartments={currentDepartmentOptions.map((department) => department['department'])}
+        selectedDepartments={selectedDepartments}
+        handleCheckDepartment={handleCheckDepartment}
       />
     </Box>
   );

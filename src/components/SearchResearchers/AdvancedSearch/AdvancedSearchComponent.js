@@ -14,6 +14,10 @@ import GrantInformation from "../../ResearcherProfile/GrantInformation";
 import AutoCompleteDropDown from "./AutoCompleteDrowDown";
 import InputBase from "@mui/material/InputBase";
 import Scroll from "react-scroll";
+import ArrowDropDownCircleRoundedIcon from '@mui/icons-material/ArrowDropDownCircleRounded';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
 
 import { API } from "aws-amplify";
 
@@ -64,6 +68,7 @@ export default function Advanced_Search(props) {
   const [toDate, setToDate] = useState("");
   const [searching, setSearching] = useState(false);
   const [searchClicked, setSearchClicked] = useState(true);
+  const [advancedSearchYet, setAdvancedSearchYet] = useState(false);
 
   const titleRef = useRef();
 
@@ -247,7 +252,7 @@ export default function Advanced_Search(props) {
         table: "grant_data",
       },
     });
-    console.log(grantsSearchResult)
+    //console.log(grantsSearchResult)
     setGrantsSearchResults(
       grantsSearchResult.data.advancedSearchGrants
     );
@@ -319,209 +324,68 @@ export default function Advanced_Search(props) {
           </Typography>
         </Paper>
       </Grid>
-      <AdvancedSearchRow
-        routeChange={routeChange}
-        whatDoesSearchBoxDo={"Include All These Words:"}
-        howToDoSearchBox={
-          "Type in the important words with spaces between them."
-        }
-        searchBarValue={includeAllTheseWordsSearchBarValue}
-        setSearchBarValue={setIncludeAllTheseWordsSearchBarValue}
-      />
-      <AdvancedSearchRow
-        routeChange={routeChange}
-        whatDoesSearchBoxDo={"Include These Exact Phrases: "}
-        howToDoSearchBox={
-          'Put exact phrases in quotes. For example: "Singapore Economy" '
-        }
-        searchBarValue={exactPhraseSearchBarValue}
-        setSearchBarValue={setExactPhraseSearchBarValue}
-      />
-      <AdvancedSearchRow
-        routeChange={routeChange}
-        whatDoesSearchBoxDo={"Include Any Of These Words"}
-        howToDoSearchBox={"Put in words that you want to search for"}
-        searchBarValue={anyWordsSearchBarValue}
-        setSearchBarValue={setAnyWordsSearchBarValue}
-      />
-      <AdvancedSearchRow
-        routeChange={routeChange}
-        whatDoesSearchBoxDo={"Do Not Include Any Of These Words"}
-        howToDoSearchBox={
-          "Put a minus sign infront of words you do not want to include. For example: -Economics -Asia"
-        }
-        searchBarValue={noneOfTheseWordsSearchBarValue}
-        setSearchBarValue={setNoneOfTheseWordsSearchBarValue}
-      />
 
-      <Grid container>
-        <Paper
+      <Grid container spacing={0.5}>
+        <Grid item xs={7.5} sx={{flexDirection: "column"}}>
+          <AutoCompleteDropDown
+              value={contentToSearchForValue}
+              setValue={setContentToSearchForValue}
+              title={"Type Of Content To Search For"}
+              DropDownArray={["Everything", "Researchers", "Publications", "Grants"]}
+              advancedSearchYet={advancedSearchYet}
+              setAdvancedSearchYet={setAdvancedSearchYet}
+            />
+          <AdvancedSearchRow
+            routeChange={routeChange}
+            whatDoesSearchBoxDo={"Include All These Words:"}
+            howToDoSearchBox={
+              "Type in the important words with spaces between them"
+            }
+            searchBarValue={includeAllTheseWordsSearchBarValue}
+            setSearchBarValue={setIncludeAllTheseWordsSearchBarValue}
+            advancedSearchYet={advancedSearchYet}
+            setAdvancedSearchYet={setAdvancedSearchYet}
+          />
+          <AdvancedSearchRow
+            routeChange={routeChange}
+            whatDoesSearchBoxDo={"Include These Exact Phrases: "}
+            howToDoSearchBox={
+              'Put exact phrases in quotes, e.g., "Singapore Economy" '
+            }
+            searchBarValue={exactPhraseSearchBarValue}
+            setSearchBarValue={setExactPhraseSearchBarValue}
+            advancedSearchYet={advancedSearchYet}
+            setAdvancedSearchYet={setAdvancedSearchYet}
+          />
+          <AdvancedSearchRow
+            routeChange={routeChange}
+            whatDoesSearchBoxDo={"Include Any Of These Words"}
+            howToDoSearchBox={"Put in words that you want to search for"}
+            searchBarValue={anyWordsSearchBarValue}
+            setSearchBarValue={setAnyWordsSearchBarValue}
+            advancedSearchYet={advancedSearchYet}
+            setAdvancedSearchYet={setAdvancedSearchYet}
+          />
+          <AdvancedSearchRow
+            routeChange={routeChange}
+            whatDoesSearchBoxDo={"Do Not Include Any Of These Words"}
+            howToDoSearchBox={
+              "Put a minus sign in front of words you want to exclude, e.g, -Economics -Asia"
+            }
+            searchBarValue={noneOfTheseWordsSearchBarValue}
+            setSearchBarValue={setNoneOfTheseWordsSearchBarValue}
+            advancedSearchYet={advancedSearchYet}
+            setAdvancedSearchYet={setAdvancedSearchYet}
+          />
+          <Paper
           square={true}
           elevation={0}
-          sx={{
-            width: "100%",
-            pl: "2%",
-            pr: "2%",
-            borderTop: 1,
-            borderColor: "rgba(0, 0, 0, 0.12)",
-          }}
-          component={Stack}
-          direction="row"
-        >
-          <Typography variant="h6" sx={{ m: "2%", ml: "0%" }}>
-            Narrow Search Results By:
-          </Typography>
-        </Paper>
-        <AutoCompleteDropDown
-          value={filterDepartmentValue}
-          setValue={setFilterDepartmentValue}
-          title={"Filter Researchers By Department"}
-          DropDownArray={allDepartments}
-        />
-        <AutoCompleteDropDown
-          value={filterFacultyValue}
-          setValue={setFilterFacultyValue}
-          title={"Filter Researchers By Faculty"}
-          DropDownArray={allFaculty}
-        />
-        <Paper
-          square={true}
-          elevation={0}
-          sx={{ width: "100%", ml: "2%", mr: "2%" }}
-          component={Stack}
-          direction="row"
-        >
-          <Paper
-            elevation={0}
-            sx={{ width: "20%", paddingRight: "2%" }}
-            component={Stack}
-            direction="column"
-            justifyContent="center"
-          ></Paper>
-          <Paper
-            square={true}
-            elevation={0}
-            sx={{ width: "24%", border: 0, mr: "1%" }}
-            component={Stack}
-            direction="row"
-          >
-            FROM
-          </Paper>
-          <Paper
-            square={true}
-            elevation={0}
-            sx={{ width: "24%", border: 0, ml: "1%" }}
-            component={Stack}
-            direction="row"
-          >
-            TO
-          </Paper>
-          <Paper
-            elevation={0}
-            sx={{ width: "30%", paddingLeft: "2%" }}
-            component={Stack}
-            direction="column"
-            justifyContent="center"
-          ></Paper>
-        </Paper>
-        <Paper
-          square={true}
-          elevation={0}
-          sx={{ width: "100%", m: "2%", mt: "0%" }}
-          component={Stack}
-          direction="row"
-        >
-          <Paper
-            elevation={0}
-            sx={{ width: "20%", paddingRight: "2%" }}
-            component={Stack}
-            direction="column"
-            justifyContent="center"
-          >
-            <Typography variant="h7">Filter Publications By Year:</Typography>
-          </Paper>
-          <Paper
-            square={true}
-            elevation={0}
-            sx={{ width: "24%", border: 1, mr: "1%" }}
-            component={Stack}
-            direction="row"
-          >
-            <InputBase
-              value={fromDate}
-              type="month"
-              onChange={(event) => {
-                setFromDate(event.target.value);
-              }}
-              fullWidth={true}
-              sx={{ padding: "8px", fontSize: "1.0rem" }}
-            ></InputBase>
-          </Paper>
-          <Paper
-            square={true}
-            elevation={0}
-            sx={{ width: "24%", border: 1, ml: "1%" }}
-            component={Stack}
-            direction="row"
-          >
-            <InputBase
-              value={toDate}
-              type="month"
-              onChange={(event) => {
-                setToDate(event.target.value);
-              }}
-              fullWidth={true}
-              sx={{ padding: "8px", fontSize: "1.0rem" }}
-            ></InputBase>
-          </Paper>
-          <Paper
-            elevation={0}
-            sx={{ width: "30%", paddingLeft: "2%" }}
-            component={Stack}
-            direction="column"
-            justifyContent="center"
-          ></Paper>
-        </Paper>
-        <AutoCompleteDropDown
-          value={filterJournalValue}
-          setValue={setFitlerJournalValue}
-          title={"Filter Publications By Journal"}
-          DropDownArray={allJournals}
-        />
-        <AutoCompleteDropDown
-          value={contentToSearchForValue}
-          setValue={setContentToSearchForValue}
-          title={"Type Of Content To Search For"}
-          DropDownArray={["Everything", "Researchers", "Publications", "Grants"]}
-        />
-        <Paper
-          square={true}
-          elevation={0}
-          sx={{
-            width: "100%",
-            p: "2%",
-            borderBottom: 1,
-            borderColor: "rgba(0, 0, 0, 0.12)",
-          }}
-          component={Stack}
-          direction="row"
-        >
-          <Paper
-            elevation={0}
-            sx={{ width: "20%", paddingRight: "2%" }}
-            component={Stack}
-            direction="column"
-            justifyContent="center"
-          ></Paper>
-          <Paper
-            square={true}
-            elevation={0}
-            sx={{ width: "50%", flexDirection: "row-reverse" }}
-            component={Stack}
-            direction="row"
+          sx={{ width: "91%"}}
+          style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: "1%"}}
           >
             <Button
               onClick={() => {
+                setAdvancedSearchYet(true)
                 routeChange();
               }}
               sx={{
@@ -534,32 +398,167 @@ export default function Advanced_Search(props) {
               Search
             </Button>
           </Paper>
-          <Paper
-            elevation={0}
-            sx={{ width: "30%", paddingLeft: "2%" }}
-            component={Stack}
-            direction="column"
-            justifyContent="center"
-          ></Paper>
-        </Paper>
+        </Grid>
+        <Grid item xs={4.5}>
+          <Accordion>
+            <AccordionSummary
+              //expandIcon={<ExpandMoreIcon/>}
+              expandIcon={<ArrowDropDownCircleRoundedIcon sx={{}}/>}
+              aria-controls="panel1a-content"
+              id="panel1a-header"
+              sx={{marginRight: '0%'}}
+            >
+              <Typography variant="h6" sx={{ m: "0%", ml: "1%", pl: "0%", pr: "0%", pb: "1%" }}>
+                Narrow Search Results By
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container>
+                <AutoCompleteDropDown
+                  value={filterDepartmentValue}
+                  setValue={setFilterDepartmentValue}
+                  title={"Filter Researchers By Department"}
+                  DropDownArray={allDepartments}
+                />
+                <AutoCompleteDropDown
+                  value={filterFacultyValue}
+                  setValue={setFilterFacultyValue}
+                  title={"Filter Researchers By Faculty"}
+                  DropDownArray={allFaculty}
+                />
+                <Paper
+                  square={true}
+                  elevation={0}
+                  sx={{ width: "100%", ml: "2%", mr: "2%" }}
+                  component={Stack}
+                  direction="row"
+                >
+                  <Paper
+                    elevation={0}
+                    sx={{ width: "20%", paddingRight: "2%" }}
+                    component={Stack}
+                    direction="column"
+                    justifyContent="center"
+                  ></Paper>
+                  <Paper
+                    square={true}
+                    elevation={0}
+                    sx={{ width: "24%", border: 0, ml: "7%", mr: "28%" }}
+                    component={Stack}
+                    direction="row"
+                  >
+                    FROM
+                  </Paper>
+                  <Paper
+                    square={true}
+                    elevation={0}
+                    sx={{ width: "24%", border: 0, ml: "1%" }}
+                    component={Stack}
+                    direction="row"
+                  >
+                    TO
+                  </Paper>
+                  <Paper
+                    elevation={0}
+                    sx={{ width: "30%", paddingLeft: "2%" }}
+                    component={Stack}
+                    direction="column"
+                    justifyContent="center"
+                  ></Paper>
+                </Paper>
+                <Paper
+                  square={true}
+                  elevation={0}
+                  sx={{ width: "100%", m: "2%", mt: "0%" }}
+                  component={Stack}
+                  direction="row"
+                  
+                >
+                  <Paper
+                    elevation={0}
+                    sx={{ width: "20%", paddingRight: "2%" }}
+                    component={Stack}
+                    direction="column"
+                    justifyContent="center"
+                  >
+                    <Typography variant="h7">Filter Publications By Year:</Typography>
+                  </Paper>
+                  <Paper
+                    square={true}
+                    elevation={0}
+                    sx={{ width: "24%", border: 1, mr: "17%" }}
+                    component={Stack}
+                    direction="row"
+                  >
+                    <InputBase
+                      value={fromDate}
+                      type="month"
+                      onChange={(event) => {
+                        setFromDate(event.target.value);
+                      }}
+                      fullWidth={true}
+                      sx={{ padding: "8px", fontSize: "1.0rem" }}
+                    ></InputBase>
+                  </Paper>
+                  <Paper
+                    square={true}
+                    elevation={0}
+                    sx={{ width: "24%", border: 1, ml: "1%" }}
+                    component={Stack}
+                    direction="row"
+                  >
+                    <InputBase
+                      value={toDate}
+                      type="month"
+                      onChange={(event) => {
+                        setToDate(event.target.value);
+                      }}
+                      fullWidth={true}
+                      sx={{ padding: "8px", fontSize: "1.0rem" }}
+                    ></InputBase>
+                  </Paper>
+                </Paper>
+                <AutoCompleteDropDown
+                  value={filterJournalValue}
+                  setValue={setFitlerJournalValue}
+                  title={"Filter Publications By Journal"}
+                  DropDownArray={allJournals}
+                />
+                {/* <AutoCompleteDropDown
+                  value={contentToSearchForValue}
+                  setValue={setContentToSearchForValue}
+                  title={"Type Of Content To Search For"}
+                  DropDownArray={["Everything", "Researchers", "Publications", "Grants"]}
+                /> */}
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+        </Grid>
       </Grid>
       <div ref={titleRef}></div>
-      {(SearchForWhat === "Everything" || SearchForWhat === "Researchers") && (
+      {advancedSearchYet && (SearchForWhat === "Everything" || SearchForWhat === "Researchers") && (
         <ResearcherSearchResultsComponent
           researchSearchResults={researchSearchResults}
           researcherSearchResultPage={researcherSearchResultPage}
           setResearcherSearchResultPage={setResearcherSearchResultPage}
+          searchYet={true}
         />
       )}
-      {(SearchForWhat === "Everything" || SearchForWhat === "Publications") && (
+      {advancedSearchYet && (SearchForWhat === "Everything" || SearchForWhat === "Publications") && (
         <PublicationSearchResultsComponent
           publicationSearchResults={publicationSearchResults}
           publicationsSearchResultPage={publicationsSearchResultPage}
           setPublicationsSearchResultPage={setPublicationsSearchResultPage}
+          searchYet={true}
         />
       )}
-      {(SearchForWhat === "Everything" || SearchForWhat === "Grants") && (
-        <GrantInformation grantData={grantsSearchResults} tabOpened={false} initialNumberOfRows={50}/>
+      {advancedSearchYet &&(SearchForWhat === "Everything" || SearchForWhat === "Grants") && (
+        <GrantInformation 
+          grantData={grantsSearchResults} 
+          tabOpened={false} 
+          initialNumberOfRows={50}
+          searchYet={true}
+        />
       )}
     </div>
   );
