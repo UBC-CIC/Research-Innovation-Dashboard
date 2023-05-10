@@ -4,65 +4,182 @@ import boto3
 import numpy
 from pyjarowinkler.distance import get_jaro_distance
 import os
+from unidecode import unidecode
+from strsimpy.normalized_levenshtein import NormalizedLevenshtein
+from strsimpy.jaro_winkler import JaroWinkler
+
+normalized_levenshtein = NormalizedLevenshtein()
+jarowinkler = JaroWinkler()
+
 
 s3_client = boto3.client("s3")
+
+def normalized_levenshtein_distance(s1, s2):
+    return normalized_levenshtein.distance(s1, s2)
+
+def jaccard_similarity_for_sets(s1, s2):
+    set1 = set(s1)
+    set2 = set(s2)
+    intersection = set1.intersection(set2)
+    union = set1.union(set2)
+    return len(intersection) / len(union)
+
+def computeScore(s1, s2):
+    jaro_winkler_distance = jarowinkler.similarity(s1, s2)
+    normalized_levenshtein = normalized_levenshtein_distance(s1, s2)
+    jaccard_similarity_value = jaccard_similarity_for_sets(s1, s2)
+
+    # Define the weights for the string similarity metrics
+    weights = {
+        'jaro_winkler': 0.6,
+        'levenshtein': 0.4,
+        'jaccard': 0
+    }
+
+    # Calculate the weighted score
+    score = (jaro_winkler_distance * weights['jaro_winkler'] +
+             (1 - normalized_levenshtein) * weights['levenshtein'] +
+             jaccard_similarity_value * weights['jaccard'])
+
+    print("Score is: " + str(score))
+    return score
+
+def matchLastNames(scopus_last_name, institution_last_name):
+    if scopus_last_name is None or institution_last_name is None:
+        return False
+
+    if scopus_last_name == "" or institution_last_name == "":
+        return False
+
+    # Convert to lowercase
+    scopus_last_name = scopus_last_name.lower()
+    institution_last_name = institution_last_name.lower()
+
+    # Remove accents
+    scopus_last_name = unidecode(scopus_last_name)
+    institution_last_name = unidecode(institution_last_name)
+
+    common_suffixes = {"pharmd", "phd"}
+
+    scopus_last_name_array = scopus_last_name.split()
+    institution_last_name_array = institution_last_name.split()
+
+    scopus_last_name_array = [x for x in scopus_last_name_array if x not in common_suffixes]
+    institution_last_name_array = [x for x in institution_last_name_array if x not in common_suffixes]
+
+    # Make string from array with space between each word
+    scopus_last_name = " ".join(scopus_last_name_array)
+    institution_last_name = " ".join(institution_last_name_array)
+
+    score = computeScore(scopus_last_name, institution_last_name)
+
+    threshold = 0.96
+    if score >= threshold:
+        return True
+
+    return False
+
+def matchFirstNames(scopusFirstName, institutionFirstName):
+    """
+    The scopusFirstName can have multiple words, hyphens, and words with periods.
+    The institutionFirstName can have multiple words, hyphens, and words with periods.
+
+    This function is only called if the last names match.
+    """
+
+    # Check if the first names are None or empty strings
+    if scopusFirstName is None or institutionFirstName is None:
+        return False
+
+    # Check if the first names are empty strings
+    if scopusFirstName == "" or institutionFirstName == "":
+        return False
+
+    # Convert to lowercase
+    scopusFirstName = scopusFirstName.lower()
+    institutionFirstName = institutionFirstName.lower()
+
+    # Remove accents
+    scopusFirstName = unidecode(scopusFirstName)
+    institutionFirstName = unidecode(institutionFirstName)
+
+    threshold = 0.95
+
+    print("Score for two names:")
+    print(scopusFirstName)
+    print(institutionFirstName)
+
+    # Compute the score
+    score = computeScore(scopusFirstName, institutionFirstName)
+
+    # If the score is greater than the threshold then return True
+    if score >= threshold:
+        return True
+
+
+    scopusFirstNameWord = scopusFirstName.split()
+    institutionFirstNameWords = institutionFirstName.split()
+
+    # Compute the score of the first names that do not match fully
+    score = computeScore(scopusFirstNameWord[0], institutionFirstNameWords[0])
+
+
+    if score >= threshold:
+        # Check that the first letter of the remaining words match
+        i = 0
+        while i < len(scopusFirstNameWord) and i < len(institutionFirstNameWords):
+            if scopusFirstNameWord[i][0] != institutionFirstNameWords[i][0]:
+                return False
+            i += 1
+
+        return True
+
+    return False
 
 '''
 Compares the given institution_name to the last name in each scopus_id_row. Returns all matches that have
 a Jaro-Winkler distance greater than or equal to 0.95
 '''
 def SearchIdsLastName(institution_name, scopus_id_rows):
+    # Create an empty list to store the matches.
     matches = []
-    max_jaro_distance = 0
-    matched_name = ''
     for row in scopus_id_rows:
+        # Get the last name from the row.
         scopus_name = row['CLEANED_LAST_NAME']
-        jaro_distance = get_jaro_distance(scopus_name, institution_name, winkler=True, scaling=0.1)
-        if (jaro_distance >= max_jaro_distance):
-            max_jaro_distance = jaro_distance
-            matched_name = row['NAME']
-            matched_name_last = row['CLEANED_LAST_NAME']
-            matched_name_first = row['CLEANED_FIRST_NAME']
-            matched_id = row['SCOPUS_ID']
-        if (jaro_distance >= 0.95):
-            matches.append({'SCOPUS_NAME': row['NAME'], 'SCOPUS_CLEANED_LAST_NAME': scopus_name, 'SCOPUS_CLEANED_FIRST_NAME': row['CLEANED_FIRST_NAME'], 'SCOPUS_ID': row['SCOPUS_ID'], 'JARO_DISTANCE': jaro_distance})
+        # check if the last names match
+        lastNamesMatch = matchLastNames(scopus_name, institution_name)
+        # If the last names match append the row to the matches list.
+        if lastNamesMatch:
+            matches.append({'SCOPUS_NAME': row['NAME'], 'SCOPUS_CLEANED_LAST_NAME': scopus_name, 'SCOPUS_CLEANED_FIRST_NAME': row['CLEANED_FIRST_NAME'], 'SCOPUS_ID': row['SCOPUS_ID']})
+    # If there are no matches then return False and an empty list.
     if (len(matches) == 0):
-        matches.append({'SCOPUS_NAME': matched_name, 'SCOPUS_CLEANED_LAST_NAME': matched_name_last, 'SCOPUS_CLEANED_FIRST_NAME': matched_name_first, 'SCOPUS_ID': matched_id, 'JARO_DISTANCE': max_jaro_distance})
         return (False, matches)
-    elif (len(matches) > 1):
-        return(True, PruneMatches(matches))
-    else:
-        return(True, matches)
+    return(True, matches)
 
 '''
 Compares the given institution_name to the first name in each scopus_id_row. Returns all matches that have
 a Jaro-Winkler distance greater than or equal to 0.95
 '''
-def SearchIdsFirstName(institution_name, scopus_id_rows, email):
+def SearchIdsFirstName(institutionFirstName, lastNameMatches):
+    # Create an empty list to store the matches.
     matches = []
-    max_jaro_distance = 0
-    matched_name = ''
-    for row in scopus_id_rows:
-        scopus_name = row['SCOPUS_CLEANED_FIRST_NAME']
-        if (scopus_name):
-            jaro_distance = get_jaro_distance(scopus_name, institution_name, winkler=True, scaling=0.1)
-        else:
-            jaro_distance = 0
-        if (jaro_distance >= max_jaro_distance):
-            max_jaro_distance = jaro_distance
-            matched_name = row['SCOPUS_NAME']
-            matched_name_last = row['SCOPUS_CLEANED_LAST_NAME']
-            matched_name_first = row['SCOPUS_CLEANED_FIRST_NAME']
-            matched_id = row['SCOPUS_ID']
-        if (jaro_distance >= 0.95):
-            matches.append({'SCOPUS_NAME': row['SCOPUS_NAME'], 'SCOPUS_CLEANED_LAST_NAME': row['SCOPUS_CLEANED_LAST_NAME'], 'SCOPUS_CLEANED_FIRST_NAME': scopus_name, 'SCOPUS_ID': row['SCOPUS_ID'], 'JARO_DISTANCE': jaro_distance})
-    if (len(matches) == 0):
-        matches.append({'SCOPUS_NAME': matched_name, 'SCOPUS_CLEANED_LAST_NAME': matched_name_last, 'SCOPUS_CLEANED_FIRST_NAME': matched_name_first, 'SCOPUS_ID': matched_id, 'JARO_DISTANCE': max_jaro_distance})
+
+    for row in lastNameMatches:
+        scopusFirstName = row['SCOPUS_CLEANED_FIRST_NAME']
+
+        # check if the first names match
+        firstNamesMatch = matchFirstNames(institutionFirstName, scopusFirstName)
+
+        # If the first names match append the row to the matches list.
+        if firstNamesMatch:
+            matches.append({'SCOPUS_NAME': row['SCOPUS_NAME'], 'SCOPUS_CLEANED_LAST_NAME': row['SCOPUS_CLEANED_LAST_NAME'], 'SCOPUS_CLEANED_FIRST_NAME': scopusFirstName, 'SCOPUS_ID': row['SCOPUS_ID']})
+
+    # If there are no matches then return False and an empty list.
+    if (len(matches) == 0): 
         return (False, matches)
-    elif (len(matches) > 1):
-        return(True, PruneMatches(matches))
-    else:
-        return(True, matches)
+
+    # If there are matches then return True and the list of matches.
+    return (True, matches)
 
 '''
 Given a list of potential matches, returns a list containing the match with the highest Jaro-Winkler distance.
@@ -103,19 +220,31 @@ def lambda_handler(event, context):
         row = table_rows[i]
         first_name = row['CLEANED_FIRST_NAME']
         last_name = row['CLEANED_LAST_NAME']
-        results = SearchIdsLastName(last_name, scopus_id_rows)
-        results = SearchIdsFirstName(first_name, results[1], row['EMAIL_ADDRESS'])
-        found_match = results[0]
-        matches = results[1]
-        for i in range(len(matches)):
-            matches[i].update(row)
-        if not found_match:
-            no_matches = numpy.concatenate((no_matches, matches))
+
+        fullMatches = []
+        foundFullMatch = False
+
+        # Search for matches by last name
+        foundMatch, matches = SearchIdsLastName(last_name, scopus_id_rows)
+        # If matches are found by last name, search through matched last names for a first name match.
+        if (foundMatch):
+            foundFullMatch, fullMatches = SearchIdsFirstName(first_name, matches)
+
+
+        for i in range(len(fullMatches)):
+            fullMatches[i].update(row)
+
+        if (foundFullMatch):
+            # If there are multiple matches with a Jaro-Winkler distance greater than 0.95 then store them in the duplicates folder.
+            if(len(fullMatches) > 1):
+                duplicates = numpy.concatenate((duplicates, fullMatches))
+                
+            # If there is only one match with a Jaro-Winkler distance greater than 0.95 then store it in the matches folder.
+            else:
+                found_matches = numpy.concatenate((found_matches, fullMatches))
+        # If no matches are found by last name then store the row in the no_matches folder.
         else:
-            if len(matches) > 1:
-                duplicates = numpy.concatenate((duplicates, matches))
-            elif len(matches) == 1:
-                found_matches = numpy.concatenate((found_matches, matches))
+            no_matches = numpy.concatenate((no_matches, fullMatches))
     
     # TODO: change 100 to environment variable
     file_number = int(event['startIndex'] / 100)
@@ -126,7 +255,7 @@ def lambda_handler(event, context):
         file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'INSTITUTION_USER_ID', 
                     'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
                     'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
-                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'EXTRA_IDS', 'JARO_DISTANCE', 'CLOSEST_MATCH_NAME']
+                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'EXTRA_IDS', 'CLOSEST_MATCH_NAME']
         writer.writerow(file_headers)
         for match in found_matches:
             writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], 
@@ -134,7 +263,7 @@ def lambda_handler(event, context):
                              match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
                              match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
                              match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['SCOPUS_ID'], [],
-                             match['JARO_DISTANCE'], match['SCOPUS_NAME']])
+                             match['SCOPUS_NAME']])
     
     # Upload the data into s3
     s3 = boto3.resource('s3')
@@ -148,7 +277,7 @@ def lambda_handler(event, context):
         file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'INSTITUTION_USER_ID', 
                     'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
                     'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
-                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'JARO_DISTANCE', 'CLOSEST_MATCH_NAME']
+                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'CLOSEST_MATCH_NAME']
         writer.writerow(file_headers)
         for match in duplicates:
             writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], 
@@ -156,7 +285,7 @@ def lambda_handler(event, context):
                              match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
                              match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
                              match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['SCOPUS_ID'], 
-                             match['JARO_DISTANCE'], match['SCOPUS_NAME']])
+                             match['SCOPUS_NAME']])
     
     # Upload the data into s3
     key = 'researcher_data/duplicates/duplicates' + str(file_number) + '.csv'
@@ -168,7 +297,7 @@ def lambda_handler(event, context):
         file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'CLEANED_NAME', 'INSTITUTION_USER_ID', 
                     'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
                     'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
-                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'JARO_DISTANCE', 
+                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 
                     'CLOSEST_MATCH_NAME', 'CLOSEST_MATCH_ID', 'CLOSEST_MATCH_NAME_CLEANED']
         writer.writerow(file_headers)
         for match in no_matches:
@@ -176,7 +305,7 @@ def lambda_handler(event, context):
                              match['INSTITUTION_USER_ID'], match['EMAIL_ADDRESS'], match['PRIMARY_DEPARTMENT_AFFILIATION'], 
                              match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
                              match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
-                             match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['JARO_DISTANCE'],
+                             match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], 
                              match['SCOPUS_NAME'], match['SCOPUS_ID'], match['SCOPUS_CLEANED_LAST_NAME']])
     
     # Upload the data into s3

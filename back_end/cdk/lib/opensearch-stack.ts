@@ -23,7 +23,7 @@ export class OpensearchStack extends Stack {
     constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
       super(scope, id, props);
 
-    this.domainName = 'cdk-opensearch-domain'
+    this.domainName = 'expertisedashboard-os-domain'
 
     //Create a role for lambda to access opensearch
     const lambdaRole = new Role(this, 'OpenSearchLambdaRole', {
@@ -40,8 +40,6 @@ export class OpensearchStack extends Stack {
                             "es:ESHttpPost",
                         ],
                         resources: ["arn:aws:es:*:*:domain/*"]
-                        //arn:aws:es:ca-central-1:649335657496:domain/cdk-opensearch-domain
-                        //arn:aws:es:::domain/*
                     }),
                     new PolicyStatement({
                         effect: Effect.ALLOW,
@@ -64,7 +62,7 @@ export class OpensearchStack extends Stack {
         effect: iam.Effect.ALLOW,
         actions: [ 'es:ESHttp*' ],
         principals: [ new ArnPrincipal(lambdaRole.roleArn) ],
-        resources: [ `arn:aws:es:ca-central-1:${this.account}:domain/${this.domainName}` ],
+        resources: [ `arn:aws:es:${this.region}:${this.account}:domain/${this.domainName}` ],
     });
 
     // get the default security group from the vpc
@@ -138,6 +136,7 @@ export class OpensearchStack extends Stack {
         memorySize: 512,
         environment: {
             "OPENSEARCH_ENDPOINT": this.devDomain.domainEndpoint,
+            "AWS_REGION": this.region
         },
         securityGroups: [ defaultSecurityGroup ],
         vpc: vpcStack.vpc,

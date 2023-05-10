@@ -62,7 +62,7 @@ export class DataFetchStack extends cdk.Stack {
     });
 
     // The layer containing the numpy library (AWS Managed)
-    const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', 'arn:aws:lambda:ca-central-1:336392948345:layer:AWSDataWrangler-Python39:5')
+    const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', `arn:aws:lambda:${this.region}:336392948345:layer:AWSDataWrangler-Python39:5`)
 
     // Create the database tables (runs during deployment)
     const createTables = new triggers.TriggerFunction(this, 'expertiseDashboard-createTables', {
@@ -119,7 +119,7 @@ export class DataFetchStack extends cdk.Stack {
         "ssm:GetParameters",
         "ssm:GetParametersByPath",
       ],
-      resources: [`arn:aws:ssm:ca-central-1:${this.account}:parameter/service/elsevier/api/user_name/*`]
+      resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/service/elsevier/api/user_name/*`]
     }));
     nameMatchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
@@ -142,7 +142,7 @@ export class DataFetchStack extends cdk.Stack {
         // Secrets Manager
         "secretsmanager:GetSecretValue",
       ],
-      resources: [`arn:aws:secretsmanager:ca-central-1:${this.account}:secret:expertiseDashboard/credentials/*`]
+      resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:expertiseDashboard/credentials/*`]
     }));
     dataFetchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
@@ -176,7 +176,7 @@ export class DataFetchStack extends cdk.Stack {
         "ssm:GetParametersByPath",
       ],
       resources: [
-        `arn:aws:ssm:ca-central-1:${this.account}:parameter/service/elsevier/api/user_name/*`,
+        `arn:aws:ssm:${this.region}:${this.account}:parameter/service/elsevier/api/user_name/*`,
       ]
     }));
     //Create a policy to start DMS task

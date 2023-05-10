@@ -43,23 +43,24 @@ def lambda_handler(event, context):
         file_headers[3] = "INSTITUTION_USER_ID"
         file_headers.append('CLEANED_FIRST_NAME')
         file_headers.append('CLEANED_LAST_NAME')
+        # write the headers to the csv file
         writer.writerow(file_headers)
         for row in table_rows:
+            # remove all spaces from the rank
             rank = row['PRIMARY_ACADEMIC_RANK'].replace(' ', '')
+
+            # if the rank is in the list of ranks, write the row to the csv file
             if rank in ranks:
                 del row['SNAPSHOT_DATE']
-                first_name = row['PREFERRED_FIRST_NAME'].replace('-', ' ').split()[0]
-                last_name = row['PREFERRED_LAST_NAME'].replace('-', ' ').split()[0]
-                first_name_clean = "".join(c for c in first_name if c.isalpha())
-                first_name_clean = first_name_clean.lower()
-                last_name_clean = "".join(c for c in last_name if c.isalpha())
-                last_name_clean = last_name_clean.lower()
+
+                first_name = row['PREFERRED_FIRST_NAME']
+                last_name = row['PREFERRED_LAST_NAME']
                 keys = list(row.keys())
                 values = []
                 for key in keys:
                     values.append(row[key])
-                values.append(first_name_clean)
-                values.append(last_name_clean)
+                values.append(first_name)
+                values.append(last_name)
                 writer.writerow(values)
                 clean_rows_count += 1
     

@@ -11,6 +11,7 @@ import { DatabaseStack } from '../lib/database-stack';
 import { DataFetchStack } from '../lib/datafetch-stack';
 import { GrantDataStack } from '../lib/grantdata-stack';
 import { PatentDataStack } from '../lib/patentdata-stack';
+import { UpdatePublicationStack } from '../lib/updatepublication-stack';
 
 
 const app = new cdk.App();
@@ -41,8 +42,13 @@ const patentDataStack = new PatentDataStack(app, 'PatentDataStack', grantDataSta
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 patentDataStack.addDependency(grantDataStack)
 
-const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseStack, dmsStack,
-    {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
+const updatePublicationStack = new UpdatePublicationStack(app, 'UpdatePublicationStack', grantDataStack, 
+    {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }})
+updatePublicationStack.addDependency(grantDataStack)
+
+// fargate stack deprecated since we are using Glue for updatePublications
+// const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseStack, dmsStack,
+//     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
     
 const appsyncStack = new AppsyncStack(app, 'AppsyncStack', openSearchStack, vpcStack, databaseStack, dataFetchStack,
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});

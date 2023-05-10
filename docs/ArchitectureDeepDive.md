@@ -53,7 +53,7 @@
 26. All queries approved by AWS Web Application Firewall (WAF) are passed to AppSync.
 27. All queries are first sent to AWS WAF. This helps prevent malicious users from getting data or breaking the website with DDOS attacks.
 28. Users connect to the webpage, where access to AWS resources is done through authentication using AWS Cognito.
-29. Users navigate to the VPRI application in their web browser.
+29. Users navigate to the application in their web browser.
 
 # Update Publications Deep Dive (10)
 
@@ -71,18 +71,17 @@ If a researcher has published a paper since the update publications function las
 
 ![Database Schema](../docs/images/Database-Schema.png)
 ## Update Publications Flow of Code:
-![Update Publications Code Flow](../docs/images/Update-Publications-Code-Flow-Photo.png)
 
-### Remove Publications without Institution's author:
+### 1. Remove Publications without Institution's author:
 This function removes all the publications in the database that do not have an active Institution's researcher listed as an author. An active Institution's researcher is someone who has a row in the researchers table. Papers may get deleted because a researcher is removed from the researchers table or because a researcher's Scopus ID is changed. 
 
-### Update All Researcher Number Of Documents:
+### 2. Update All Researcher Number Of Documents:
 This function queries the database for each researcher and sets the num_documents to a new value if required.
 
-### Create List of Researchers that need to be updated:
+### 3. Create List of Researchers that need to be updated:
 This function queries the database and Scopus to check if a researcher needs to be updated. If the researcher has less documents in the database than on Scopus the researcher must be updated and the code adds them to a list. This function also updates every researcher's h-index regardless of their number of documents changing. This is because their h-index can change even if they don’t publish a new paper.
 
-### Update Researchers:
+### 4. Update Researchers:
 This function fetches the publications of each researcher. There is a limitation with Scopus when you query for an author's publications. For each publication it will only show the first 100 authors on the publication, which can cause problems because Institution's authors on those publications might not be in the first 100 authors. So when the update publications function comes across a publication there are four possible options:
 The publication is not in the database and the publication has less than 100 authors.
 The publication is in the database and has less than 100 authors.
