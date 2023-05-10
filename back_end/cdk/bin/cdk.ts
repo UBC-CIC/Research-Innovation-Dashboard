@@ -46,8 +46,9 @@ const updatePublicationStack = new UpdatePublicationStack(app, 'UpdatePublicatio
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }})
 updatePublicationStack.addDependency(grantDataStack)
 
-const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseStack, dmsStack,
-    {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
+// fargate stack deprecated since we are using Glue for updatePublications
+// const fargateStack = new FargateStack(app, 'FargateStack', vpcStack, databaseStack, dmsStack,
+//     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
     
 const appsyncStack = new AppsyncStack(app, 'AppsyncStack', openSearchStack, vpcStack, databaseStack, dataFetchStack,
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});

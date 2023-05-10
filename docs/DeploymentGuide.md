@@ -196,7 +196,7 @@ cdk deploy AppsyncStack --profile your-profile-name
 ```
 
 ```
-cdk deploy FargateStack --profile your-profile-name
+cdk deploy UpdatePublicationStack --profile your-profile-name
 ```
 
 ### Taking down the deployed stacks

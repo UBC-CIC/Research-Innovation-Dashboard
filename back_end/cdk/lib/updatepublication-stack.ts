@@ -71,7 +71,7 @@ export class UpdatePublicationStack extends Stack {
     const PYTHON_VER = "3.9";
     const GLUE_VER = "3.0";
     const MAX_RETRIES = 0; // no retries, only execute once
-    const MAX_CAPACITY = 0.0625; // 1/16 of a DPU, lowest setting
+    const MAX_CAPACITY = 1; // 1/16 of a DPU, lowest setting
     const MAX_CONCURRENT_RUNS = 7; // 7 concurrent runs of the same job simultaneously
     const TIMEOUT = 120; // 120 min timeout duration
     const defaultArguments = {
