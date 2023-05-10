@@ -60,6 +60,20 @@ export class DataFetchStack extends cdk.Stack {
       compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
       description: 'Contains the pytz library, used to get the correct timezone when fetching the date',
     });
+    
+    // The layer containing the strsimpy library
+    const strsimpy = new lambda.LayerVersion(this, 'strsimpy', {
+      code: lambda.Code.fromAsset('layers/strsimpy.zip'),
+      compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
+      description: 'Contains the strsimpy library, used to perform various string comparison metrics',
+    });
+
+    // The layer containing the strsimpy library
+    const unicode = new lambda.LayerVersion(this, 'unicode', {
+      code: lambda.Code.fromAsset('layers/unicode.zip'),
+      compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
+      description: 'Contains the unicode library, used to decode unicode',
+    });
 
     // The layer containing the numpy library (AWS Managed)
     const numpy = lambda.LayerVersion.fromLayerVersionArn(this, 'awsNumpyLayer', `arn:aws:lambda:${this.region}:336392948345:layer:AWSDataWrangler-Python39:5`)
@@ -243,7 +257,7 @@ export class DataFetchStack extends cdk.Stack {
       runtime: lambda.Runtime.PYTHON_3_9,
       functionName: 'expertiseDashboard-compareNames',
       handler: 'compareNames.lambda_handler',
-      layers: [this.pyjarowinkler, numpy],
+      layers: [this.pyjarowinkler, numpy, unicode, strsimpy],
       code: lambda.Code.fromAsset('lambda/compareNames'),
       timeout: cdk.Duration.minutes(15),
       role: nameMatchRole,

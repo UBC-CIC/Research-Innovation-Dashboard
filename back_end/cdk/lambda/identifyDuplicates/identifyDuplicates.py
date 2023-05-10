@@ -122,24 +122,63 @@ for each author and appends it to the authors info. Fetches data for 100
 authors on each API call
 '''
 def sciValFetch(authors):
-    url = os.environ.get('SCIVAL_URL')
-    max_authors = int(os.environ.get('SCIVAL_MAX_AUTHORS'))
+    try:
+        url = os.environ['SCIVAL_URL']
+        max_authors = int(os.environ['SCIVAL_MAX_AUTHORS'])
+    except KeyError as e:
+        print(f"Error: Missing environment variable {e}")
+        return
+    except ValueError as e:
+        print(f"Error: Invalid environment variable value {e}")
+        return
+
     authors_split = splitArray(authors, max_authors)
+
     for author_subset in authors_split:
         author_ids = []
         for author in author_subset:
             author_ids.append(int(author['SCOPUS_ID']))
-        query = {'authors' : str(author_ids).replace('[','').replace(']',''),
-        'metricTypes' : 'HIndices',
-        'yearRange': '5yrs',
-        'byYear' : 'false'
-        }
-        response = requests.get(url, headers=elsevier_headers, params=query)
-        results = response.json()['results']
+
+        query = {'authors': ','.join(map(str, author_ids)),
+                 'metricTypes': 'HIndices',
+                 'yearRange': '5yrs',
+                 'byYear': 'false'
+                 }
+
+        max_retries = 5
+        retries = 0
+        backoff_factor = 2
+
+        while retries <= max_retries:
+            try:
+                response = requests.get(url, headers=elsevier_headers, params=query)
+                response.raise_for_status()
+                break
+            except requests.exceptions.RequestException as e:
+                if response.status_code == 429 or isinstance(e, requests.exceptions.Timeout):
+                    # API rate limit hit or timeout occurred, apply exponential backoff
+                    sleep_time = backoff_factor ** retries
+                    print(f"API rate limit hit or request timed out. Retrying in {sleep_time} seconds...")
+                    time.sleep(sleep_time)
+                    retries += 1
+                else:
+                    # Other request exceptions
+                    print(f"Error: API request failed - {e}")
+                    return
+            if retries > max_retries:
+                print("Error: Maximum retries reached. Giving up.")
+                return
+
+        try:
+            results = response.json()['results']
+        except KeyError as e:
+            print(f"Error: Unexpected JSON structure in API response - {e}")
+            return
+
         for result in results:
             for author in author_subset:
-                if (int(author['SCOPUS_ID']) == result['author']['id']):
-                    if(list(result['metrics'][0].keys()).count('value')):
+                if int(author['SCOPUS_ID']) == result['author']['id']:
+                    if 'value' in result['metrics'][0]:
                         author['h_index'] = result['metrics'][0]['value']
 
 '''
@@ -180,7 +219,7 @@ def lambda_handler(event, context):
         file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'INSTITUTION_USER_ID', 
                     'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
                     'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
-                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'EXTRA_IDS', 'JARO_DISTANCE', 'CLOSEST_MATCH_NAME']
+                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'EXTRA_IDS', 'CLOSEST_MATCH_NAME']
         writer.writerow(file_headers)
         for match in solved_duplicates:
             writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], 
@@ -188,7 +227,7 @@ def lambda_handler(event, context):
                              match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
                              match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
                              match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['SCOPUS_ID'], [], 
-                             match['JARO_DISTANCE'], match['CLOSEST_MATCH_NAME']])
+                             match['CLOSEST_MATCH_NAME']])
     
     # Upload the solved duplicates to s3
     s3 = boto3.resource('s3')
@@ -222,7 +261,7 @@ def lambda_handler(event, context):
         file_headers = ['PREFERRED_FIRST_NAME', 'PREFERRED_LAST_NAME', 'PREFERRED_FULL_NAME', 'INSTITUTION_USER_ID', 
                     'EMAIL_ADDRESS', 'PRIMARY_DEPARTMENT_AFFILIATION', 'SECONDARY_DEPARTMENT_AFFILIATION', 
                     'PRIMARY_FACULTY_AFFILIATION', 'SECONDARY_FACULTY_AFFILIATION', 'PRIMARY_CAMPUS_LOCATION', 
-                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'JARO_DISTANCE', 'EXTRA_IDS']
+                    'PRIMARY_ACADEMIC_RANK', 'PRIMARY_ACADEMIC_TRACK_TYPE', 'SCOPUS_ID', 'EXTRA_IDS']
         writer.writerow(file_headers)
         for match in extra_id_authors:
             writer.writerow([match['PREFERRED_FIRST_NAME'], match['PREFERRED_LAST_NAME'], match['PREFERRED_FULL_NAME'], 
@@ -230,7 +269,7 @@ def lambda_handler(event, context):
                              match['SECONDARY_DEPARTMENT_AFFILIATION'], match['PRIMARY_FACULTY_AFFILIATION'], 
                              match['SECONDARY_FACULTY_AFFILIATION'], match['PRIMARY_CAMPUS_LOCATION'], 
                              match['PRIMARY_ACADEMIC_RANK'], match['PRIMARY_ACADEMIC_TRACK_TYPE'], match['SCOPUS_ID'], 
-                             match['JARO_DISTANCE'], match['EXTRA_IDS']])
+                             match['EXTRA_IDS']])
     
     # Upload the unsolved duplicates to s3
     key = 'researcher_data/duplicates/unsolved_duplicates/unsolved_duplicates' + str(iteration_number) + '.csv'

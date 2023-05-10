@@ -41,7 +41,6 @@ def computeScore(s1, s2):
              (1 - normalized_levenshtein) * weights['levenshtein'] +
              jaccard_similarity_value * weights['jaccard'])
 
-    print("Score is: " + str(score))
     return score
 
 def matchLastNames(scopus_last_name, institution_last_name):
@@ -104,10 +103,6 @@ def matchFirstNames(scopusFirstName, institutionFirstName):
     institutionFirstName = unidecode(institutionFirstName)
 
     threshold = 0.95
-
-    print("Score for two names:")
-    print(scopusFirstName)
-    print(institutionFirstName)
 
     # Compute the score
     score = computeScore(scopusFirstName, institutionFirstName)

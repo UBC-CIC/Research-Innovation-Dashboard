@@ -2,11 +2,12 @@
 
 ## Architecture
 
-![Architecture diagram](../docs/images/p3/ExpertiseDashboard_Architecture_Phase_III.drawio.png?raw=true)
+![Architecture diagram](../docs/images/p3/ExpertiseDashboard_Architecture_Phase_III-final.drawio.png?raw=true)
 
+Architecture Diagram exported as XML file from draw.io can be found [here](ExpertiseDashboard_Architecture_Phase_III.drawio.xml).
 ## Description
 ### Back End Flow (1-15)
-![Architecture diagram](.docs/images/../../images/p3/ExpertiseDashboard_Architecture_Back_End_Phase_III.drawio.png)
+![Architecture diagram](.docs/images/../../images/p3/ExpertiseDashboard_Architecture_Back_End_Phase_III.drawio-final.png)
 
 #### NOTE: "Institution" in this document refers to the institution that deploys this solution.
 
@@ -21,7 +22,7 @@
 7. The number of filed patents listed on ORCID is fetched from the ORCID API and stored in the database
 8. Each researcher's publication data is fetched from the Scopus API and stored in the database. This data includes each publication’s title, associated keywords, author names and Scopus ids, journal title, and the number of times the publication has been cited.
 9. The start replication Lambda will start the DMS replication task to replicate data from the PostgreSQL database to the AWS Opensearch cluster to make the data searchable on the webapp.
-10. Every Saturday at midnight a python docker container hosted on AWS fargate will be run to update the publications of the researchers in the database. The container will update researcher’s h-indexes and number of publications. Update publications will also add newly published publications to the database and remove publications with no current Institution's researchers.
+10. Every Saturday at midnight a Glue Job will be run to update the publications of the researchers in the database. It will update researcher’s h-indexes and number of publications. Update publications will also add newly published publications to the database and remove publications with no current Institution's researchers.
 11. Once per week the AWS DMS task will be run to replicate data from the PostgreSQL database to AWS opensearch. This makes the data searchable and keeps the searches up to date.
 12. When queried, the Lambda communicates with AWS OpenSearch and executes the search required.
 13. AWS Appsync triggers the OpenSearch Lambda and passes the correct variables needed to execute the query.
@@ -61,7 +62,7 @@ The goal of the update publications feature is to keep the database up to date w
 
 ## How often update publications is run:
 
-Update publications is run once a week at midnight (UTC time) on Saturday. To accomplish this, the following cron expression is used (0 0 ? * SAT *) (minute, hour, Day-of-month, Month, Day-of-week, Year). When the cron expression triggers, a Python docker container is launched on AWS Fargate. When the container is running, it runs a series of Python functions to update and add publications to the database.
+Update publications is run once a week at midnight (UTC time) on Saturday. To accomplish this, the following cron expression is used (0 0 ? * SAT *) (minute, hour, Day-of-month, Month, Day-of-week, Year). When the cron expression triggers, a Glue Job is invoked. When the Job is running, it runs a series of Python functions to update and add publications to the database.
 
 ## What Tables and Columns are Changed:
 
@@ -102,5 +103,3 @@ Check if the publication has the queried author’s ID stored. If the author is 
 
 #### After all the researchers have been updated:
 After all the researchers have been updated the update publications code triggers the AWS DMS replication task to start to replicate data from the PostgreSQL database to the opensearch cluster to make it searchable on the webapp and to keep the data up to date.
-
-
