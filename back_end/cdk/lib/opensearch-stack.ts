@@ -86,9 +86,10 @@ export class OpensearchStack extends Stack {
         encryptionAtRest: {
             enabled: true,
         },
-        fineGrainedAccessControl: {
-            masterUserArn: lambdaRole.roleArn,
-        },
+        // OpenSearch domain with fineGrainedAccessControl is not compatible with DMS 3.4.7 (2023-05-25)
+        // fineGrainedAccessControl: {
+        //     masterUserArn: lambdaRole.roleArn,
+        // },
         nodeToNodeEncryption: true
     });
 

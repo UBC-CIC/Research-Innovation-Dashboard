@@ -60,7 +60,6 @@ export const advancedSearchPublications = /* GraphQL */ `
       link
       title
       year_published
-      author_ids_string
     }
   }
 `;
@@ -174,7 +173,6 @@ export const getPub = /* GraphQL */ `
       link
       title
       year_published
-      author_ids_string
     }
   }
 `;
@@ -257,7 +255,6 @@ export const getResearcherPubsByCitations = /* GraphQL */ `
       link
       title
       year_published
-      author_ids_string
     }
   }
 `;
@@ -273,7 +270,6 @@ export const getResearcherPubsByTitle = /* GraphQL */ `
       link
       title
       year_published
-      author_ids_string
     }
   }
 `;
@@ -289,7 +285,6 @@ export const getResearcherPubsByYear = /* GraphQL */ `
       link
       title
       year_published
-      author_ids_string
     }
   }
 `;
@@ -311,7 +306,6 @@ export const searchPublications = /* GraphQL */ `
       link
       title
       year_published
-      author_ids_string
     }
   }
 `;
