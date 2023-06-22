@@ -1,4 +1,4 @@
-# Research-Innovation-Dashboard
+# Expertise Portal
 
 | Index                                               | Description                                             |
 | :-------------------------------------------------- | :------------------------------------------------------ |
