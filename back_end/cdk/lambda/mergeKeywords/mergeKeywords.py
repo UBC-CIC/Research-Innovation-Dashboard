@@ -27,8 +27,7 @@ def createHashMap(text):
 def getCredentials():
     credentials = {}
 
-    response = sm_client.get_secret_value(
-        SecretId='expertiseDashboard/credentials/dbCredentials')
+    response = sm_client.get_secret_value(SecretId='expertiseDashboard/credentials/dbCredentials')
     secrets = json.loads(response['SecretString'])
     credentials['username'] = secrets['username']
     credentials['password'] = secrets['password']

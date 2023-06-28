@@ -33,8 +33,7 @@ def createHashMap(text):
 def getCredentials():
     credentials = {}
 
-    response = sm_client.get_secret_value(
-        SecretId=SECRET_NAME)
+    response = sm_client.get_secret_value(SecretId=SECRET_NAME)
     secrets = json.loads(response['SecretString'])
     credentials['username'] = secrets['username']
     credentials['password'] = secrets['password']

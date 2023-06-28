@@ -26,8 +26,7 @@ ACCESS_AUTH_URL = "https://ops.epo.org/3.2/auth/accesstoken"
 # get API credentials
 glue_client = boto3.client("glue")
 sm_client = boto3.client("secretsmanager")
-secret = json.loads(sm_client.get_secret_value(
-    SecretId=API_SECRET_NAME)["SecretString"])
+secret = json.loads(sm_client.get_secret_value(SecretId=API_SECRET_NAME)["SecretString"])
 consumer_key = secret["consumer_key"]
 consumer_secret_key = secret["consumer_secret_key"]
 
