@@ -138,7 +138,7 @@ function Navbar(props) {
               variant="h3"
               color="#002145"
             >
-              Expertise Dashboard
+              Expertise Portal
             </Typography>
           </Toolbar>
         </AppBar>

@@ -19,7 +19,8 @@ export class VpcStack extends Stack {
 
     // VPC for application
     this.vpc = new ec2.Vpc(this, 'expertiseDashboard-Vpc', {
-        cidr: '10.0.0.0/16',
+        //cidr: '10.0.0.0/16',
+        ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16'),
         natGatewayProvider: natGatewayProvider,
         natGateways: 1,
         maxAzs: 2,
@@ -41,41 +42,33 @@ export class VpcStack extends Stack {
     });
     this.vpc.addFlowLog('expertiseDashboard-vpcFlowLog');
 
-    // Get default security group for VPC
-    const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, this.vpc.vpcDefaultSecurityGroup);
-
     // Add SSM endpoint to VPC
     this.vpc.addInterfaceEndpoint("SSM Endpoint", {
       service: ec2.InterfaceVpcEndpointAwsService.SSM,
-      securityGroups: [defaultSecurityGroup],
       subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED},
     });
 
     // Add secrets manager endpoint to VPC
     this.vpc.addInterfaceEndpoint("Secrets Manager Endpoint", {
       service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
-      securityGroups: [defaultSecurityGroup],
       subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED},
     });
 
     // Add RDS endpoint to VPC
     this.vpc.addInterfaceEndpoint("RDS Endpoint", {
       service: ec2.InterfaceVpcEndpointAwsService.RDS,
-      securityGroups: [defaultSecurityGroup],
       subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED},
     });
 
     // Add Glue endpoint to VPC
     this.vpc.addInterfaceEndpoint("Glue Endpoint", {
       service: ec2.InterfaceVpcEndpointAwsService.GLUE,
-      securityGroups: [defaultSecurityGroup],
       subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED}
     });
 
     // Add Cloudwatch endpoint to VPC
     this.vpc.addInterfaceEndpoint("Cloudwatch Endpoint", {
       service: ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
-      securityGroups: [defaultSecurityGroup],
       subnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED}
     });
 

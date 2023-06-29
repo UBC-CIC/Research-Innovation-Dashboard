@@ -63,8 +63,6 @@ export class UpdatePublicationStack extends Stack {
 
     // reuse Glue bucket from grant to store glue Script
     const glueS3Bucket = grantDataStack.glueS3Bucket;
-    // reuse Glue Connection's name
-    const glueConnectionName = grantDataStack.glueConnectionName;
     // reuse Glue DMS Connection's name
     const glueDmsConnectionName = grantDataStack.glueDmsConnectionName;
 
@@ -78,8 +76,8 @@ export class UpdatePublicationStack extends Stack {
       "--extra-py-files": `s3://${glueS3Bucket.bucketName}/extra-python-libs/pyjarowinkler-1.8-py2.py3-none-any.whl,s3://${glueS3Bucket.bucketName}/extra-python-libs/custom_utils-0.1-py3-none-any.whl`,
       "library-set": "analytics",
       "--DB_SECRET_NAME": grantDataStack.secretPath,
-      "--DMS_TASK_ARN": grantDataStack.dmsTaskArn
-
+      "--DMS_TASK_ARN": grantDataStack.dmsTaskArn,
+      "--additional-python-modules": "psycopg2-binary"
     };
 
     // Glue Job: fetch EPO patent data from OPS API

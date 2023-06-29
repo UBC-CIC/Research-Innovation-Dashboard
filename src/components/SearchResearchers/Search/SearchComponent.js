@@ -307,7 +307,7 @@ export default function SearchComponent(props) {
                 {
                   (props.whatToSearch === "Everything" && searchYet === false) ?
                     (<Typography align="center" variant="h4" sx={{ margin: "8px", pt: "1.5%", pb: "1.5%" }}>
-                      {"Welcome to the Expertise Dashboard"}
+                      {"Welcome to the Expertise Portal"}
                     </Typography>) : (props.whatToSearch === "Researchers") ? 
                       (<Typography align="center" variant="h4" sx={{ margin: "8px", pt: "1.5%", pb: "1.5%" }}>
                         {"Find Researchers"}

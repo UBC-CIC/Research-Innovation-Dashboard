@@ -70,13 +70,10 @@ export class PatentDataStack extends Stack {
       publicReadAccess: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
-      serverAccessLogsPrefix: "accessLog"
     });
 
     // reuse Glue bucket from grant to store glue Script
     const glueS3Bucket = grantDataStack.glueS3Bucket;
-    // reuse Glue Connection's name
-    const glueConnectionName = grantDataStack.glueConnectionName;
     // reuse Glue DMS Connection's name
     const glueDmsConnectionName = grantDataStack.glueDmsConnectionName;
 
@@ -108,7 +105,8 @@ export class PatentDataStack extends Stack {
       "--EPO_INSTITUTION_NAME": epoInstitutionName.valueAsString,
       "--FILE_PATH": "",
       "--EQUIVALENT": "false",
-      "--DMS_TASK_ARN": grantDataStack.dmsTaskArn
+      "--DMS_TASK_ARN": grantDataStack.dmsTaskArn,
+      "--additional-python-modules": "psycopg2-binary"
 
     };
 
@@ -206,7 +204,7 @@ export class PatentDataStack extends Stack {
         maxConcurrentRuns: MAX_CONCURRENT_RUNS,
       },
       connections: {
-        connections: [glueConnectionName]
+        connections: [glueDmsConnectionName]
       },
       maxRetries: MAX_RETRIES,
       maxCapacity: MAX_CAPACITY,
@@ -234,7 +232,7 @@ export class PatentDataStack extends Stack {
         maxConcurrentRuns: MAX_CONCURRENT_RUNS,
       },
       connections: {
-        connections: [glueConnectionName]
+        connections: [glueDmsConnectionName]
       },
       maxRetries: MAX_RETRIES,
       maxCapacity: MAX_CAPACITY,

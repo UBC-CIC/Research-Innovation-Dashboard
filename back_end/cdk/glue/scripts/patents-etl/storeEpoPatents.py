@@ -52,8 +52,7 @@ def storePatentData():
 
     # secretsmanager client to get db credentials
     sm_client = boto3.client("secretsmanager")
-    response = sm_client.get_secret_value(
-        SecretId=DB_SECRET_NAME)["SecretString"]
+    response = sm_client.get_secret_value(SecretId=DB_SECRET_NAME)["SecretString"]
     secret = json.loads(response)
 
     connection = psycopg2.connect(

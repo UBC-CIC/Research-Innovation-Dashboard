@@ -140,8 +140,7 @@ def createResearcherList():
 
     # secret manager client to get login credentials
     sm_client = boto3.client("secretsmanager")
-    response = sm_client.get_secret_value(
-        SecretId=DB_SECRET_NAME)["SecretString"]
+    response = sm_client.get_secret_value(SecretId=DB_SECRET_NAME)["SecretString"]
     secret = json.loads(response)
 
     # postgreSQL connection
@@ -264,6 +263,8 @@ def assign_ids_epo_patent():
     putToS3(df, TEMP_BUCKET_NAME, FILE_PATH)
 
 # script entry point
+
+
 def main(argv):
 
     global FILE_PATH

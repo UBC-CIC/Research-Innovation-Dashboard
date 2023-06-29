@@ -11,6 +11,7 @@ import { ArnPrincipal, Effect, PolicyDocument, PolicyStatement, Role, ServicePri
 import { DatabaseStack } from './database-stack';
 import { DmsStack } from './dms-stack';
 import { GrantDataStack } from './grantdata-stack';
+import { DefinitionBody } from 'aws-cdk-lib/aws-stepfunctions';
 
 export class DataFetchStack extends cdk.Stack {
   public readonly psycopg2: lambda.LayerVersion;
@@ -27,7 +28,6 @@ export class DataFetchStack extends cdk.Stack {
       publicReadAccess: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
-      serverAccessLogsPrefix: "accessLog"
     });
 
     /*
@@ -438,18 +438,26 @@ export class DataFetchStack extends cdk.Stack {
       lambdaFunction: cleanNoMatches,
       outputPath: '$.Payload',
     });
+    /* 
+    any step that's fetching from the Elsevier's API should NOT run in parallel 
+    due to a very strict API throttling of 2 requests/second https://dev.elsevier.com/api_key_settings.html
+    */
     const cleanNoMatchesMap = new sfn.Map(this, 'Missing Matches Map', {
-      maxConcurrency: 5,
+      maxConcurrency: 1,
       itemsPath: '$'
     });
     cleanNoMatchesMap.iterator(cleanNoMatchesInvoke);
-
+    
     const identifyDuplicatesInvoke = new tasks.LambdaInvoke(this, 'Perform Additional Comparisons Duplicate Profiles', {
       lambdaFunction: identifyDuplicates,
       outputPath: '$.Payload',
     });
+    /* 
+    any step that's fetching from any Elsevier's API should NOT run in parallel 
+    due to a very strict API throttling of 2 requests/second https://dev.elsevier.com/api_key_settings.html
+    */
     const identifyDuplicatesMap = new sfn.Map(this, 'Duplicates Map', {
-      maxConcurrency: 5,
+      maxConcurrency: 1,
       itemsPath: '$'
     });
     identifyDuplicatesMap.iterator(identifyDuplicatesInvoke);
@@ -473,8 +481,12 @@ export class DataFetchStack extends cdk.Stack {
       lambdaFunction: publicationFetch,
       outputPath: '$.Payload',
     });
+    /* 
+    any step that's fetching from any Elsevier's API should NOT run in parallel 
+    due to a very strict API throttling of 2 requests/second https://dev.elsevier.com/api_key_settings.html
+    */
     const publicationMap = new sfn.Map(this, 'Publication Map', {
-      maxConcurrency: 5,
+      maxConcurrency: 1,
       itemsPath: '$'
     });
     publicationMap.iterator(publicationFetchInvoke);
@@ -501,7 +513,7 @@ export class DataFetchStack extends cdk.Stack {
       .next(replicationStartInvoke);
     
     const dataFetch = new sfn.StateMachine(this, 'expertiseDashboard-DataFetchStateMachine', {
-      definition: dataFetchDefinition,
+      definitionBody: sfn.DefinitionBody.fromChainable(dataFetchDefinition),
     });
 
     // Give the lambdas permission to access the S3 Bucket

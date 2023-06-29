@@ -65,9 +65,6 @@ export class AppsyncStack extends Stack {
       description: 'Contains the postgres library',
     });
 
-    //Get default secuirty group
-    const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, vpcStack.vpc.vpcDefaultSecurityGroup);
-
     // Create the postgresql db query function.
     const queryDbFunction = new lambda.Function(this, 'expertiseDashboard-postgresQuery', {
       functionName: "expertiseDashboard-postgresQuery",
@@ -79,7 +76,6 @@ export class AppsyncStack extends Stack {
       environment: {
           "SM_DB_CREDENTIALS": databaseStack.secretPath,
       },
-      securityGroups: [ defaultSecurityGroup ],
       vpc: vpcStack.vpc,
       code: lambda.Code.fromAsset('./lambda/postgresQuery/'),
       layers: [postgresLayer]
@@ -103,22 +99,6 @@ export class AppsyncStack extends Stack {
                 ]
             }),
         },
-    });
-
-    const mergeKeywords = new lambda.Function(this, 'expertiseDashboard-mergeKeywords', {
-      functionName: "expertiseDashboard-mergeKeywords",
-      runtime: lambda.Runtime.PYTHON_3_9,
-      handler: 'mergeKeywords.lambda_handler',
-      timeout: cdk.Duration.minutes(15),
-      role: lambdaRole,
-      memorySize: 512,
-      environment: {
-          "SM_DB_CREDENTIALS": databaseStack.secretPath,
-      },
-      securityGroups: [ defaultSecurityGroup ],
-      vpc: vpcStack.vpc,
-      code: lambda.Code.fromAsset('./lambda/mergeKeywords/'),
-      layers: [dataFetchStack.pyjarowinkler, dataFetchStack.psycopg2]
     });
 
     //Create Opensearch Appsync Data Source
@@ -407,8 +387,8 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    SearchResearcherResolver.addDependsOn(opensearchDataSource);
-    SearchResearcherResolver.addDependsOn(apiSchema);
+    SearchResearcherResolver.addDependency(opensearchDataSource);
+    SearchResearcherResolver.addDependency(apiSchema);
 
     const SearchPublicationsResolver = new appsync.CfnResolver(this, 'searchPublications', {
       apiId: APIID,
@@ -416,8 +396,8 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    SearchPublicationsResolver.addDependsOn(opensearchDataSource);
-    SearchPublicationsResolver.addDependsOn(apiSchema);
+    SearchPublicationsResolver.addDependency(opensearchDataSource);
+    SearchPublicationsResolver.addDependency(apiSchema);
 
     const SearchGrantsResolver = new appsync.CfnResolver(this, 'searchGrants', {
       apiId: APIID,
@@ -425,8 +405,8 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    SearchGrantsResolver.addDependsOn(opensearchDataSource);
-    SearchGrantsResolver.addDependsOn(apiSchema);
+    SearchGrantsResolver.addDependency(opensearchDataSource);
+    SearchGrantsResolver.addDependency(apiSchema);
 
     const SearchPatentsResolver = new appsync.CfnResolver(this, 'searchPatents', {
       apiId: APIID,
@@ -434,8 +414,8 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    SearchPatentsResolver.addDependsOn(opensearchDataSource);
-    SearchPatentsResolver.addDependsOn(apiSchema);
+    SearchPatentsResolver.addDependency(opensearchDataSource);
+    SearchPatentsResolver.addDependency(apiSchema);
 
     const SimilarResearchersResolver = new appsync.CfnResolver(this, 'similarResearchers', {
       apiId: APIID,
@@ -443,8 +423,8 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    SimilarResearchersResolver.addDependsOn(opensearchDataSource);
-    SimilarResearchersResolver.addDependsOn(apiSchema);
+    SimilarResearchersResolver.addDependency(opensearchDataSource);
+    SimilarResearchersResolver.addDependency(apiSchema);
 
     const AdvancedSearchResearchersResolver = new appsync.CfnResolver(this, 'advancedSearchResearchers', {
       apiId: APIID,
@@ -452,8 +432,8 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    AdvancedSearchResearchersResolver.addDependsOn(opensearchDataSource);
-    AdvancedSearchResearchersResolver.addDependsOn(apiSchema);
+    AdvancedSearchResearchersResolver.addDependency(opensearchDataSource);
+    AdvancedSearchResearchersResolver.addDependency(apiSchema);
 
     const AdvancedSearchPublicationsResolver = new appsync.CfnResolver(this, 'advancedSearchPublications', {
       apiId: APIID,
@@ -461,8 +441,8 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    AdvancedSearchPublicationsResolver.addDependsOn(opensearchDataSource);
-    AdvancedSearchPublicationsResolver.addDependsOn(apiSchema);
+    AdvancedSearchPublicationsResolver.addDependency(opensearchDataSource);
+    AdvancedSearchPublicationsResolver.addDependency(apiSchema);
 
     const AdvancedSearchGrantsResolver = new appsync.CfnResolver(this, 'advancedSearchGrants', {
       apiId: APIID,
@@ -470,8 +450,8 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    AdvancedSearchGrantsResolver.addDependsOn(opensearchDataSource);
-    AdvancedSearchGrantsResolver.addDependsOn(apiSchema);
+    AdvancedSearchGrantsResolver.addDependency(opensearchDataSource);
+    AdvancedSearchGrantsResolver.addDependency(apiSchema);
 
     const OtherResearchersWithKeywordResolver = new appsync.CfnResolver(this, 'otherResearchersWithKeyword', {
       apiId: APIID,
@@ -479,8 +459,8 @@ export class AppsyncStack extends Stack {
       typeName: 'Query',
       dataSourceName: opensearchDataSource.name,
     });
-    OtherResearchersWithKeywordResolver.addDependsOn(opensearchDataSource);
-    OtherResearchersWithKeywordResolver.addDependsOn(apiSchema);
+    OtherResearchersWithKeywordResolver.addDependency(opensearchDataSource);
+    OtherResearchersWithKeywordResolver.addDependency(apiSchema);
 
     //Create all the PostgreSQL resolvers
     let postgresqlDBQueryList = ["allPublicationsPerFacultyQuery", "facultyMetrics", "getAllDepartments",
@@ -498,8 +478,8 @@ export class AppsyncStack extends Stack {
         typeName: 'Query',
         dataSourceName: postgresqlDataSource.name,
       });
-      resolver.addDependsOn(postgresqlDataSource);
-      resolver.addDependsOn(apiSchema);
+      resolver.addDependency(postgresqlDataSource);
+      resolver.addDependency(apiSchema);
     }
 
     // Waf Firewall

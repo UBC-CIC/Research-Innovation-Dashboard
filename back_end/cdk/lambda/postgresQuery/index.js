@@ -5,14 +5,18 @@ let secretsManager = new AWS.SecretsManager();
 
 let { SM_DB_CREDENTIALS } = process.env;
 
-async function handler(event) {
-  let sm = await secretsManager
+let sql; // Global variable to hold the database connection
+
+async function initializeConnection() {
+  // Retrieve the secret from AWS Secrets Manager
+  const secret = await secretsManager
     .getSecretValue({ SecretId: SM_DB_CREDENTIALS })
     .promise();
-  let credentials = JSON.parse(sm.SecretString);
 
-  let connectionConfig = {
-    host: credentials.host,
+  const credentials = JSON.parse(secret.SecretString);
+
+  const connectionConfig = {
+    host: credentials.host, // using the proxy endpoint instead of db host
     port: credentials.port,
     username: credentials.username,
     password: credentials.password,
@@ -20,8 +24,19 @@ async function handler(event) {
     ssl: true,
   };
 
-  let sql = postgres(connectionConfig);
+  // Create the PostgreSQL connection
+  sql = postgres(connectionConfig);
+
+  console.log("Database connection initialized");
+}
+
+async function handler(event) {
   
+  // Initialize the database connection if not already initialized
+  if (!sql) {
+    await initializeConnection(); 
+  }
+
   let payload = {};
   let scopusId;
   /*
@@ -514,7 +529,7 @@ async function handler(event) {
       console.log("Unexpected Query!")
   }
 
-  await sql.end({ timeout: 0 });
+  //await sql.end({ timeout: 0 });
 
   return payload;
 }

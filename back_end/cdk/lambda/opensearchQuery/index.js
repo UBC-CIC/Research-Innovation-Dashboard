@@ -5,7 +5,7 @@ const aws4 = require("aws4");
 
 exports.handler = async (event) => {
 var host = 'https://' + process.env.OPENSEARCH_ENDPOINT
-var region = process.env.AWS_REGION
+var region = process.env.AWS_ACC_REGION
 
 const createAwsConnector = (credentials, region) => {
   class AmazonConnection extends Connection {

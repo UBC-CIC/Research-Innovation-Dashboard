@@ -79,7 +79,7 @@ function App(props) {
               type={"image"}
               themeColor={"standard"}
               animateTitle={false}
-              title={"Research Expertise Portal"}
+              title={"Expertise Portal"}
               darkMode={true}
               disableSignUp={true}
             />

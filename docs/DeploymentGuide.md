@@ -319,3 +319,12 @@ To set up user accounts on the app, you will need to do the following steps
    ![alt text](images/webApp/webapp14.png)
 6. The user is now an Admin! (If you are having issues, try relogging on the web app)
    ![alt text](images/webApp/webapp15.png)
+
+## Deactivating User Self Sign up
+
+1. Navigate back to same user pool in the previous step on the Cognito Console, click on `Sign-up experience`.
+ ![alt text](images/deploymentGuide/cognito8.png)
+1. Make sure that the `Self-registration` option is disabled. If it is not, simply click the `Edit` button and
+disable the feature. This will ensure that all users must be manually created on the Cognito Console directly by
+an administrative personnel.
+ ![alt text](images/deploymentGuide/cognito9.png)
