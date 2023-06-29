@@ -63,7 +63,7 @@ export class DmsStack extends Stack {
         replicationSubnetGroupDescription: 'subnets that have access to my rds source and target opensearch cluster.',
         subnetIds: subnets
     });
-
+    
     //Launch an instance in the subnet group created above
     const instance = new dms.CfnReplicationInstance(this, 'Instance', {
         replicationInstanceIdentifier: 'cdk-instance',
@@ -75,9 +75,6 @@ export class DmsStack extends Stack {
         replicationSubnetGroupIdentifier: this.subnet.ref,
 
         publiclyAccessible: false,
-
-        // Attach the default VPC security group to the replication instance
-        vpcSecurityGroupIds: [ vpcStack.vpc.vpcDefaultSecurityGroup ],
 
     });
     

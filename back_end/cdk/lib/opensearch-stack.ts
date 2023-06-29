@@ -64,9 +64,6 @@ export class OpensearchStack extends Stack {
         principals: [ new ArnPrincipal(lambdaRole.roleArn) ],
         resources: [ `arn:aws:es:${this.region}:${this.account}:domain/${this.domainName}` ],
     });
-
-    // get the default security group from the vpc
-    const defaultSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, id, vpcStack.vpc.vpcDefaultSecurityGroup);
     
     // Create the opensearch domain
     this.devDomain = new opensearch.Domain(this, 'expertiseDashboard-CdkOpensearchDomain', {
@@ -80,7 +77,6 @@ export class OpensearchStack extends Stack {
         accessPolicies: [openSearchPolicyStatement],
         vpc: vpcStack.vpc,
         vpcSubnets: [vpcStack.vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_ISOLATED})],
-        securityGroups: [defaultSecurityGroup],
         zoneAwareness: {availabilityZoneCount : 2},
         enforceHttps: true,
         encryptionAtRest: {
@@ -92,6 +88,12 @@ export class OpensearchStack extends Stack {
         // },
         nodeToNodeEncryption: true
     });
+
+    for (let i = 0; i < this.devDomain.connections.securityGroups.length; i++) {
+        this.devDomain.connections.securityGroups[i].addIngressRule(
+            ec2.Peer.ipv4('10.0.0.0/16'), ec2.Port.tcp(443), 'Allow HTTPS from 10.0.0.0/16'
+        )
+    }
 
     //Attach vpc service linked role to opensearch domain
     this.devDomain.node.addDependency(vpcStack.openSearchVPCPermissions);
@@ -137,9 +139,8 @@ export class OpensearchStack extends Stack {
         memorySize: 512,
         environment: {
             "OPENSEARCH_ENDPOINT": this.devDomain.domainEndpoint,
-            "AWS_REGION": this.region
+            "AWS_ACC_REGION": this.region
         },
-        securityGroups: [ defaultSecurityGroup ],
         vpc: vpcStack.vpc,
         code: lambda.Code.fromAsset('lambda/opensearchQuery'),
         layers: [aws4Layer, awsSdkLayer, opensearchLayer],

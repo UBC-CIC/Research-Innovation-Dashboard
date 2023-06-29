@@ -18,8 +18,6 @@ import { DmsStack } from "./dms-stack";
 
 export class GrantDataStack extends Stack {
 
-  public readonly glueConnection: glue.CfnConnection;
-  public readonly glueConnectionName: string;
   public readonly glueDmsConnection: glue.CfnConnection;
   public readonly glueDmsConnectionName: string;
   public readonly secretPath: string;
@@ -88,7 +86,6 @@ export class GrantDataStack extends Stack {
       publicReadAccess: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
-      serverAccessLogsPrefix: "accessLog"
     });
 
     // create S3 bucket for the grant data
@@ -99,7 +96,6 @@ export class GrantDataStack extends Stack {
       publicReadAccess: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
-      serverAccessLogsPrefix: "accessLog"
     });
 
     // create folder structure for the user to upload grant CSV files
@@ -347,41 +343,17 @@ export class GrantDataStack extends Stack {
       destinationKeyPrefix: "extra-python-libs",
     });
 
-    // Create a Connection to the PostgreSQL database inside the VPC
-    this.glueConnectionName = "postgres-conn";
-    const databaseSecret = sm.Secret.fromSecretNameV2(
-      this,
-      "databaseSecret",
-      databaseStack.secretPath
-    );
-    const host = databaseSecret.secretValueFromJson("host").unsafeUnwrap();
-    const dbname = databaseSecret.secretValueFromJson("dbname").unsafeUnwrap();
-    const connectionProperties: { [key: string]: any } = {
-      JDBC_ENFORCE_SSL: "true",
-      JDBC_CONNECTION_URL: "jdbc:postgresql://" + host + ":5432/" + dbname,
-      SKIP_CUSTOM_JDBC_CERT_VALIDATION: "true",
-      SECRET_ID: databaseStack.secretPath,
-      KAFKA_SSL_ENABLED: "false",
-    };
-    const publicSubnetId = vpcStack.vpc.publicSubnets[0].subnetId;
-    const securityGroup = vpcStack.vpc.vpcDefaultSecurityGroup;
-    this.glueConnection = new glue.CfnConnection(
-      this,
-      this.glueConnectionName,
-      {
-        catalogId: this.account, // this AWS account ID
-        connectionInput: {
-          name: this.glueConnectionName,
-          description: "a connection to the PostgreSQL database for Glue",
-          connectionType: "JDBC",
-          connectionProperties: connectionProperties,
-          physicalConnectionRequirements: {
-            availabilityZone: vpcStack.availabilityZones[0],
-            securityGroupIdList: [securityGroup],
-            subnetId: publicSubnetId,
-          },
-        },
-      }
+    const securityGroup = new ec2.SecurityGroup(this, "glueSecurityGroup", {
+      vpc: vpcStack.vpc,
+      allowAllOutbound: true,
+      description: "Self-referencing security group for Glue",
+      securityGroupName: "default-glue-security-group",
+    });
+    // add self-referencing ingress rule
+    securityGroup.addIngressRule(
+      securityGroup,
+      ec2.Port.allTcp(),
+      "self-referencing security group rule"
     );
 
     // Create a Connection to the PostgreSQL database inside the VPC
@@ -403,8 +375,8 @@ export class GrantDataStack extends Stack {
           connectionProperties: dmsConnectionProps,
           physicalConnectionRequirements: {
             availabilityZone: vpcStack.availabilityZones[0],
-            securityGroupIdList: [securityGroup],
-            subnetId: dmsStack.subnet.subnetIds[0],
+            securityGroupIdList: [securityGroup.securityGroupId],
+            subnetId: databaseStack.dbInstance.vpc.isolatedSubnets[0].subnetId,
           },
         },
       }
@@ -434,7 +406,8 @@ export class GrantDataStack extends Stack {
       "--SECRET_NAME": databaseStack.secretPath,
       "--BUCKET_NAME": grantDataS3Bucket.bucketName,
       "--CFI_INSTITUTION_NAME": cfiInstitutionName.valueAsString,
-      "--DMS_TASK_ARN": this.dmsTaskArn
+      "--DMS_TASK_ARN": this.dmsTaskArn,
+      "--additional-python-modules": "psycopg2-binary"
     };
 
     // Glue Job: clean cihr data
@@ -556,7 +529,7 @@ export class GrantDataStack extends Stack {
         maxConcurrentRuns: MAX_CONCURRENT_RUNS,
       },
       connections: {
-        connections: [this.glueConnectionName],
+        connections: [this.glueDmsConnectionName],
       },
       maxRetries: MAX_RETRIES,
       maxCapacity: MAX_CAPACITY,
@@ -584,7 +557,7 @@ export class GrantDataStack extends Stack {
         maxConcurrentRuns: MAX_CONCURRENT_RUNS,
       },
       connections: {
-        connections: [this.glueConnectionName],
+        connections: [this.glueDmsConnectionName],
       },
       maxRetries: MAX_RETRIES,
       maxCapacity: MAX_CAPACITY,
@@ -640,7 +613,7 @@ export class GrantDataStack extends Stack {
         maxConcurrentRuns: MAX_CONCURRENT_RUNS,
       },
       connections: {
-        connections: [this.glueConnectionName],
+        connections: [this.glueDmsConnectionName],
       },
       maxRetries: MAX_RETRIES,
       maxCapacity: MAX_CAPACITY,
@@ -650,6 +623,7 @@ export class GrantDataStack extends Stack {
         "--extra-py-files": `s3://${this.glueS3Bucket.bucketName}/extra-python-libs/pyjarowinkler-1.8-py2.py3-none-any.whl,s3://${this.glueS3Bucket.bucketName}/extra-python-libs/custom_utils-0.1-py3-none-any.whl`,
         "library-set": "analytics",
         "--SECRET_NAME": databaseStack.secretPath,
+        "--additional-python-modules": "psycopg2-binary"
       }
     });
     this.mergeKeywordsJob = mergeKeywordsJob;
@@ -684,7 +658,6 @@ export class GrantDataStack extends Stack {
     mergeKeywordsJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     createFolders.applyRemovalPolicy(RemovalPolicy.DESTROY);
     glueTrigger.applyRemovalPolicy(RemovalPolicy.DESTROY);
-    this.glueConnection.applyRemovalPolicy(RemovalPolicy.DESTROY);
     glueRole.applyRemovalPolicy(RemovalPolicy.DESTROY);
   }
 }

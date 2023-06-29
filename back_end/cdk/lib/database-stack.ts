@@ -18,7 +18,7 @@ export class DatabaseStack extends Stack {
 
     const parameterGroup = new rds.ParameterGroup(this, "rdsParameterGroup", {
       engine: rds.DatabaseInstanceEngine.postgres({
-        version: rds.PostgresEngineVersion.VER_13_4,
+        version: rds.PostgresEngineVersion.VER_14_5,
       }),
       description: "Custom Parameter Group To Allow DMS Replication",
       parameters: {
@@ -33,10 +33,10 @@ export class DatabaseStack extends Stack {
     this.dbInstance = new rds.DatabaseInstance(this, 'expertiseDashboard', {
       vpc: vpcStack.vpc,
       vpcSubnets: {
-        subnetType: ec2.SubnetType.PUBLIC,
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
       },
       engine: rds.DatabaseInstanceEngine.postgres({
-        version: rds.PostgresEngineVersion.VER_13_4,
+        version: rds.PostgresEngineVersion.VER_14_5,
       }),
       instanceType: ec2.InstanceType.of(
         ec2.InstanceClass.BURSTABLE3,
