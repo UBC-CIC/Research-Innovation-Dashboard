@@ -1,9 +1,15 @@
 # Requirements
 
-Before you deploy, you must have the following installed on your device:
+## Accounts Requirements
 
 - [AWS Account](https://aws.amazon.com/account/)
 - [GitHub Account](https://github.com/)
+
+## Software Requirements
+
+Before you deploy, you must have the following softwares installed on your device. Please install the correct version of each software according to your machine's operating system.
+
+- [Node JS](https://nodejs.org/en/download) and [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 - [AWS CLI](https://aws.amazon.com/cli/)
 - [AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/cli.html)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
@@ -12,7 +18,15 @@ Before you deploy, you must have the following installed on your device:
 
 If you are on a Windows device, it is recommended to install the [Windows Subsystem For Linux](https://docs.microsoft.com/en-us/windows/wsl/install), which lets you run a Linux terminal on your Windows computer natively. Some of the steps will require its use. [Windows Terminal](https://apps.microsoft.com/store/detail/windows-terminal/9N0DX20HK701) is also recommended for using WSL.
 
-# Step 1: Clone The Repository
+## API Keys/Tokens
+
+The application interact with various third-party API, so it is vital to obtains those API keys/tokens and securely store them before moving forward with the deployment.
+
+- Elsevier API Key and Institution Token obtainable via the [Elsevier Developer Portal](https://dev.elsevier.com/).
+- European Patent Office's OPS API Key obtainable by following the instructions on the [Open Patent Services](https://developers.epo.org/) portal.
+
+# Deployment
+## Step 1: Clone The Repository
 
 First, clone the GitHub repository onto your machine. To do this:
 
@@ -30,7 +44,7 @@ The code should now be in the folder you created. Navigate into the folder conta
 cd Research-Innovation-Dashboard
 ```
 
-# Step 2: Frontend Deployment
+## Step 2: Frontend Deployment
 
 Before installing Amplify we need to create the IAM Role that gives us the permissions needed to implement this solution. Run the following line of code:
 
@@ -63,11 +77,11 @@ The **Deploy to Amplify Console** button will take you to your AWS console to de
    Refer to [AWS's Page on Single Page Apps](https://docs.aws.amazon.com/amplify/latest/userguide/redirects.html#redirects-for-single-page-web-apps-spa) for further information on why we did that
    ![alt text](images/amplifyConsole/amplify-console-05.png)
 
-# Step 2: Backend Deployment
+## Step 2: Backend Deployment
 
 It's time to set up everything that goes on behind the scenes! For more information on how the backend works, feel free to refer to the Architecture Deep Dive, but an understanding of the backend is not necessary for deployment.
 
-## Step 1: Install Dependencies
+### 1: Install Dependencies
 
 The first step is to get into the backend folder. This can be done with the following commands:
 
@@ -82,7 +96,7 @@ Now that you are in the backend directory, install the core dependencies with th
 npm install
 ```
 
-## Step 2: Upload the Elsevier API Key, Institution Token, Database secret and OPS API Key
+### 2: Upload the Elsevier API Key, Institution Token, Database secret and OPS API Key
 
 While in the `back_end/cdk` folder, run the following commands. Ensure you replace "INSTITUTION_TOKEN" in the first command with your own Elsevier institution token and you replace "API_KEY" in the second command with your own Elsevier API key.
 
@@ -118,7 +132,7 @@ aws secretsmanager create-secret \
     --secret-string "{\"consumer_key\":\"CONSUMER_KEY\",\"consumer_secret_key\":\"CONSUMER_SECRET_KEY\"}"
 ```
 
-## Step 3: CDK Deployment
+### 3: CDK Deployment
 
 Initialize the CDK stacks (required only if you have not deployed this stack before). Note this CDK deployment was tested in `ca-central-1` region only.
 
@@ -206,7 +220,7 @@ Please delete the stacks in the opposite order of when you deployed them.
 
 ![alt text](images/p3/deployment/cloudformation-take-down.png)
 
-# Step 4: Upload Data to S3 for the DataPipeline
+## Step 4: Upload Data to S3 for the DataPipeline
 
 1. Follow this [link](https://www.scival.com/overview/authors?uri=Institution/501036) to the Scival page for your Institution and sign in. Click on the `Export` dropdown menu then click `Download full list of authors (CSV)`. Rename the file to `scopus_ids.csv`.
    ![alt text](images/deploymentGuide/scival_download.jpg)
@@ -225,7 +239,7 @@ Please delete the stacks in the opposite order of when you deployed them.
    ![alt text](images/p3/deployment/depl-researcher-data-s3.png)
 9.  Once the upload is complete click `Close`
 
-# Step 5: Run the Data Pipeline
+## Step 5: Run the Data Pipeline
 
 1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Step Functions` in the search bar.
    ![alt text](images/deploymentGuide/step_function_search.jpg)
@@ -240,7 +254,7 @@ Please delete the stacks in the opposite order of when you deployed them.
 
 6. **When the StateMachine finished executing, you can now continue to** [Step 6](#step-6-upload-data-to-s3-for-the-grant-data-pipeline) below for the Grant Data Pipeline.
 
-# Step 6: Upload data to S3 for the Grant Data Pipeline
+## Step 6: Upload data to S3 for the Grant Data Pipeline
 
 1. Refer to the [User Guide to Grant Downloads](User%20Guide%20to%20Grant%20Downloads.pdf) for instructions on how to obtain the grant data for your institution. After obtaining the CSV files, double check your files with the [sample csv files](example_data/sample_grant_data/) labeled `sample_cihr.csv`, `sample_nserc.csv` `sample_sshrc.csv`, `sample_cfi.csv`. Ensure that the format is similar to the sample files.
    
@@ -267,7 +281,7 @@ Please delete the stacks in the opposite order of when you deployed them.
 
 7.  If you see that a folder(s) is missing. Please wait for another 10 or so minutes because this could be a latency issue. If you came back and check and that missing folder still has not show up, then it is possible that a wrong file was uploaded in **raw** folder. Please double check your **raw** folder and follow the instructions above to reupload accordingly.
 
-# Step 7: Starting Patent Data Pipeline
+## Step 7: Starting Patent Data Pipeline
 
 **NOTE: Only starts this step when the StateMachine from [step 5](#step-5-run-the-data-pipeline) finished executing.**
 
@@ -287,7 +301,7 @@ Please delete the stacks in the opposite order of when you deployed them.
 
 **NOTE**: You would have to run the steps above for first-time deployment. **The Patent Data Pipeline** is scheduled to run on every month on the 1st and 15th day (twice a month).
 
-# Step 8: Creating a User
+## Step 8: Creating a User
 
 To set up user accounts on the app, you will need to do the following steps
 
@@ -305,7 +319,7 @@ To set up user accounts on the app, you will need to do the following steps
    ![alt text](images/webApp/webapp06.png)
 7. The new user account has been created!
 
-## Registering Admin Accounts
+### Registering Admin Accounts
 
 1. At the [AWS online console](https://console.aws.amazon.com/console/home), enter `Cognito` in the search bar.
    ![alt text](images/webApp/webapp01.png)
@@ -320,7 +334,7 @@ To set up user accounts on the app, you will need to do the following steps
 6. The user is now an Admin! (If you are having issues, try relogging on the web app)
    ![alt text](images/webApp/webapp15.png)
 
-## Deactivating User Self Sign up
+### Deactivating User Self Sign up
 
 1. Navigate back to same user pool in the previous step on the Cognito Console, click on `Sign-up experience`.
  ![alt text](images/deploymentGuide/cognito8.png)

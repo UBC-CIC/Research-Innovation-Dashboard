@@ -4,6 +4,8 @@
 
 ![Architecture diagram](../docs/images/p3/ExpertiseDashboard_Architecture_Phase_III-final.drawio.png?raw=true)
 
+For AWS VPC Networking Details, see this [document](NetworkingSpecifications.md).
+
 Architecture Diagram exported as XML file from draw.io can be found [here](ExpertiseDashboard_Architecture_Phase_III.drawio.xml).
 ## Description
 ### Back End Flow (1-15)

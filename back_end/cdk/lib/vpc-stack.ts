@@ -13,8 +13,6 @@ export class VpcStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    ec2.NatProvider.gateway()
-
     const natGatewayProvider = ec2.NatProvider.gateway()
 
     // VPC for application
