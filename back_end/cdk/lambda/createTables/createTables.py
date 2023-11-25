@@ -152,6 +152,25 @@ def lambda_handler(event, context):
     columns.append(createColumn('matched_inventors_names', 'varchar', '', True))
     query = createQuery('patent_data', columns)
     cursor.execute(query)
+    
+    # Create Edges Table
+    columns = []
+    columns.append(createColumn('source_id', 'character varying', '', False))
+    columns.append(createColumn('target_id', 'character varying', '', False))
+    columns.append(createColumn('publication_ids', 'text ARRAY', '', False))
+    columns.append(createColumn('num_publications', 'integer', '', False))
+    columns.append(createColumn('last_updated', 'character varying', '', True))
+    query = createQuery('edges_full', columns)
+    cursor.execute(query)
+    
+    # Create Potential Edges Table
+    columns = []
+    columns.append(createColumn('source_id', 'text', '', False))
+    columns.append(createColumn('target_id', 'text', '', False))
+    columns.append(createColumn('shared_keywords', 'text ARRAY', '', False))
+    columns.append(createColumn('last_updated', 'character varying', '', True))
+    query = createQuery('potential_edges', columns)
+    cursor.execute(query)
 
     cursor.close()
     connection.commit()
