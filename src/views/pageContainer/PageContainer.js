@@ -10,6 +10,7 @@ import SearchComponent from "../../components/SearchResearchers/Search/SearchCom
 import AdvancedSearchComponent from "../../components/SearchResearchers/AdvancedSearch/AdvancedSearchComponent";
 import Impacts from "../../components/Impacts/Impact";
 import Metrics from "../../components/Metrics/Metrics";
+import TheApp from "../../components/Graph/TheApp";
 import AdminDashboard from "../../components/AdminDashboard/AdminDashboard";
 import { Auth } from "aws-amplify";
 
@@ -77,6 +78,7 @@ function PageContainer(props) {
             <Route path="/AdminDashboard/" element={<AdminDashboard />} />
           )}
           <Route path="/Impact/" element={<Impacts />} />
+          <Route path="/Graph/" element={<TheApp />} />
           <Route
             path="/AdvancedSearch/:SearchForWhat/:AllWords/:ExactPhrase/:AnyWords/:NoneOfTheseWords/:Department/:Faculty/:yearFrom/:yearTo/:Journal"
             element={<AdvancedSearchComponent />}

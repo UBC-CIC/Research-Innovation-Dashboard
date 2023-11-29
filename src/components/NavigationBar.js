@@ -102,6 +102,9 @@ function Navbar(props) {
     else if(currentPath.includes("/Metrics/")){
       setActiveButton("Metrics")
     }
+    else if(currentPath.includes("/Graph/")){
+      setActiveButton("Graph")
+    }
     else if(currentPath.includes("AdminDashboard")){
       setActiveButton("AdminDashboard")
     }
@@ -258,6 +261,15 @@ function Navbar(props) {
               }}
               onClick={() => navigate("/Metrics/")}>
                 Metrics
+            </NavButton>
+            <NavButton 
+              sx={{
+                paddingLeft: "28px",
+                paddingRight: "28px",
+                ...(activeButton === "Graph" && activeButtonStyle),
+              }}
+              onClick={() => navigate("/Graph/")}>
+                Graph
             </NavButton>
             {adminUser && (
               <NavButton 
