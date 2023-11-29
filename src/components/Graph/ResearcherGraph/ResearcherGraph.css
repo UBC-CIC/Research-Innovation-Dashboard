@@ -1,0 +1,52 @@
+.Researcher-Graph {
+  box-shadow: none;
+}
+
+#researcher-graph-card {
+  box-shadow: none;
+}
+
+#accordion-details-card{
+  box-shadow: none;
+}
+#potential-connections-card-content {
+  padding-top: 0em;
+}
+
+#researchers-list-card {
+  box-shadow: none;
+  border: 1px solid #bdbdbd;
+  margin-top: 0.5em;
+}
+
+#researchers-list-card-content {
+  padding:0.75em;
+}
+
+#accordion {
+  box-shadow: none;
+  border: 1px solid #bdbdbd;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+#accordion-details {
+  padding:0em;
+}
+
+#graph-legend {
+  box-shadow: none;
+  padding-left:0.25em
+}
+
+.paper-link {
+margin-top: 1.0em;
+}
+
+.side-panel {
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-color: #002145;
+  height: 75vh;
+  overflow-y:auto;
+}

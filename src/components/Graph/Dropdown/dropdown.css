@@ -1,0 +1,14 @@
+.dropdown {
+  border: 1px;
+  border-color: black;
+  border-style: solid;
+}
+
+#dropdown-button {
+    padding-left: 12px;
+    border-radius: 0px;
+    border: 5px;
+    border-color: black;
+    background-color: #002145;
+    text-transform: none;
+}
