@@ -48,23 +48,26 @@ export default function TheApp(props) {
   }, [currentlyAppliedFaculties, currentlyAppliedKeywordFilter])
 
   const getGraph = async () => {
-    const researchers = await API.graphql({
-      query: getResearchers,
-      variables: {"facultiesToFilterOn": currentlyAppliedFaculties, "keyword": keywordFilter.toLowerCase()},
-    });
-    console.log("researchers:", researchers.data.getResearchers);
-    setResearcherNodes(researchers.data.getResearchers);
+    try {
+      const [researchers, edgesResult] = await Promise.all([
+        API.graphql({
+          query: getResearchers,
+          variables: {"facultiesToFilterOn": currentlyAppliedFaculties, "keyword": keywordFilter.toLowerCase()},
+        }),
+        API.graphql({
+          query: getEdges,
+          variables: {"facultiesToFilterOn": currentlyAppliedFaculties, "keyword": keywordFilter.toLowerCase()},
+        }),
+      ]);
 
-    const edgesResult = await API.graphql({
-      query: getEdges,
-      variables: {"facultiesToFilterOn": currentlyAppliedFaculties, "keyword": keywordFilter.toLowerCase()},
-    });
-
-    console.log("edges: ", edgesResult)
-    setGraphEdges(edgesResult.data.getEdges)
-    setGraphProgress(20)
-    setAutoCompleteOptions(Object.values(researchers.data.getResearchers).map(formatOptions));
-  }
+      setResearcherNodes(researchers.data.getResearchers);
+      setGraphEdges(edgesResult.data.getEdges);
+      setGraphProgress(20);
+      setAutoCompleteOptions(Object.values(researchers.data.getResearchers).map(formatOptions));
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   const formatOptions = (entry) => {
     let retval = entry.attributes
