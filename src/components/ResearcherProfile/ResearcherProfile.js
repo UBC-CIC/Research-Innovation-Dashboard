@@ -22,6 +22,7 @@ import Amplify from "@aws-amplify/core";
 import { Auth } from "@aws-amplify/auth";
 import awsmobile from "../../aws-exports";
 import GrantInformation from "./GrantInformation";
+import GraphInformation from "./GraphInformation";
 
 import { API } from "aws-amplify";
 import {
@@ -61,6 +62,7 @@ export default function Researcher_profile_overview() {
   const [showAreasOfInterest, setShowAreasOfInterest] = useState(false);
   const [showPublications, setShowPublications] = useState(false);
   const [showSimilarResearchers, setShowSimilarResearchers] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
   const [similarResearchersArray, setSimilarResearchersArray] = useState([]);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(0)
   const [rank, setRank] = useState("")
@@ -346,6 +348,7 @@ export default function Researcher_profile_overview() {
     setShowPatents(false);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setShowGraph(false);
     setNavButtonSelected("Overview");
   }
 
@@ -360,6 +363,7 @@ export default function Researcher_profile_overview() {
     setShowPatents(false);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setShowGraph(false);
     setNavButtonSelected("Areas of Interest");
   }
 
@@ -372,6 +376,7 @@ export default function Researcher_profile_overview() {
     setShowPatents(false);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setShowGraph(false);
     setNavButtonSelected("Publications");
   }
 
@@ -386,6 +391,7 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setShowGraph(false);
   }
 
   function showGrantsFunction() {
@@ -399,6 +405,7 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setShowGraph(false);
     setNavButtonSelected("Grants");
   }
 
@@ -413,6 +420,7 @@ export default function Researcher_profile_overview() {
     setincreasePublicationListBy(5);
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
+    setShowGraph(false);
     setNavButtonSelected("Patents");
   }
 
@@ -429,6 +437,20 @@ export default function Researcher_profile_overview() {
     setShowResearchersWithSimilarKeyword(true);
     setKeywordToSearchFor(keyWord);
     getSimilarResearcherBasedOnKeyword(keyWord);
+    setShowGraph(false);
+  }
+
+  function showGraphFunc() {
+    setShowOverview(false);
+    setShowAreasOfInterest(false);
+    setShowPublications(false);
+    setShowSimilarResearchers(false);
+    setShowGrants(false);
+    setShowPatents(false);
+    setShowFullGraph(false);
+    setShowResearchersWithSimilarKeyword(false);
+    setShowGraph(true);
+    setNavButtonSelected("Graph");
   }
 
   const getSimilarResearcherBasedOnKeyword = async (keyWord) => {
@@ -505,6 +527,7 @@ export default function Researcher_profile_overview() {
               showPublicationsFunc,
               showGrantsFunction,
               showPatentsFunction,
+              showGraphFunc,
             }}
             navButtonSelected={navButtonSelected}
             dataLength={{grants: grantData.length, patents: researcherPatents.length}}
@@ -610,6 +633,13 @@ export default function Researcher_profile_overview() {
                     </Box>
                 </Paper>
               </Grid>
+              <Grid item xs={12}>
+                <Paper square={true} elevation={0} variant="outlined">
+                    <GraphInformation
+                    scopusId={scopusId}
+                    />
+                </Paper>
+              </Grid>
             </Grid>
           )}
           {showAreasOfInterest && (
@@ -681,6 +711,15 @@ export default function Researcher_profile_overview() {
               errorTitle={"No Other Researchers with the keyword: "+keywordToSearchFor}
               keywordToSearchFor={keywordToSearchFor}
             />
+          )}
+          {showGraph && (
+            <Grid item xs={12}>
+              <Paper square={true} elevation={0} variant="outlined">
+                  <GraphInformation
+                  scopusId={scopusId}
+                  />
+              </Paper>
+            </Grid>
           )}
         </Grid>
       )}

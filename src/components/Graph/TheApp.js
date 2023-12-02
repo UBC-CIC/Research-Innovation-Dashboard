@@ -5,6 +5,7 @@ import {ResearcherGraph} from './ResearcherGraph/ResearcherGraph';
 import Navbar from "./Navbar/navbar";
 import {SearchBar} from "./Searchbar/searchbar"
 import Tutorial from "./Tutorial/Tutorial";
+import { useParams } from 'react-router-dom';
 
 import Amplify from "@aws-amplify/core";
 import { Auth } from "@aws-amplify/auth";
@@ -22,6 +23,8 @@ Auth.configure(awsmobile);
 
 
 export default function TheApp(props) {
+  const { scopusId } = useParams();
+
   const [researcherNodes, setResearcherNodes] = useState(null);
   const [graphEdges, setGraphEdges] = useState(null);
   const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
@@ -89,6 +92,7 @@ export default function TheApp(props) {
     setSelectedEdge(null);
     setGraphProgress(10)
     getGraph();
+    setSelectedNode(scopusId);
   }
 
   function startTutorial() {

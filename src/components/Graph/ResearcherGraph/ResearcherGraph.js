@@ -112,13 +112,19 @@ const ResearcherGraph = (props) => {
 
   //On change of the selected node get information on the researcher
   useEffect(() => {
-    if(props.selectedNode) {
-      getResearcherFunction(selectedResearcher);
-    } else{
-      setSelectedResearcher(null);
-      setSimilarResearchers(null);
+    if(graphState === "finished" && props.selectedNode && props.researcherNodes){
+      // Check if props.selectedNode exists within props.researcherNodes.key
+      const selectedNodeExists = props.researcherNodes.some(node => node.key === props.selectedNode);
+
+        if(selectedNodeExists) {
+          getResearcherFunction(selectedResearcher);
+        } else{
+          props.setSelectedNode(null);
+          setSelectedResearcher(null);
+          setSimilarResearchers(null);
+        }
     }
-  }, [props.selectedNode])
+  }, [props.selectedNode, graphState])
 
   useEffect(() => {
     if(props.selectedEdge) {
