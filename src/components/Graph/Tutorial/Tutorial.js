@@ -65,14 +65,9 @@ export default function Tutorial(props) {
         let firstTime = window.localStorage.getItem('firstTime');
         if(firstTime != "true") {
             props.setRun(true);
-            console.log("hi")
             window.localStorage.setItem('firstTime', "true");            
         }
     }, [])
-
-    useEffect(() => {
-        console.log(stepIndex);
-    }, [stepIndex])
 
     useEffect(() => {
         if(stepIndex == 2 && props.selectedNode && props.run){
@@ -98,11 +93,6 @@ export default function Tutorial(props) {
 
     function handleJoyrideCallback(CallBackProps) {
         const { action, index, status, type } = CallBackProps;
-
-        console.log(action);
-        console.log(index);
-        console.log(status);
-        console.log(type);
 
         if (index == 2 || index == 4) {
             setStyles({
@@ -131,7 +121,6 @@ export default function Tutorial(props) {
             setStepIndex(index + 1);
         }
         else if(action === "prev" && type == "step:after") {
-            console.log("prev here")
             setStepIndex(index -1);
         }
     }
