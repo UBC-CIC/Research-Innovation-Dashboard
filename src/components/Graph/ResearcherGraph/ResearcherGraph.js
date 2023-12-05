@@ -6,7 +6,23 @@ import {
   ZoomControl,
   FullScreenControl,
 } from "@react-sigma/core";
-import { Container,Box, Card, Grid, IconButton, Accordion,AccordionSummary,AccordionDetails, CardContent, Typography} from "@mui/material";
+import {
+  Container,
+  Box,
+  Card,
+  Grid,
+  IconButton,
+  Button,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  CardContent,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
+} from "@mui/material";
 import "./ResearcherGraph.css";
 import {GraphEvents} from "./helpers/GraphEvents";
 import Graph from "graphology";
@@ -47,6 +63,7 @@ const ResearcherGraph = (props) => {
 
   const [graphState, setGraphState ] = useState("loading")
   const [tempGraph, setTempGraph ] = useState(null)
+  const [alertOpen, setAlertOpen] = React.useState(false);
   
   useEffect(() => {
     if(props.researcherNodes ===null || props.graphEdges === null){
@@ -122,6 +139,7 @@ const ResearcherGraph = (props) => {
           props.setSelectedNode(null);
           setSelectedResearcher(null);
           setSimilarResearchers(null);
+          setAlertOpen(true);
         }
     }
   }, [props.selectedNode, graphState])
@@ -252,6 +270,18 @@ const ResearcherGraph = (props) => {
           </Container>
         </Grid>
       </Grid>
+      {/* Alert Dialog */}
+      <Dialog open={alertOpen} onClose={() => setAlertOpen(false)}>
+        <DialogTitle>Alert</DialogTitle>
+        <DialogContent>
+          <div>The researcher could not be found in the graph.</div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAlertOpen(false)} color="primary">
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
