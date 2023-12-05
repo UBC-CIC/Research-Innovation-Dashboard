@@ -72,8 +72,6 @@ export default function SearchComponent(props) {
     selectedClassification = patentClassifications.split("&&");
   }
   
-  // console.log(props.whatToSearch)
-
   //for researcher filters
   const [selectedDepartments, setSelectedDeparments] = useState(
     selectedDepartmentsArray
@@ -238,7 +236,6 @@ export default function SearchComponent(props) {
         // don't refresh until the department/faculty filter dialogs is closed
         navigate(url);
         window.location.reload();
-        //console.log(selectedFaculties)
       }
     }
 
@@ -284,12 +281,8 @@ export default function SearchComponent(props) {
         query: getCatagoriesCount,
       });
 
-      //console.log("Hereee")
-
-      console.log(catagoriesCount.data.getCatagoriesCount)
       setCatagoriesCount(catagoriesCount.data.getCatagoriesCount);
     };
-    //console.log("HEREEE")
     getCatagoriesCountFunction();
   }, []);
 

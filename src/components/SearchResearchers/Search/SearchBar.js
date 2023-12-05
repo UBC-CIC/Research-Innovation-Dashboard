@@ -90,11 +90,8 @@ export default function Search_Bar(props) {
     });
 
     props.setResearcherSearchResults(
-      //researcherSearchResult.data.searchResearcher
       researcherSearchResult.data.searchResearcher
     );
-    console.log(researcherSearchResult.data.searchResearcher.length)
-    // console.log(researcherSearchResult.data.searchResearcher)
   };
 
   const searchPublicationsQuery = async () => {

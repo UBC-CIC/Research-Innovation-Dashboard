@@ -26,7 +26,6 @@ function App(props) {
   }, []);
 
   useEffect(() => {
-    console.log(loginState)
     updateCurrentLoginState(loginState);
   }, [loginState]);
 
