@@ -18,14 +18,6 @@ const settings = ['Logout'];
 export default function Nav_Bar(props) {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
-  async function signOut() {
-    try {
-        await Auth.signOut();
-    } catch (error) {
-        console.log('error signing out: ', error);
-    }
-  }
-
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -75,9 +67,6 @@ export default function Nav_Bar(props) {
                     >
                       <MenuItem key={'Tutorial'} onClick={handleCloseUserMenu}>
                         <Typography onClick={() => {props.startTutorial()}} textAlign="center">{'Start Tour'}</Typography>
-                      </MenuItem>
-                      <MenuItem key={'Logout'} onClick={handleCloseUserMenu}>
-                        <Typography onClick={() => {signOut();}} textAlign="center">{'Logout'}</Typography>
                       </MenuItem>
                         {/* {settings.map((setting) => (
                         <MenuItem key={setting} onClick={handleCloseUserMenu}>
