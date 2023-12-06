@@ -78,8 +78,8 @@ function PageContainer(props) {
             <Route path="/AdminDashboard/" element={<AdminDashboard />} />
           )}
           <Route path="/Impact/" element={<Impacts />} />
-          <Route path="/Graph/:scopusId" element={<TheApp />} />
-          <Route path="/Graph/*" element={<TheApp />} />
+          <Route path="/Collaborators/:scopusId" element={<TheApp />} />
+          <Route path="/Collaborators/*" element={<TheApp />} />
           <Route
             path="/AdvancedSearch/:SearchForWhat/:AllWords/:ExactPhrase/:AnyWords/:NoneOfTheseWords/:Department/:Faculty/:yearFrom/:yearTo/:Journal"
             element={<AdvancedSearchComponent />}

@@ -450,7 +450,7 @@ export default function Researcher_profile_overview() {
     setShowFullGraph(false);
     setShowResearchersWithSimilarKeyword(false);
     setShowGraph(true);
-    setNavButtonSelected("Graph");
+    setNavButtonSelected("Collaborators");
   }
 
   const getSimilarResearcherBasedOnKeyword = async (keyWord) => {

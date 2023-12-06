@@ -102,8 +102,8 @@ function Navbar(props) {
     else if(currentPath.includes("/Metrics/")){
       setActiveButton("Metrics")
     }
-    else if(currentPath.includes("/Graph/")){
-      setActiveButton("Graph")
+    else if(currentPath.includes("/Collaborators/")){
+      setActiveButton("Collaborators")
     }
     else if(currentPath.includes("AdminDashboard")){
       setActiveButton("AdminDashboard")
@@ -266,10 +266,10 @@ function Navbar(props) {
               sx={{
                 paddingLeft: "28px",
                 paddingRight: "28px",
-                ...(activeButton === "Graph" && activeButtonStyle),
+                ...(activeButton === "Collaborators" && activeButtonStyle),
               }}
-              onClick={() => navigate("/Graph/")}>
-                Graph
+              onClick={() => navigate("/Collaborators/")}>
+                Collaborators
             </NavButton>
             {adminUser && (
               <NavButton 

@@ -12,15 +12,15 @@ export default function GraphInformation(props){
     return (
         <Box>
           <Box sx={{ ml: "2%", mr: "2%", mb: "0.5%"}} id="header_text">
-            Graph
+            Collaborators
           </Box>
           <Box sx={{ ml: "2%", mr: "2%", mb:"0.25%"}}>
             <Typography>View a graph of this researcher's connections</Typography>
           </Box>
           <Box sx={{ ml: "2%", mr: "2%", mb:"2%"}}>
-            <a href={`/Graph/${props.scopusId}`} target="_blank" rel="noopener noreferrer">
+            <a href={`/Collaborators/${props.scopusId}`} target="_blank" rel="noopener noreferrer">
                 <Button variant="contained">
-                    View Graph
+                    View Collaborators
                 </Button>
             </a>
           </Box>
