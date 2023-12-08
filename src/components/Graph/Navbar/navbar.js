@@ -39,7 +39,7 @@ export default function Nav_Bar(props) {
                 xs="none"
                 md="flex"
                 >
-                Innovation Connections
+                Researcher Connections
                 </Typography>
                 <Box sx={{ flexGrow: 0 }}>
                     <Tooltip title="Open settings">
