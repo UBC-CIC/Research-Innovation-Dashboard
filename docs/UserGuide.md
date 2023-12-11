@@ -174,7 +174,7 @@ To view the exact number of times a certain keyword has appeared, hover over the
 The collaborators tab displays a graph of researcher connections. 
 ### Home
 
-The Home page displays the main view of the website and all components. This includes the [Main Graph Component](#main-graph), [Searchbar Component](#researcher-search), [Filters](#Filters), and the [Side Panel](#Side-Panel).
+The Home page displays the main view of the website and all components. This includes the [Main Graph Component](#main-graph), [Searchbar Component](#researcher-search), [Filters](#filters), and the [Side Panel](#side-panel).
 
 ![alt text](images/UserGuide-Final/collaborators/home.png)
 
