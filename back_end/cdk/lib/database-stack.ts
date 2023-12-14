@@ -40,7 +40,7 @@ export class DatabaseStack extends Stack {
       }),
       instanceType: ec2.InstanceType.of(
         ec2.InstanceClass.BURSTABLE3,
-        ec2.InstanceSize.MICRO,
+        ec2.InstanceSize.MEDIUM,
       ),
       credentials: rds.Credentials.fromUsername(dbUsername.secretValueFromJson("username").unsafeUnwrap() , {
         secretName: this.secretPath
