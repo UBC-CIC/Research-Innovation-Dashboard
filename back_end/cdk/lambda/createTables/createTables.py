@@ -1,13 +1,20 @@
 import boto3
 import psycopg2
 import json
+from psycopg2.extensions import AsIs
+import secrets
 
 sm_client = boto3.client('secretsmanager')
+
+def getDbSecret():
+    response = sm_client.get_secret_value(SecretId='expertiseDashboard/adminCredentials/dbCredentials')
+    secret = json.loads(response['SecretString'])
+    return secret
 
 def getCredentials():
     credentials = {}
 
-    response = sm_client.get_secret_value(SecretId='expertiseDashboard/credentials/dbCredentials')
+    response = sm_client.get_secret_value(SecretId='expertiseDashboard/adminCredentials/dbCredentials')
     secrets = json.loads(response['SecretString'])
     credentials['username'] = secrets['username']
     credentials['password'] = secrets['password']
@@ -37,6 +44,7 @@ def createColumn(column_name, columnType, constraints, final_column):
     return column
 
 def lambda_handler(event, context):
+    secret = getDbSecret()
     credentials = getCredentials()
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
@@ -152,6 +160,59 @@ def lambda_handler(event, context):
     columns.append(createColumn('matched_inventors_names', 'varchar', '', True))
     query = createQuery('patent_data', columns)
     cursor.execute(query)
+
+
+    ## Create user with limited permission on RDS
+
+    # Generate 16 bytes username and password randomly
+    username = secrets.token_hex(8)
+    password = secrets.token_hex(16)
+    
+    # Based on the observation,
+    #   - Database name: does not reflect from the CDK dbname read more from https://stackoverflow.com/questions/51014647/aws-postgres-db-does-not-exist-when-connecting-with-pg
+    #   - Schema: uses the default schema 'public' in all tables
+    #
+    # Create new user with the following permission:
+    #   - SELECT
+    #   - INSERT
+    #   - UPDATE
+    #   - DELETE
+    sqlCreateUser = """
+        DO $$
+        BEGIN
+            CREATE ROLE readwrite;
+        EXCEPTION
+            WHEN duplicate_object THEN
+                RAISE NOTICE 'Role already exists.';
+        END
+        $$;
+        
+        GRANT CONNECT ON DATABASE postgres TO readwrite;
+        
+        GRANT USAGE, CREATE ON SCHEMA public TO readwrite;
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO readwrite;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO readwrite;
+        GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO readwrite;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE ON SEQUENCES TO readwrite;
+        
+        CREATE USER "%s" WITH PASSWORD '%s';
+        GRANT readwrite TO "%s";
+    """
+
+    authInfo = {
+            'username': username,
+            'password': password
+        }
+        
+    secret.update(authInfo)
+    
+    sm_client = boto3.client("secretsmanager")
+    sm_client.put_secret_value(
+        SecretId='expertiseDashboard/credentials/dbCredentials',
+        SecretString=json.dumps(secret))
+    
+    # Execute table creation
+    cursor.execute(sqlCreateUser, (AsIs(username), AsIs(password), AsIs(username),))
 
     cursor.close()
     connection.commit()
