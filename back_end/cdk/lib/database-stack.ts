@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import { Stack, StackProps, RemovalPolicy, SecretValue } from 'aws-cdk-lib';
+import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { aws_rds as rds } from 'aws-cdk-lib';
@@ -10,24 +10,11 @@ import * as sm from 'aws-cdk-lib/aws-secretsmanager'
 export class DatabaseStack extends Stack {
     public readonly dbInstance: rds.DatabaseInstance;
     public readonly secretPath: string;
-    public readonly secretPathUser: sm.Secret;
-    public readonly secretPathAdminName: string;
 
     constructor(scope: Construct, id: string, vpcStack: VpcStack, props?: StackProps) {
       super(scope, id, props);
 
-    this.secretPathAdminName = "expertiseDashboard/adminCredentials/dbCredentials"; // Name in the Secret Manager to store admin/master DB credentials
-    this.secretPath = 'expertiseDashboard/credentials/dbCredentials'; // Name in the Secret Manager to store limited permission user DB credentials
-
-    this.secretPathUser = new sm.Secret(this, this.secretPath, {
-        secretName: this.secretPath,
-        description: "Secrets for clients to connect to RDS",
-        removalPolicy: RemovalPolicy.DESTROY,
-        secretObjectValue: {
-            username: SecretValue.unsafePlainText(""),
-            password: SecretValue.unsafePlainText("")
-        }
-    });
+    this.secretPath = 'expertiseDashboard/credentials/dbCredentials';
 
     const parameterGroup = new rds.ParameterGroup(this, "rdsParameterGroup", {
       engine: rds.DatabaseInstanceEngine.postgres({
@@ -56,7 +43,7 @@ export class DatabaseStack extends Stack {
         ec2.InstanceSize.MEDIUM,
       ),
       credentials: rds.Credentials.fromUsername(dbUsername.secretValueFromJson("username").unsafeUnwrap() , {
-        secretName: this.secretPathAdminName
+        secretName: this.secretPath
       }),
       multiAz: true,
       allocatedStorage: 100,
