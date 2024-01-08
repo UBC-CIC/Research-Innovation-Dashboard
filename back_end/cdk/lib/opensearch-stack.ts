@@ -71,7 +71,7 @@ export class OpensearchStack extends Stack {
         enableVersionUpgrade: true,
         capacity: {
             dataNodes: 2,
-            dataNodeInstanceType: "t3.small.search"
+            dataNodeInstanceType: "t3.medium.search"
         },
         domainName: this.domainName,
         accessPolicies: [openSearchPolicyStatement],
