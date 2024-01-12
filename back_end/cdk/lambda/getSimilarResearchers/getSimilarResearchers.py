@@ -15,13 +15,25 @@ def getCredentials():
     credentials['host'] = secrets['host']
     credentials['db'] = secrets['dbname']
     return credentials
+    
+#Helper function to get a nested value from a dictionary.
+def get_nested_value(data, keys):
+    for key in keys:
+        if key in data:
+            data = data[key]
+        else:
+            return None
+    return data
 
 def lambda_handler(event, context):
     credentials = getCredentials()
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     
-    researcher_id = event["researcher_id"]
+    researcher_id = get_nested_value(event, ["arguments", "researcher_id"])
+    if researcher_id is None:
+        researcher_id = get_nested_value(event, ["researcher_id"])
+    
     cursor.execute("select rd.first_name, rd.last_name, rd.prime_faculty, pe.target_id, pe.shared_keywords from potential_edges pe join researcher_data rd on pe.target_id = rd.scopus_id where pe.source_id = '" +
         researcher_id + "' and array_length(pe.shared_keywords, 1) > 5"
     )

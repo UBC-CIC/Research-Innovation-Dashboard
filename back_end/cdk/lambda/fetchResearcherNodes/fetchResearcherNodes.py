@@ -16,6 +16,15 @@ def getCredentials():
     credentials['db'] = secrets['dbname']
     return credentials
 
+#Helper function to get a nested value from a dictionary.
+def get_nested_value(data, keys):
+    for key in keys:
+        if key in data:
+            data = data[key]
+        else:
+            return None
+    return data
+
 def lambda_handler(event, context):
     colorObject = {
         "Faculty of Applied Science": "#A84D52", # Redwood
@@ -48,12 +57,20 @@ def lambda_handler(event, context):
     
     query = ""
     
-    if len(event["facultiesToFilterOn"]) > 0 and len(event["keyword"]) > 0:
+    facultiesToFilterOn = get_nested_value(event, ["arguments", "facultiesToFilterOn"])
+    if facultiesToFilterOn is None:
+        facultiesToFilterOn = get_nested_value(event, ["facultiesToFilterOn"])
+        
+    keyword = get_nested_value(event, ["arguments", "keyword"])
+    if keyword is None:
+        keyword = get_nested_value(event, ["keyword"])
+    
+    if len(facultiesToFilterOn) > 0 and len(keyword) > 0:
         queryData = []
         
-        queryData.append(event["facultiesToFilterOn"])
+        queryData.append(facultiesToFilterOn)
         
-        keywordList = event["keyword"].split(", ")
+        keywordList = keyword.split(", ")
         
         query = "SELECT * FROM public.researcher_data WHERE prime_faculty=ANY(%s) AND ("
         
@@ -66,12 +83,12 @@ def lambda_handler(event, context):
         
         query = query + ") AND (scopus_id = ANY (SELECT source_id FROM public.edges_full) OR scopus_id = ANY (SELECT target_id FROM public.edges_full))"
         cursor.execute(query, (queryData))
-    elif len(event["facultiesToFilterOn"]) > 0:
-        cursor.execute("SELECT * FROM public.researcher_data WHERE prime_faculty=ANY(%s) AND (scopus_id = ANY (SELECT source_id FROM public.edges_full) OR scopus_id = ANY (SELECT target_id FROM public.edges_full))", (event["facultiesToFilterOn"],))
-    elif len(event["keyword"]) > 0:
+    elif len(facultiesToFilterOn) > 0:
+        cursor.execute("SELECT * FROM public.researcher_data WHERE prime_faculty=ANY(%s) AND (scopus_id = ANY (SELECT source_id FROM public.edges_full) OR scopus_id = ANY (SELECT target_id FROM public.edges_full))", (facultiesToFilterOn,))
+    elif len(keyword) > 0:
         queryData = []
         
-        keywordList = event["keyword"].split(", ")
+        keywordList = keyword.split(", ")
         
         query = "SELECT * FROM public.researcher_data WHERE ("
         

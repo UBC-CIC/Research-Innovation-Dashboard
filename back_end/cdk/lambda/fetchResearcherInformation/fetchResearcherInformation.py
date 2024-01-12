@@ -15,13 +15,26 @@ def getCredentials():
     credentials['host'] = secrets['host']
     credentials['db'] = secrets['dbname']
     return credentials
+    
+#Helper function to get a nested value from a dictionary.
+def get_nested_value(data, keys):
+    for key in keys:
+        if key in data:
+            data = data[key]
+        else:
+            return None
+    return data
 
 def lambda_handler(event, context):
     credentials = getCredentials()
     connection = psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db'])
     cursor = connection.cursor()
     
-    query = "SELECT * FROM researcher_data WHERE scopus_id = '" + event["id"] + "'" #SQL Query
+    id = get_nested_value(event, ["arguments", "id"])
+    if id is None:
+        id = get_nested_value(event, ["id"])
+    
+    query = "SELECT * FROM researcher_data WHERE scopus_id = '" + id + "'" #SQL Query
     cursor.execute(query) #This runs the query
     result = cursor.fetchone() #This command gets all the data you can fetch one as well
     

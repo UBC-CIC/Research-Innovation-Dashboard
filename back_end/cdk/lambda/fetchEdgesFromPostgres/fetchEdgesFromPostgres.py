@@ -15,6 +15,15 @@ def getCredentials():
     credentials['db'] = secrets['dbname']
     return credentials
     
+#Helper function to get a nested value from a dictionary.
+def get_nested_value(data, keys):
+    for key in keys:
+        if key in data:
+            data = data[key]
+        else:
+            return None
+    return data
+    
 def createKeywordsString(keywordList):
     queryString = ""
     keywordsToAdd = []
@@ -34,17 +43,25 @@ def lambda_handler(event, context):
     
     result = []
     
-    if len(event["facultiesToFilterOn"]) > 0 and len(event["keyword"]) > 0:
+    facultiesToFilterOn = get_nested_value(event, ["arguments", "facultiesToFilterOn"])
+    if facultiesToFilterOn is None:
+        facultiesToFilterOn = get_nested_value(event, ["facultiesToFilterOn"])
+        
+    keyword = get_nested_value(event, ["arguments", "keyword"])
+    if keyword is None:
+        keyword = get_nested_value(event, ["keyword"])
+    
+    if len(facultiesToFilterOn) > 0 and len(keyword) > 0:
         queryData = []
         
-        keywordQueryString, keywordsToAdd = createKeywordsString(event["keyword"].split(", "))
+        keywordQueryString, keywordsToAdd = createKeywordsString(keyword.split(", "))
         
-        queryData.append(event["facultiesToFilterOn"])
+        queryData.append(facultiesToFilterOn)
         
         for keyword in keywordsToAdd:
             queryData.append(keyword)
         
-        queryData.append(event["facultiesToFilterOn"])
+        queryData.append(facultiesToFilterOn)
         
         for keyword in keywordsToAdd:
             queryData.append(keyword)
@@ -64,13 +81,13 @@ def lambda_handler(event, context):
         query = query + "))"
 
         cursor.execute(query, (queryData))
-    elif len(event["facultiesToFilterOn"]) > 0: 
-        cursor.execute("SELECT * FROM public.edges_full WHERE source_id=ANY(SELECT scopus_id FROM researcher_data WHERE prime_faculty=ANY(%s)) AND target_id=ANY(SELECT scopus_id FROM researcher_data WHERE prime_faculty=ANY(%s))", (event["facultiesToFilterOn"], event["facultiesToFilterOn"],))
-    elif len(event["keyword"]) > 0:
+    elif len(facultiesToFilterOn) > 0: 
+        cursor.execute("SELECT * FROM public.edges_full WHERE source_id=ANY(SELECT scopus_id FROM researcher_data WHERE prime_faculty=ANY(%s)) AND target_id=ANY(SELECT scopus_id FROM researcher_data WHERE prime_faculty=ANY(%s))", (facultiesToFilterOn, facultiesToFilterOn,))
+    elif len(keyword) > 0:
         queryData = []
         query = ""
         
-        keywordQueryString, keywordsToAdd = createKeywordsString(event["keyword"].split(", "))
+        keywordQueryString, keywordsToAdd = createKeywordsString(keyword.split(", "))
         
         #add keywords twice
         for keyword in keywordsToAdd:
