@@ -92,7 +92,7 @@ export class GrantDataStack extends Stack {
     const grantDataS3Bucket = new s3.Bucket(this, "expertiseDashboard-grant-data-s3-bucket", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
-      versioned: false,
+      versioned: true,
       publicReadAccess: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
