@@ -77,7 +77,7 @@ The **Deploy to Amplify Console** button will take you to your AWS console to de
    Refer to [AWS's Page on Single Page Apps](https://docs.aws.amazon.com/amplify/latest/userguide/redirects.html#redirects-for-single-page-web-apps-spa) for further information on why we did that
    ![alt text](images/amplifyConsole/amplify-console-05.png)
 
-## Step 2: Backend Deployment
+## Step 3: Backend Deployment
 
 It's time to set up everything that goes on behind the scenes! For more information on how the backend works, feel free to refer to the Architecture Deep Dive, but an understanding of the backend is not necessary for deployment.
 
@@ -213,6 +213,10 @@ cdk deploy AppsyncStack --profile your-profile-name
 cdk deploy UpdatePublicationStack --profile your-profile-name
 ```
 
+```
+cdk deploy GraphDataStack --profile your-profile-name
+```
+
 ### Taking down the deployed stacks
 
 To take down the deployed stack, navigate to AWS Cloudformation, click on the stack(s) and hit Delete.
@@ -283,7 +287,7 @@ Please delete the stacks in the opposite order of when you deployed them.
 
 ## Step 7: Starting Patent Data Pipeline
 
-**NOTE: Only starts this step when the StateMachine from [step 5](#step-5-run-the-data-pipeline) finished executing.**
+**NOTE: Only start this step when the StateMachine from [step 5](#step-5-run-the-data-pipeline) finished executing.**
 
 1. On AWS Console, search and navigate to AWS Glue
    ![alt text](images/p3/deployment/depl-glue.png)
@@ -301,7 +305,29 @@ Please delete the stacks in the opposite order of when you deployed them.
 
 **NOTE**: You would have to run the steps above for first-time deployment. **The Patent Data Pipeline** is scheduled to run on every month on the 1st and 15th day (twice a month).
 
-## Step 8: Creating a User
+## Step 8: Starting Knowledge Graph Data Pipeline
+
+**NOTE: Only start this step when the StateMachine from [step 5](#step-5-run-the-data-pipeline) finished executing.**
+
+1. On AWS Console, search and navigate to AWS Glue
+   ![alt text](images/p3/deployment/depl-glue.png)
+
+2. Navigate to ETL jobs > Visual ETL
+   ![alt text](images/p3/deployment/depl-glue-job.png)
+
+3. Search for a Glue job that contains the string `createEdges`.
+   ![alt text](images/deploymentGuide/deploy-glue-job-createEdges.png)
+
+4. Tick the box next to it and click `Run job`.
+   ![alt text](images/deploymentGuide/deploy-glue-job-run-createEdges.png)
+
+5. This glue job will now run and populate the database. This process will take ~2.5 hours. If you navigate to the page you visited in part 3, you can click the glue job name that contains the string `createEdges` and then select the `Runs` tab to view the status of the glue job. Once it is finished running the glue job run status will display `Successful`. 
+
+6. Once the `createEdges` glue job is finished executing, follow steps 1-4 again to run the glue job that contains the string `CreateSimilarResearchers`.
+
+7. No further action is needed. This glue job will now run and populate the database. This process will take ~14 hours. 
+
+## Step 9: Creating a User
 
 To set up user accounts on the app, you will need to do the following steps
 
