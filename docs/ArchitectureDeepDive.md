@@ -2,7 +2,7 @@
 
 ## Architecture
 
-![Architecture diagram](../docs/images/p3/ExpertiseDashboard_Architecture_Phase_III-final.drawio.png?raw=true)
+![Architecture diagram](../docs/images/p3/ExpertiseDashboard_Architecture_KnowledgeGraph.drawio.png)
 
 For AWS VPC Networking Details, see this [document](NetworkingSpecifications.md).
 
@@ -49,6 +49,14 @@ Architecture Diagram exported as XML file from draw.io can be found [here](Exper
 4.   After each patent entry is name-matched, this step will insert the processed patent data into the RDS PostgreSQL under the patent_data table. Only patents with at least one matched researcher as an inventor will be inserted into the database.
 5.   This step will start a data Replication Task on AWS Data Migration Service (DMS) to replicate the new patent data into AWS Opensearch Service. After this process is done, the data will be searchable on the front-end web app.
 
+#### Steps 30-33 are explored in more detail as part of the [Knowledge Graph Pipeline Deep Dive](/docs/KnowledgeGraphDataPipelineDeepDive.md)
+30. When queries are made to for data related to the knowledge graph, Lambda connects to the RDS PostgreSQL database and gets the data requested by AppSync.
+
+31. AWS AppSync triggers the PostgreSQL Lambda resolver and passes the correct variables needed to get the required data.
+
+32. The first of two glue jobs in the knowledge graph data pipeline uses existing data from the PostgreSQL database to populate a table in the database that defines researchers nodes that will be used in the visual graph. 
+
+33. The second of two glue jobs in the knowledge graph data pipeline uses existing data from the PostgreSQL database to populate a table in the database that defines researchers who are similar to eachother.  
 
 ### Front End Flow (26-29)
 ![Architecture diagram](../docs/images/architecture-diagram-front-end.png)
