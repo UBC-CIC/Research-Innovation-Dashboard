@@ -81,6 +81,67 @@ export class AppsyncStack extends Stack {
       layers: [postgresLayer]
     });
 
+    // Create Lambdas for Knowledge Graph db queries
+    const fetchResearcherNodes = new lambda.Function(this, 'expertiseDashboard-fetchResearcherNodes', {
+      functionName: "expertiseDashboard-fetchResearcherNodes",
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'fetchResearcherNodes.lambda_handler',
+      timeout: cdk.Duration.seconds(300),
+      role: lambdaRole,
+      memorySize: 512,
+      vpc: vpcStack.vpc,
+      code: lambda.Code.fromAsset('lambda/fetchResearcherNodes'),
+      layers: [dataFetchStack.psycopg2]
+    });
+
+    const getSimilarResearchers = new lambda.Function(this, 'expertiseDashboard-getSimilarResearchers', {
+      functionName: "expertiseDashboard-getSimilarResearchers",
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'getSimilarResearchers.lambda_handler',
+      timeout: cdk.Duration.seconds(300),
+      role: lambdaRole,
+      memorySize: 512,
+      vpc: vpcStack.vpc,
+      code: lambda.Code.fromAsset('lambda/getSimilarResearchers'),
+      layers: [dataFetchStack.psycopg2]
+    });
+
+    const fetchResearcherInformation = new lambda.Function(this, 'expertiseDashboard-fetchResearcherInformation', {
+      functionName: "expertiseDashboard-fetchResearcherInformation",
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'fetchResearcherInformation.lambda_handler',
+      timeout: cdk.Duration.seconds(300),
+      role: lambdaRole,
+      memorySize: 512,
+      vpc: vpcStack.vpc,
+      code: lambda.Code.fromAsset('lambda/fetchResearcherInformation'),
+      layers: [dataFetchStack.psycopg2]
+    });
+
+    const fetchEdgesFromPostgres = new lambda.Function(this, 'expertiseDashboard-fetchEdgesFromPostgres', {
+      functionName: "expertiseDashboard-fetchEdgesFromPostgres",
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'fetchEdgesFromPostgres.lambda_handler',
+      timeout: cdk.Duration.seconds(300),
+      role: lambdaRole,
+      memorySize: 512,
+      vpc: vpcStack.vpc,
+      code: lambda.Code.fromAsset('lambda/fetchEdgesFromPostgres'),
+      layers: [dataFetchStack.psycopg2]
+    });
+
+    const getSharedPublications = new lambda.Function(this, 'expertiseDashboard-getSharedPublications', {
+      functionName: "expertiseDashboard-getSharedPublications",
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: 'getSharedPublications.lambda_handler',
+      timeout: cdk.Duration.seconds(300),
+      role: lambdaRole,
+      memorySize: 512,
+      vpc: vpcStack.vpc,
+      code: lambda.Code.fromAsset('lambda/getSharedPublications'),
+      layers: [dataFetchStack.psycopg2]
+    });
+
     //Create Lamabda Service role for the Appsync datasources
     const appsyncLambdaServiceRole = new Role(this, 'appsyncLambdaServiceRole', {
       roleName: 'appsyncLambdaServiceRole',
@@ -94,7 +155,13 @@ export class AppsyncStack extends Stack {
                           //Lambda Invoke
                           "lambda:invokeFunction",
                         ],
-                        resources: [opensearchStack.opensearchFunction.functionArn, queryDbFunction.functionArn]
+                        resources: [opensearchStack.opensearchFunction.functionArn, 
+                                    queryDbFunction.functionArn,
+                                    fetchResearcherNodes.functionArn,
+                                    getSimilarResearchers.functionArn,
+                                    fetchResearcherInformation.functionArn,
+                                    fetchEdgesFromPostgres.functionArn,
+                                    getSharedPublications.functionArn]
                     })
                 ]
             }),
@@ -123,6 +190,57 @@ export class AppsyncStack extends Stack {
       serviceRoleArn: appsyncLambdaServiceRole.roleArn
     });
 
+    //Create Knowledge Graph Appsync Data Sources
+    const fetchResearcherNodesDataSource = new appsync.CfnDataSource(this, 'fetchResearcherNodesDataSource', {
+      apiId: APIID,
+      name: "fetchResearcherNodesDataSource",
+      type: "AWS_LAMBDA",
+      lambdaConfig: {
+        lambdaFunctionArn: fetchResearcherNodes.functionArn
+      },
+      serviceRoleArn: appsyncLambdaServiceRole.roleArn
+    });
+
+    const getSimilarResearchersDataSource = new appsync.CfnDataSource(this, 'getSimilarResearchersDataSource', {
+      apiId: APIID,
+      name: "getSimilarResearchersDataSource",
+      type: "AWS_LAMBDA",
+      lambdaConfig: {
+        lambdaFunctionArn: getSimilarResearchers.functionArn
+      },
+      serviceRoleArn: appsyncLambdaServiceRole.roleArn
+    });
+
+    const fetchResearcherInformationDataSource = new appsync.CfnDataSource(this, 'fetchResearcherInformationDataSource', {
+      apiId: APIID,
+      name: "fetchResearcherInformationDataSource",
+      type: "AWS_LAMBDA",
+      lambdaConfig: {
+        lambdaFunctionArn: fetchResearcherInformation.functionArn
+      },
+      serviceRoleArn: appsyncLambdaServiceRole.roleArn
+    });
+
+    const fetchEdgesFromPostgresDataSource = new appsync.CfnDataSource(this, 'fetchEdgesFromPostgresDataSource', {
+      apiId: APIID,
+      name: "fetchEdgesFromPostgresDataSource",
+      type: "AWS_LAMBDA",
+      lambdaConfig: {
+        lambdaFunctionArn: fetchEdgesFromPostgres.functionArn
+      },
+      serviceRoleArn: appsyncLambdaServiceRole.roleArn
+    });
+
+    const getSharedPublicationsDataSource = new appsync.CfnDataSource(this, 'getSharedPublicationsDataSource', {
+      apiId: APIID,
+      name: "getSharedPublicationsDataSource",
+      type: "AWS_LAMBDA",
+      lambdaConfig: {
+        lambdaFunctionArn: getSharedPublications.functionArn
+      },
+      serviceRoleArn: appsyncLambdaServiceRole.roleArn
+    });
+    
     //Upload the right schema to appsync
     const apiSchema = new appsync.CfnGraphQLSchema(this, 'MyCfnGraphQLSchema', {
       apiId: APIID,
@@ -137,6 +255,20 @@ export class AppsyncStack extends Stack {
       
       type Department {
         prime_department: String
+      }
+      
+      type Edge {
+        attributes: EdgeAttributes
+        key: String
+        source: String
+        target: String
+        undirected: Boolean
+      }
+      
+      type EdgeAttributes {
+        color: String
+        sharedPublications: [String]
+        size: Float
       }
       
       type Faculty {
@@ -154,14 +286,19 @@ export class AppsyncStack extends Stack {
         researcher_id: String
       }
       
-      type Mutation {
-        putPub(
-          authors: [String!],
-          id: ID!,
-          journal: String,
-          keywords: [String],
-          title: String!
-        ): Publication
+      type Links {
+        key: String!
+        numPublications: Int!
+        source: String!
+        target: String!
+      }
+      
+      type PotentialResearcher {
+        firstName: String
+        lastName: String
+        id: String
+        faculty: String
+        sharedKeywords: [String]
       }
       
       type Publication {
@@ -176,67 +313,12 @@ export class AppsyncStack extends Stack {
         year_published: String
       }
       
-      type Query {
-        advancedSearchGrants(
-          includeAllTheseWords: String!,
-          includeAnyOfTheseWords: String!,
-          includeTheseExactWordsOrPhrases: String!,
-          noneOfTheseWords: String!,
-          table: String!
-        ): [grant]
-        advancedSearchPublications(
-          includeAllTheseWords: String!,
-          includeAnyOfTheseWords: String!,
-          includeTheseExactWordsOrPhrases: String!,
-          journal: String!,
-          noneOfTheseWords: String!,
-          table: String!,
-          year_gte: Int!,
-          year_lte: Int!
-        ): [Publication]
-        advancedSearchResearchers(
-          includeAllTheseWords: String!,
-          includeAnyOfTheseWords: String!,
-          includeTheseExactWordsOrPhrases: String!,
-          noneOfTheseWords: String!,
-          prime_department: String!,
-          prime_faculty: String!,
-          table: String!
-        ): [ResearcherOpenSearch]
-        allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
-        facultyMetrics(faculty: String!): [facultyMetric]
-        getAllDepartments: [String]
-        getAllDistinctJournals: [String]
-        getAllFaculty: [String]
-        getAllResearchersImpacts: [Impact]
-        getNumberOfResearcherPubsAllYears(id: ID!): graphDataAllYears
-        getNumberOfResearcherPubsLastFiveYears(id: ID!): graphData
-        getPub(id: ID!): Publication
-        getResearcher(id: ID!): Researcher
-        getResearcherElsevier(id: ID!): ResearcherElsevier
-        getResearcherFull(id: ID!): ResearcherFull
-        getResearcherOrcid(id: ID!): ResearcherOrcid
-        getResearcherPubsByCitations(id: ID!): [Publication]
-        getResearcherPubsByTitle(id: ID!): [Publication]
-        getResearcherPubsByYear(id: ID!): [Publication]
-        searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
-        searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]
-        similarResearchers(researcher_id: String!): [ResearcherOpenSearch]
-        totalPublicationPerYear: [pubsPerYear]
-        wordCloud(gte: Int!, lte: Int!): [wordCloud]
-        changeScopusId(oldScopusId: String!, newScopusId: String!): Boolean
-        lastUpdatedResearchersList: [lastUpdated]
-        getUpdatePublicationsLogs: [updatePublicationsLogType]
-        searchGrants(search_value: String!, grantAgenciesToFilterBy: [String]!): [grant]
-        searchPatents(search_value: String!, patentClassificationFilter: [String]!): [patent]
-        otherResearchersWithKeyword(keyword: String!): [ResearcherOpenSearch]
-        getAllGrantAgencies: [String]
-        getFlaggedIds: [[Researcher]]
-        getResearcherImpactsByDepartment(prime_department: String!): [Impact]
-        getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
-        getResearcherPatents(id: ID!): [patent]
-        getResearcherGrants(id: ID!): [grant]
-        getCatagoriesCount: Catagories
+      type PublicationForGraph {
+        authors: String
+        journal: String
+        link: String
+        title: String
+        yearPublished: String
       }
       
       type Researcher {
@@ -258,11 +340,27 @@ export class AppsyncStack extends Stack {
         second_faculty: String
       }
       
+      type ResearcherAttributes {
+        color: String!
+        label: String
+      }
+      
       type ResearcherElsevier {
         h_index: Float
         id: ID!
         num_citations: Int
         num_documents: Int
+      }
+      
+      type ResearcherForGraph {
+        department: String!
+        email: String!
+        faculty: String!
+        firstName: String!
+        id: String!
+        keywords: String!
+        lastName: String!
+        rank: String!
       }
       
       type ResearcherFull {
@@ -287,6 +385,11 @@ export class AppsyncStack extends Stack {
         scopus_id: String!
         second_department: String
         second_faculty: String
+      }
+      
+      type ResearcherNode {
+        attributes: ResearcherAttributes
+        key: String
       }
       
       type ResearcherOpenSearch {
@@ -377,6 +480,84 @@ export class AppsyncStack extends Stack {
         text: String
         value: Int
       }
+      
+      type Mutation {
+        putPub(
+          authors: [String!],
+          id: ID!,
+          journal: String,
+          keywords: [String],
+          title: String!
+        ): Publication
+      }
+      
+      type Query {
+        advancedSearchGrants(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          noneOfTheseWords: String!,
+          table: String!
+        ): [grant]
+        advancedSearchPublications(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          journal: String!,
+          noneOfTheseWords: String!,
+          table: String!,
+          year_gte: Int!,
+          year_lte: Int!
+        ): [Publication]
+        advancedSearchResearchers(
+          includeAllTheseWords: String!,
+          includeAnyOfTheseWords: String!,
+          includeTheseExactWordsOrPhrases: String!,
+          noneOfTheseWords: String!,
+          prime_department: String!,
+          prime_faculty: String!,
+          table: String!
+        ): [ResearcherOpenSearch]
+        allPublicationsPerFacultyQuery: [totalPubsPerFaculty]
+        facultyMetrics(faculty: String!): [facultyMetric]
+        getAllDepartments: [String]
+        getAllDistinctJournals: [String]
+        getAllFaculty: [String]
+        getAllResearchersImpacts: [Impact]
+        getNumberOfResearcherPubsAllYears(id: ID!): graphDataAllYears
+        getNumberOfResearcherPubsLastFiveYears(id: ID!): graphData
+        getPub(id: ID!): Publication
+        getResearcher(id: ID!): Researcher
+        getResearcherElsevier(id: ID!): ResearcherElsevier
+        getResearcherFull(id: ID!): ResearcherFull
+        getResearcherOrcid(id: ID!): ResearcherOrcid
+        getResearcherPubsByCitations(id: ID!): [Publication]
+        getResearcherPubsByTitle(id: ID!): [Publication]
+        getResearcherPubsByYear(id: ID!): [Publication]
+        searchPublications(search_value: String!, journalsToFilterBy: [String]!): [Publication]
+        searchResearcher(search_value: String!, departmentsToFilterBy: [String]!, facultiesToFilterBy: [String]!): [ResearcherOpenSearch]
+        similarResearchers(researcher_id: String!): [ResearcherOpenSearch]
+        totalPublicationPerYear: [pubsPerYear]
+        wordCloud(gte: Int!, lte: Int!): [wordCloud]
+        changeScopusId(oldScopusId: String!, newScopusId: String!): Boolean
+        lastUpdatedResearchersList: [lastUpdated]
+        getUpdatePublicationsLogs: [updatePublicationsLogType]
+        searchGrants(search_value: String!, grantAgenciesToFilterBy: [String]!): [grant]
+        searchPatents(search_value: String!, patentClassificationFilter: [String]!): [patent]
+        otherResearchersWithKeyword(keyword: String!): [ResearcherOpenSearch]
+        getAllGrantAgencies: [String]
+        getFlaggedIds: [[Researcher]]
+        getResearcherImpactsByDepartment(prime_department: String!): [Impact]
+        getResearcherImpactsByFaculty(prime_faculty: String!): [Impact]
+        getResearcherPatents(id: ID!): [patent]
+        getResearcherGrants(id: ID!): [grant]
+        getCatagoriesCount: Catagories
+        getEdges(facultiesToFilterOn: [String], keyword: String): [Edge]
+        getResearcherForGraph(id: String!): ResearcherForGraph
+        getResearchers(facultiesToFilterOn: [String], keyword: String): [ResearcherNode]
+        getSharedPublications(id1: String!, id2: String!): [PublicationForGraph]
+        getSimilarResearchers(researcher_id: String!): [PotentialResearcher]
+      }
       `
     });
 
@@ -461,6 +642,52 @@ export class AppsyncStack extends Stack {
     });
     OtherResearchersWithKeywordResolver.addDependency(opensearchDataSource);
     OtherResearchersWithKeywordResolver.addDependency(apiSchema);
+
+    //Create all the Knowledge Graph resolvers for the schema
+    const getResearchersResolver = new appsync.CfnResolver(this, 'getResearchers', {
+      apiId: APIID,
+      fieldName: 'getResearchers',
+      typeName: 'Query',
+      dataSourceName:fetchResearcherNodesDataSource.name,
+    });
+    getResearchersResolver.addDependency(fetchResearcherNodesDataSource);
+    getResearchersResolver.addDependency(apiSchema);
+
+    const getSimilarResearchersResolver = new appsync.CfnResolver(this, 'getSimilarResearchers', {
+      apiId: APIID,
+      fieldName: 'getSimilarResearchers',
+      typeName: 'Query',
+      dataSourceName:getSimilarResearchersDataSource.name,
+    });
+    getSimilarResearchersResolver.addDependency(getSimilarResearchersDataSource);
+    getSimilarResearchersResolver.addDependency(apiSchema);
+    
+    const getResearcherForGraphResolver = new appsync.CfnResolver(this, 'getResearcherForGraph', {
+      apiId: APIID,
+      fieldName: 'getResearcherForGraph',
+      typeName: 'Query',
+      dataSourceName:fetchResearcherInformationDataSource.name,
+    });
+    getResearcherForGraphResolver.addDependency(fetchResearcherInformationDataSource);
+    getResearcherForGraphResolver.addDependency(apiSchema);
+
+    const getEdgesResolver = new appsync.CfnResolver(this, 'getEdges', {
+      apiId: APIID,
+      fieldName: 'getEdges',
+      typeName: 'Query',
+      dataSourceName:fetchEdgesFromPostgresDataSource.name,
+    });
+    getEdgesResolver.addDependency(fetchEdgesFromPostgresDataSource);
+    getEdgesResolver.addDependency(apiSchema);
+
+    const getSharedPublicationsResolver = new appsync.CfnResolver(this, 'getSharedPublications', {
+      apiId: APIID,
+      fieldName: 'getSharedPublications',
+      typeName: 'Query',
+      dataSourceName:getSharedPublicationsDataSource.name,
+    });
+    getSharedPublicationsResolver.addDependency(getSharedPublicationsDataSource);
+    getSharedPublicationsResolver.addDependency(apiSchema);
 
     //Create all the PostgreSQL resolvers
     let postgresqlDBQueryList = ["allPublicationsPerFacultyQuery", "facultyMetrics", "getAllDepartments",
