@@ -38,11 +38,9 @@ This function fetch and encrypts the API keys per instructions in OPS v3.2 docum
 def authorization():
     # encode the keys into base64 representation
     combined_string = f"{consumer_key}:{consumer_secret_key}"
-    print(combined_string)
 
     b = base64.b64encode(bytes(combined_string, 'utf-8'))  # bytes
     base64_key = b.decode('utf-8')
-    print(base64_key)
 
     # request access token
     headers = {"Authorization": base64_key,
@@ -51,7 +49,6 @@ def authorization():
     response = requests.post(
         url=ACCESS_AUTH_URL, headers=headers, data=payload)
     access_token = response.json()["access_token"]
-    # print(response.json())
     return access_token
 
 
@@ -106,7 +103,6 @@ def fetch_all_equivalent_patent_data():
             applicants = []  # list of applicant names
             publication_date = ""
             inventors = []  # list of inventor names
-            print(document)
             family_number = document['exchange-documents']['exchange-document']['@family-id']
             cpc = []  # list of cpc numbers
             country_code = ""
@@ -216,13 +212,6 @@ def main(argv):
         print(
             f"API fetching process exited early. Saving entries we currently have into s3.")
     finally:
-        # datetime object containing current date and time
-        # now = datetime.now()
-        # print("now =", now)
-        # # dd/mm/YY H:M:S
-        # dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-        # print("date and time =", dt_string)
-
         df = pd.DataFrame(col_dict)
         df = df[(df.country_code.str.contains("US")) | (df.country_code.str.contains("CA"))]
         total_patent_count = len(df.index)

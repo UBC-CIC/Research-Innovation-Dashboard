@@ -125,17 +125,12 @@ def process_researcher_data(cursor, local_database_data, instoken, apikey):
         except Exception as e:
             log(f"Error fetching data from Scopus API: {e}")
             continue
-        
-        print(author_data_array)
 
         for index, author_data in enumerate(author_data_array):
             if author_data['@status'] == 'not_found':
                 log("Add Researcher To List Of Issue Researchers")
             else:
                 researcher_id, num_documents_scopus, h_index = extract_researcher_info(author_data)
-                log(researcher_id)
-                log(num_documents_scopus)
-                log(h_index)
                 update_h_index(cursor, researcher_id, h_index)
 
                 local_database_data_num_documents = local_database_data[index + index][1]
@@ -282,7 +277,6 @@ def handlePublicationInDatabase(publication, author_id, cursor, connection):
 
 def handlePublicationNotInDatabase(publication, author_id):
     try:
-        log(publication)
         author_ids = []
         author_names = []
 
@@ -506,8 +500,6 @@ def store_keywords(author_id, publications, cursor):
         cursor.execute(query, (keywords_string, author_id))
     except Exception as e:
         log(f"Error in store_keywords: {e}")
-        log(author_id)
-        log(keywords_string)
 
 def updateResearchers(researchersToUpdateArray, instoken, apikey, connection, cursor):
     """
@@ -556,7 +548,6 @@ def main():
         with psycopg2.connect(user=credentials['username'], password=credentials['password'], host=credentials['host'], database=credentials['db']) as connection:
             with connection.cursor() as cursor:
                 researcherArray = createListOfResearchersToUpdate()
-                log(f"Finished Creating List Of Researchers To Update. List of researchers is: {researcherArray}")
 
                 NumberOfPublicationsUpdate = updateResearchers(researcherArray, instoken, apikey, connection, cursor)
                 log("Finished Updating Researchers")
@@ -580,15 +571,3 @@ def main():
     log(f"DMS Glue Job started with Run ID: "+str(response['JobRunId']))
 
 main()
-
-# instoken = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/instoken', WithDecryption=True)
-# apikey = ssm_client.get_parameter(Name='/service/elsevier/api/user_name/key', WithDecryption=True)
-    
-# authorArray = ["55765887300"]
-    
-# url = 'https://api.elsevier.com/content/author'
-# headers = {'Accept': 'application/json', 'X-ELS-APIKey': apikey['Parameter']['Value'], 'X-ELS-Insttoken': instoken['Parameter']['Value']}
-# params = {'field': 'document-count,h-index', 'author_id': authorArray}
-
-# response = requests.get(url, headers=headers, params=params)
-# log(response)
