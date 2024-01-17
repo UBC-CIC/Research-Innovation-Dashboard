@@ -5,6 +5,7 @@ import boto3
 researcher_columns_no_keywords = 'first_name, last_name, email, rank, prime_department, prime_faculty, scopus_id'
 
 sm_client = boto3.client('secretsmanager')
+glue_client = boto3.client('glue')
 
 def getCredentials():
     credentials = {}
@@ -149,3 +150,6 @@ def publication_list_to_sql_str(pub_list):
 
 # Clear existing edges, create new edges from scratch
 createEdges()
+
+# Trigger downstream glue job 
+glue_client.start_job_run(JobName="expertiseDashboard-CreateSimilarResearchers")
