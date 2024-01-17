@@ -321,11 +321,7 @@ Please delete the stacks in the opposite order of when you deployed them.
 4. Tick the box next to it and click `Run job`.
    ![alt text](images/deploymentGuide/deploy-glue-job-run-createEdges.png)
 
-5. This glue job will now run and populate the database. This process will take ~2.5 hours. If you navigate to the page you visited in part 3, you can click the glue job name that contains the string `createEdges` and then select the `Runs` tab to view the status of the glue job. Once it is finished running the glue job run status will display `Successful`. 
-
-6. Once the `createEdges` glue job is finished executing, follow steps 1-4 again to run the glue job that contains the string `CreateSimilarResearchers`.
-
-7. No further action is needed. This glue job will now run and populate the database. This process will take ~14 hours. 
+5. No further action is needed. This will execute the entire pipeline. This process will take ~18 hours. 
 
 ## Step 9: Creating a User
 
