@@ -15,6 +15,7 @@
 | [Researcher Profile](#Researcher-Profile)    | Researcher profile and information page               |
 | [Impact](#Impact)                            | Researcher impact by department or faculty            |
 | [Metrics](#Metrics)                          | Top 100 research keywords word cloud                  |
+| [Collaborators](#Collaborators)              | Graph of researcher connections                  |
 | [Admin Dashboard](#Admin-Dashboard)          | Update logs, Changing Scopus IDs, Viewing Flagged IDs |
 | [Updating Researchers](#Updating-Researchers)| Process for Updating Researcher Data                  |
 | [Updating Grant Data](#updating-grant-data)  | Process for Updating Grant Data                       |

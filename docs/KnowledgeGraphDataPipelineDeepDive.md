@@ -1,9 +1,16 @@
 # Knowledge Graph Data Pipeline Deep Dive
 
-The goal of the Knowledge Graph Pipeline is to populate the database with data that can be used to generate a visual graph of researchers' connections.
+The goal of the Knowledge Graph Pipeline is to populate the database with data that can be used to generate a graph of researchers' connections.
+
+## 1. Data Transformation
+The Knowledge Graph data pipeline consists of two glue jobs. 
+
+The first glue job transforms existing researcher and publication data from the PostgreSQL database. It then uses the transformed data to populate the edges_full table in the database, which defines how researchers will be connected to eachother in the graph. 
+
+The second glue job transforms existing researcher data from the PostgreSQL database. It then uses the transformed data to populate the potential_edges table in the database, which defines researchers who are similar to eachother based on shared keywords.
 
 
-## 1. Knowledge Graph Tables Schema
+## 2. Knowledge Graph Tables Schema
 
 ![Knowledge Graph Schema](images/KnowledgeGraphDatabaseSchema.png)
 

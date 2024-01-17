@@ -50,13 +50,13 @@ Architecture Diagram exported as XML file from draw.io can be found [here](Exper
 5.   This step will start a data Replication Task on AWS Data Migration Service (DMS) to replicate the new patent data into AWS Opensearch Service. After this process is done, the data will be searchable on the front-end web app.
 
 #### Steps 30-33 are explored in more detail as part of the [Knowledge Graph Pipeline Deep Dive](/docs/KnowledgeGraphDataPipelineDeepDive.md)
-30. When queries are made to for data related to the knowledge graph, Lambda connects to the RDS PostgreSQL database and gets the data requested by AppSync.
+30. When queries are made for data related to the knowledge graph, Lambda connects to the RDS PostgreSQL database and gets the data requested by AppSync.
 
 31. AWS AppSync triggers the PostgreSQL Lambda resolver and passes the correct variables needed to get the required data.
 
-32. The first of two glue jobs in the knowledge graph data pipeline uses existing data from the PostgreSQL database to populate a table in the database that defines researchers nodes that will be used in the visual graph. 
+32. This step transforms existing researcher and publication data from the PostgreSQL database. It then uses the transformed data to populate the edges_full table in the database, which defines how researchers will be connected to eachother in the graph. 
 
-33. The second of two glue jobs in the knowledge graph data pipeline uses existing data from the PostgreSQL database to populate a table in the database that defines researchers who are similar to eachother.  
+33. This step transforms existing researcher data from the PostgreSQL database. It then uses the transformed data to populate the potential_edges table in the database, which defines researchers who are similar to eachother based on shared keywords.
 
 ### Front End Flow (26-29)
 ![Architecture diagram](../docs/images/architecture-diagram-front-end.png)
