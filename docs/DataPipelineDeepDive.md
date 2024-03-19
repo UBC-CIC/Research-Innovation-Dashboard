@@ -35,7 +35,7 @@ Researchers whose Scopus id’s were identified in steps 2-4 have their data sto
 
 | Column Name | Description | Source |
 | ----------- | ----------- | ----------- |
-| employee_id | The researchers employee id | S3 (.csv file) |
+| institution_user_id | The researchers institution user id | S3 (.csv file) |
 | first_name | First name of researcher | S3 (.csv file) |
 | preferred_name | Preferred name of researcher | S3 (.csv file) |
 | last_name | Last name of researcher | S3 (.csv file) |

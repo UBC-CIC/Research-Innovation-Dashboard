@@ -210,11 +210,7 @@ def upload_to_s3(edges):
     out_file = open("/tmp/edges.json", "w") 
     json.dump(edges, out_file)
     out_file.close()
-    # TODO Change S3 bucket name to environment variable (also in cdk + add s3 write permissions)
-    s3_client.upload_file('/tmp/edges.json', 'aayushtestbucketxy', 'edges.json')
+    s3_client.upload_file('/tmp/edges.json', 'expertiseDashboard-GraphBucket', 'edges.json')
 
 # Create new edges into SHADOW_TABLE, so that the lock to edges_full is not held up
 createEdges()
-
-# Trigger downstream glue job 
-# glue_client.start_job_run(JobName="expertiseDashboard-CreateSimilarResearchers")

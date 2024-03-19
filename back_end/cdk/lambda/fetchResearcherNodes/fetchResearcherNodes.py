@@ -3,6 +3,7 @@ import boto3
 import psycopg2
 
 sm_client = boto3.client('secretsmanager')
+s3_client = boto3.client('s3')
 
 #This function gets the credentials for the databae
 def getCredentials():
@@ -24,6 +25,13 @@ def get_nested_value(data, keys):
         else:
             return None
     return data
+    
+def put_in_s3(data):
+    out_file = open("/tmp/nodes.json", "w")
+    json.dump(data, out_file)
+    out_file.close()
+    # TODO Change S3 bucket name to environment variable (also in cdk + add s3 write permissions)
+    s3_client.upload_file('/tmp/nodes.json', 'aayushtestbucketxy', 'nodes.json')
 
 def lambda_handler(event, context):
     colorObject = {
@@ -64,6 +72,10 @@ def lambda_handler(event, context):
     keyword = get_nested_value(event, ["arguments", "keyword"])
     if keyword is None:
         keyword = get_nested_value(event, ["keyword"])
+        
+    stepFunctionCall = get_nested_value(event, ["arguments", "stepFunctionCall"])
+    if stepFunctionCall is None:
+        stepFunctionCall = get_nested_value(event, ["stepFunctionCall"])
     
     if len(facultiesToFilterOn) > 0 and len(keyword) > 0:
         queryData = []
@@ -133,5 +145,9 @@ def lambda_handler(event, context):
 
     cursor.close() #This ends the connection
     connection.commit() #This one makes any changes you made with queries commited
+    
+    if stepFunctionCall != None:
+        put_in_s3(researcherList)
+        return "Put in S3 successful!"
     
     return researcherList

@@ -14,6 +14,7 @@ import { triggers } from "aws-cdk-lib";
 import { DatabaseStack } from "./database-stack";
 import { Effect, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { GrantDataStack } from "./grantdata-stack";
+import { DataFetchStack } from "./datafetch-stack";
 
 export class GraphDataStack extends Stack {
     constructor(
@@ -21,9 +22,17 @@ export class GraphDataStack extends Stack {
     id: string,
     grantDataStack: GrantDataStack,
     vpcStack: VpcStack,
+    dataFetchRole: iam.Role,
     props?: StackProps
   ) {
     super(scope, id, props);
+
+    // S3 Bucket to store the graph
+    // DO NOT CHANGE BUCKET NAME
+    const graphBucket = new s3.Bucket(this, 'GraphBucket', {
+      bucketName: 'expertise-dashboard-graph-bucket',
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL
+    });
 
     // Create new Glue Role. DO NOT RENAME THE ROLE!!!
     const roleName = "AWSGlueServiceRole-GraphData";
@@ -152,5 +161,16 @@ export class GraphDataStack extends Stack {
     createEdgesJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     createSimilarResearchersJob.applyRemovalPolicy(RemovalPolicy.DESTROY);
     glueRole.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
+    const createXY = new lambda.Function(this, 'expertiseDashboard-createXYForGraph', {
+      runtime: lambda.Runtime.NODEJS_16_X,
+      functionName: 'expertiseDashboard-createXYForGraph',
+      code: new lambda.AssetCode('lambda/createXYForGraph'),
+      handler: 'createXYForGraph.handler',
+      role: dataFetchRole,
+      environment: {
+        'GRAPH_BUCKET': graphBucket.bucketName
+      }
+    });
   }
 }

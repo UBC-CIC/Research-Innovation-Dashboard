@@ -180,7 +180,7 @@ export const getResearcher = /* GraphQL */ `
   query GetResearcher($id: ID!) {
     getResearcher(id: $id) {
       researcher_id
-      employee_id
+      institution_user_id
       areas_of_interest
       campus
       email
@@ -467,7 +467,7 @@ export const getFlaggedIds = /* GraphQL */ `
   query GetFlaggedIds {
     getFlaggedIds {
       researcher_id
-      employee_id
+      institution_user_id
       areas_of_interest
       campus
       email

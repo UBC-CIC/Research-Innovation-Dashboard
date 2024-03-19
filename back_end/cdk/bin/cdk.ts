@@ -47,7 +47,7 @@ const updatePublicationStack = new UpdatePublicationStack(app, 'UpdatePublicatio
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }})
 updatePublicationStack.addDependency(grantDataStack)
 
-const graphDataStack = new GraphDataStack(app, 'GraphDataStack', grantDataStack, vpcStack,
+const graphDataStack = new GraphDataStack(app, 'GraphDataStack', grantDataStack, vpcStack, dataFetchStack.dataFetchRole,
     {env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }});
 patentDataStack.addDependency(grantDataStack)
 

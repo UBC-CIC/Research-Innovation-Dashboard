@@ -16,6 +16,7 @@ import { DefinitionBody } from 'aws-cdk-lib/aws-stepfunctions';
 export class DataFetchStack extends cdk.Stack {
   public readonly psycopg2: lambda.LayerVersion;
   public readonly pyjarowinkler: lambda.LayerVersion;
+  public readonly dataFetchRole: iam.Role;
 
   constructor(scope: cdk.App, id: string, databaseStack: DatabaseStack, dmsStack: DmsStack, grantDataStack: GrantDataStack, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -146,11 +147,11 @@ export class DataFetchStack extends cdk.Stack {
       resources: ["arn:aws:logs:*:*:*"]
     }));
 
-    const dataFetchRole = new Role(this, 'DataFetchRole', {
+    this.dataFetchRole = new Role(this, 'DataFetchRole', {
       roleName: 'DataFetchRole',
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
     });
-    dataFetchRole.addToPolicy(new PolicyStatement({
+    this.dataFetchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
       actions: [
         // Secrets Manager
@@ -158,7 +159,7 @@ export class DataFetchStack extends cdk.Stack {
       ],
       resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:expertiseDashboard/credentials/*`]
     }));
-    dataFetchRole.addToPolicy(new PolicyStatement({
+    this.dataFetchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
       actions: [
         // S3
@@ -167,7 +168,7 @@ export class DataFetchStack extends cdk.Stack {
       ],
       resources: [s3Bucket.bucketArn]
     }));
-    dataFetchRole.addToPolicy(new PolicyStatement({
+    this.dataFetchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
       actions: [
         // Parameter Store
@@ -181,7 +182,7 @@ export class DataFetchStack extends cdk.Stack {
       ],
       resources: ["*"] // must be *
     }));
-    dataFetchRole.addToPolicy(new PolicyStatement({
+    this.dataFetchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
       actions: [
         // Parameter Store
@@ -194,7 +195,7 @@ export class DataFetchStack extends cdk.Stack {
       ]
     }));
     //Create a policy to start DMS task
-    dataFetchRole.addToPolicy(new PolicyStatement({
+    this.dataFetchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
       actions: [
         // Parameter Store
@@ -203,7 +204,7 @@ export class DataFetchStack extends cdk.Stack {
       resources: [dmsStack.replicationTask.ref]
     }));
     // Allow CloudWatch logs
-    dataFetchRole.addToPolicy(new PolicyStatement({
+    this.dataFetchRole.addToPolicy(new PolicyStatement({
       effect: Effect.ALLOW,
       actions: [
         // CloudWatch Logs
@@ -319,7 +320,7 @@ export class DataFetchStack extends cdk.Stack {
       layers: [this.psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/researcherFetch'),
       timeout: cdk.Duration.minutes(15),
-      role: dataFetchRole,
+      role: this.dataFetchRole,
       logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
@@ -338,7 +339,7 @@ export class DataFetchStack extends cdk.Stack {
       layers: [requests, this.psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/elsevierFetch'),
       timeout: cdk.Duration.minutes(15),
-      role: dataFetchRole,
+      role: this.dataFetchRole,
       logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
@@ -360,7 +361,7 @@ export class DataFetchStack extends cdk.Stack {
       layers: [requests, this.psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/orcidFetch'),
       timeout: cdk.Duration.minutes(15),
-      role: dataFetchRole,
+      role: this.dataFetchRole,
       logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
@@ -379,7 +380,7 @@ export class DataFetchStack extends cdk.Stack {
       layers: [requests, this.psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/publicationFetch'),
       timeout: cdk.Duration.minutes(15),
-      role: dataFetchRole,
+      role: this.dataFetchRole,
       logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {
@@ -399,7 +400,7 @@ export class DataFetchStack extends cdk.Stack {
       layers: [requests, this.psycopg2, pytz],
       code: lambda.Code.fromAsset('lambda/startReplication'),
       timeout: cdk.Duration.minutes(15),
-      role: dataFetchRole,
+      role: this.dataFetchRole,
       logRetention: logs.RetentionDays.SIX_MONTHS,
       memorySize: 512,
       environment: {

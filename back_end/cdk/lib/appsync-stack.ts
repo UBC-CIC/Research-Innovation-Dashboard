@@ -323,7 +323,7 @@ export class AppsyncStack extends Stack {
       
       type Researcher {
         researcher_id: String
-        employee_id: String
+        institution_user_id: String
         areas_of_interest: String
         campus: String
         email: String

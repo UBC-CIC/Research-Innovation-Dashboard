@@ -2114,7 +2114,7 @@
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "employee_id",
+          "name" : "institution_user_id",
           "description" : null,
           "args" : [ ],
           "type" : {
