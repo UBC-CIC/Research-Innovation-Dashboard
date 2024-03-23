@@ -13,6 +13,7 @@ import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
 import { DataFetchStack } from './datafetch-stack';
 
 export class AppsyncStack extends Stack {
+  public readonly fetchResearcherNodes : lambda.Function;
   constructor(scope: Construct, id: string, opensearchStack: OpensearchStack, vpcStack: VpcStack, databaseStack: DatabaseStack, dataFetchStack: DataFetchStack, props?: StackProps) {
     super(scope, id, props);
 
@@ -57,6 +58,14 @@ export class AppsyncStack extends Stack {
         ],
         resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:expertiseDashboard/credentials/*`]
     }));
+    lambdaRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        // S3 bucket permissions
+        "s3:*",
+      ],
+      resources: ['*']
+    }))
 
     // The layer containing the postgres library
     const postgresLayer = new lambda.LayerVersion(this, 'postgres', {
@@ -82,7 +91,7 @@ export class AppsyncStack extends Stack {
     });
 
     // Create Lambdas for Knowledge Graph db queries
-    const fetchResearcherNodes = new lambda.Function(this, 'expertiseDashboard-fetchResearcherNodes', {
+    this.fetchResearcherNodes = new lambda.Function(this, 'expertiseDashboard-fetchResearcherNodes', {
       functionName: "expertiseDashboard-fetchResearcherNodes",
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'fetchResearcherNodes.lambda_handler',
@@ -157,7 +166,7 @@ export class AppsyncStack extends Stack {
                         ],
                         resources: [opensearchStack.opensearchFunction.functionArn, 
                                     queryDbFunction.functionArn,
-                                    fetchResearcherNodes.functionArn,
+                                    this.fetchResearcherNodes.functionArn,
                                     getSimilarResearchers.functionArn,
                                     fetchResearcherInformation.functionArn,
                                     fetchEdgesFromPostgres.functionArn,
@@ -196,7 +205,7 @@ export class AppsyncStack extends Stack {
       name: "fetchResearcherNodesDataSource",
       type: "AWS_LAMBDA",
       lambdaConfig: {
-        lambdaFunctionArn: fetchResearcherNodes.functionArn
+        lambdaFunctionArn: this.fetchResearcherNodes.functionArn
       },
       serviceRoleArn: appsyncLambdaServiceRole.roleArn
     });

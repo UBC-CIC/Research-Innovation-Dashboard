@@ -210,7 +210,7 @@ def upload_to_s3(edges):
     out_file = open("/tmp/edges.json", "w") 
     json.dump(edges, out_file)
     out_file.close()
-    s3_client.upload_file('/tmp/edges.json', 'expertiseDashboard-GraphBucket', 'edges.json')
+    s3_client.upload_file('/tmp/edges.json', 'expertise-dashboard-graph-bucket', 'edges.json')
 
 # Create new edges into SHADOW_TABLE, so that the lock to edges_full is not held up
 createEdges()

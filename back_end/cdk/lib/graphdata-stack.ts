@@ -15,6 +15,11 @@ import { DatabaseStack } from "./database-stack";
 import { Effect, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { GrantDataStack } from "./grantdata-stack";
 import { DataFetchStack } from "./datafetch-stack";
+import { aws_stepfunctions_tasks as tasks} from 'aws-cdk-lib';
+import { AppsyncStack } from "./appsync-stack";
+import { DefinitionBody, IntegrationPattern, StateMachine, TaskInput } from "aws-cdk-lib/aws-stepfunctions";
+import { Distribution } from "aws-cdk-lib/aws-cloudfront";
+import { S3Origin } from "aws-cdk-lib/aws-cloudfront-origins";
 
 export class GraphDataStack extends Stack {
     constructor(
@@ -23,6 +28,7 @@ export class GraphDataStack extends Stack {
     grantDataStack: GrantDataStack,
     vpcStack: VpcStack,
     dataFetchRole: iam.Role,
+    appSyncStack: AppsyncStack,
     props?: StackProps
   ) {
     super(scope, id, props);
@@ -77,7 +83,7 @@ export class GraphDataStack extends Stack {
     const PYTHON_VER = "3.9";
     const GLUE_VER = "3.0";
     const MAX_RETRIES = 0; // no retries, only execute once
-    const MAX_CAPACITY = 0.0625; // 1/16 of a DPU, lowest setting
+    const MAX_CAPACITY = 1; // 1/16 of a DPU, lowest setting
     const MAX_CONCURRENT_RUNS = 7; // 7 concurrent runs of the same job simultaneously
     const TIMEOUT = 2880; // 2880 min timeout duration
     const defaultArguments = {
@@ -163,13 +169,58 @@ export class GraphDataStack extends Stack {
     glueRole.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     const createXY = new lambda.Function(this, 'expertiseDashboard-createXYForGraph', {
-      runtime: lambda.Runtime.NODEJS_16_X,
+      runtime: lambda.Runtime.NODEJS_18_X,
       functionName: 'expertiseDashboard-createXYForGraph',
       code: new lambda.AssetCode('lambda/createXYForGraph'),
       handler: 'createXYForGraph.handler',
       role: dataFetchRole,
       environment: {
         'GRAPH_BUCKET': graphBucket.bucketName
+      },
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 512
+    });
+
+    // Step function workflow for knowledge graph
+
+    const fetchNodesStep = new tasks.LambdaInvoke(this, 'fetchNodesStep', {
+      lambdaFunction: appSyncStack.fetchResearcherNodes,
+      payload: TaskInput.fromObject({
+        facultiesToFilterOn: [],
+        keyword: '',
+        stepFunctionCall: true
+      })
+    });
+
+    const createXYStep = new tasks.LambdaInvoke(this, 'createXYStep', {
+      lambdaFunction: createXY
+    });
+
+    const createEdgesStep = new tasks.GlueStartJobRun(this, 'createEdgesStep', {
+      glueJobName: createEdgesJobName,
+      integrationPattern: IntegrationPattern.RUN_JOB
+    });
+
+    const createSimilarResearchersStep = new tasks.GlueStartJobRun(this, 'createSimilarResearchersStep', {
+      glueJobName: createSimilarResearchersJobName,
+      integrationPattern: IntegrationPattern.RUN_JOB
+    });
+
+    const graphStateMachineDefinition = createEdgesStep
+            .next(createSimilarResearchersStep)
+            .next(fetchNodesStep)
+            .next(createXYStep);
+
+    const graphStateMachine = new StateMachine(this, 'graphStateMachine', {
+      definitionBody: DefinitionBody.fromChainable(graphStateMachineDefinition),
+      stateMachineName: 'expertiseDashboard-graphStepFunction'
+    });
+
+    // Cloudfront
+
+    const cloudFrontDistribution = new Distribution(this, 'cloudfrontGraph', {
+      defaultBehavior: {
+        origin: new S3Origin(graphBucket)
       }
     });
   }

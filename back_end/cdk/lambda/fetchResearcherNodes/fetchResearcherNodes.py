@@ -30,8 +30,7 @@ def put_in_s3(data):
     out_file = open("/tmp/nodes.json", "w")
     json.dump(data, out_file)
     out_file.close()
-    # TODO Change S3 bucket name to environment variable (also in cdk + add s3 write permissions)
-    s3_client.upload_file('/tmp/nodes.json', 'aayushtestbucketxy', 'nodes.json')
+    s3_client.upload_file('/tmp/nodes.json', 'expertise-dashboard-graph-bucket', 'nodes.json')
 
 def lambda_handler(event, context):
     colorObject = {
