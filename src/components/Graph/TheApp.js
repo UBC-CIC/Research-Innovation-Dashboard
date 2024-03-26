@@ -52,7 +52,8 @@ export default function TheApp(props) {
 
   const getGraph = async () => {
     try {
-      const [researchers, edgesResult] = await Promise.all([
+
+      /*const [researchers, edgesResult] = await Promise.all([
         API.graphql({
           query: getResearchers,
           variables: {"facultiesToFilterOn": currentlyAppliedFaculties, "keyword": keywordFilter.toLowerCase()},
@@ -61,12 +62,17 @@ export default function TheApp(props) {
           query: getEdges,
           variables: {"facultiesToFilterOn": currentlyAppliedFaculties, "keyword": keywordFilter.toLowerCase()},
         }),
+      ]);*/
+
+      const [researchers, edgesResult] = await Promise.all([
+        (await fetch(`${process.env.REACT_APP_CLOUDFRONT_URL}nodes.json`)).json(),
+        (await fetch(`${process.env.REACT_APP_CLOUDFRONT_URL}edges.json`)).json()
       ]);
 
-      setResearcherNodes(researchers.data.getResearchers);
-      setGraphEdges(edgesResult.data.getEdges);
+      setResearcherNodes(researchers);
+      setGraphEdges(edgesResult);
       setGraphProgress(20);
-      setAutoCompleteOptions(Object.values(researchers.data.getResearchers).map(formatOptions));
+      setAutoCompleteOptions(Object.values(researchers).map(formatOptions));
     } catch (error) {
       console.error("Error fetching data:", error);
     }

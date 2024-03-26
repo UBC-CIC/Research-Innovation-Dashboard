@@ -96,27 +96,27 @@ const ResearcherGraph = (props) => {
           props.setGraphProgress(30)
         break;
         case(30):
-          random.assign(tempGraph); //assigns each node a random x,y value between [0,1]
+          //random.assign(tempGraph); //assigns each node a random x,y value between [0,1]
           props.setGraphProgress(40)
         break;
         case(40):
-        forceAtlas2.assign(tempGraph, {iterations: 20});
+        //forceAtlas2.assign(tempGraph, {iterations: 20});
         props.setGraphProgress(50)
         break;
         case(50):
-        forceAtlas2.assign(tempGraph, {iterations: 20});
+        //forceAtlas2.assign(tempGraph, {iterations: 20});
         props.setGraphProgress(60)
         break;
         case(60):
-        forceAtlas2.assign(tempGraph, {iterations: 20});
+        //forceAtlas2.assign(tempGraph, {iterations: 20});
         props.setGraphProgress(70)
         break;
         case(70):
-        forceAtlas2.assign(tempGraph, {iterations: 20});
+        //forceAtlas2.assign(tempGraph, {iterations: 20});
         props.setGraphProgress(80)
         break;
         case(80):
-        forceAtlas2.assign(tempGraph, {iterations: 20});
+        //forceAtlas2.assign(tempGraph, {iterations: 20});
         props.setGraphProgress(90)
         break;
         case(90):
